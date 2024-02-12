@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "XK30aHOLJJGKhCSul+AbSESsQicB26A5tfeAqwIRYCmCLHRCIM3eDG2oSscVikd2vTCop1PGEs3XXwFr0wMMHg==",
+  "success": true,
+  "projectFilePath": "/mnt/cea0b7f8-1920-4cdd-acfa-2a7bb8dd8960/programing/FFXIV/MeterWay/MeterWay/MeterWay.csproj",
+  "expectedPackageFiles": [
+    "/home/saheki/.nuget/packages/dalamudpackager/2.1.12/dalamudpackager.2.1.12.nupkg.sha512",
+    "/home/saheki/.nuget/packages/microsoft.aspnetcore.app.ref/7.0.15/microsoft.aspnetcore.app.ref.7.0.15.nupkg.sha512"
+  ],
+  "logs": []
+}

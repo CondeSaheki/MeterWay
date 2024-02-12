@@ -1,0 +1,54 @@
+﻿using Dalamud.Configuration;
+using Dalamud.Plugin;
+using System;
+using System.Numerics;
+
+using Lumina.Excel.GeneratedSheets;
+
+
+namespace Meterway
+{
+    [Serializable]
+    public class Configuration : IPluginConfiguration
+    {
+        public int Version { get; set; } = 0;
+
+        // General
+
+
+
+        public int Interaction { get; set; } = 1;
+
+        public bool SaveCombats { get; set; } = true;
+
+        public int Combats { get; set; } = 5;
+
+        public bool CombatClose { get; set; } = true;
+
+        public bool PvP { get; set; } = true;
+
+        //overlay
+        public bool Overlay { get; set; } = true;
+        public bool OverlayClickThrough { get; set; } = false;
+        public bool OverlayBackground { get; set; } = true;
+        public Vector4 OverlayBackgroundColor { get; set; } = new Vector4(0, 0, 0, 64);
+
+
+        // Aparence
+
+
+        // the below exist just to make saving less cumbersome
+        [NonSerialized]
+        private DalamudPluginInterface? PluginInterface;
+
+        public void Initialize(DalamudPluginInterface pluginInterface)
+        {
+            this.PluginInterface = pluginInterface;
+        }
+
+        public void Save()
+        {
+            this.PluginInterface!.SavePluginConfig(this);
+        }
+    }
+}

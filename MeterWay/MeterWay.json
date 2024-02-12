@@ -1,0 +1,11 @@
+{
+  "Author": "Saheki",
+  "Name": "MeterWay",
+  "Punchline": "A simple dps meter.",
+  "Description": "A gamer description.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "dps",
+    "iinact"
+  ]
+}
