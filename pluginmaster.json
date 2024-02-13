@@ -1,0 +1,23 @@
+{
+    "Author": "Saheki",
+    "Name": "MeterWay",
+    "Punchline": "A dps meter",
+    "Description": "description",
+    "InternalName": "MeterWay",
+    "AssemblyVersion": "0.0.0.0",
+    "RepoUrl": "https://github.com/CondeSaheki/MeterWay",
+    "ApplicableVersion": "any",
+    "CategoryTags": [],
+    "DalamudApiLevel": 8,
+    "IconUrl": "",
+    "ImageUrls": [
+        ""
+    ],
+    "DownloadLinkInstall": "https://github.com/CondeSaheki/MeterWay/releases/download/0.0.0.0/latest.zip",
+    "IsHide": false,
+    "IsTestingExclusive": true,
+    "DownloadLinkTesting": "https://github.com/CondeSaheki/MeterWay/releases/download/0.0.0.0/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/CondeSaheki/MeterWay/releases/download/0.0.0.0/latest.zip",
+    "DownloadCount": 0,
+    "LastUpdate": ""
+}
