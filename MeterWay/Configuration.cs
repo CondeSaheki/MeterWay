@@ -15,23 +15,17 @@ namespace Meterway
 
         // General
 
-
-
-        public int Interaction { get; set; } = 1;
-
-        public bool SaveCombats { get; set; } = true;
-
-        public int Combats { get; set; } = 5;
-
-        public bool CombatClose { get; set; } = true;
-
-        public bool PvP { get; set; } = true;
+        // public int Interaction { get; set; } = 1;
+        // public bool SaveCombats { get; set; } = true;
+        // public int Combats { get; set; } = 5;
+        // public bool CombatClose { get; set; } = true;
+        // public bool PvP { get; set; } = true;
 
         //overlay
         public bool Overlay { get; set; } = true;
         public bool OverlayClickThrough { get; set; } = false;
         public bool OverlayBackground { get; set; } = true;
-        public Vector4 OverlayBackgroundColor { get; set; } = new Vector4(0, 0, 0, 64);
+        public Vector4 OverlayBackgroundColor { get; set; } = new Vector4(0f, 0f, 0f, 0.25f);
 
 
         // Aparence

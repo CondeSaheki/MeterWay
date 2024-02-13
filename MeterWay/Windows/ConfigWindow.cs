@@ -42,26 +42,6 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Text("WIP");
 
-
-        var OverlayValue = this.plugin.Configuration.Overlay;
-        if (ImGui.Checkbox("Show Overlay", ref OverlayValue))
-        {
-            this.plugin.Configuration.Overlay = OverlayValue;
-            this.plugin.Configuration.Save();
-            if (OverlayValue)
-            {
-                this.plugin.WindowSystem.AddWindow(this.plugin.OverlayWindow);
-            }
-            else
-            {
-                this.plugin.WindowSystem.RemoveWindow(this.plugin.OverlayWindow);
-            }
-
-        }
-
-
-
-
         /*
         // a
         ImGui.Text("On end of Combats");
@@ -120,14 +100,28 @@ public class ConfigWindow : Window, IDisposable
 
     private void DrawOverlayTab()
     {
-        //if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
-
         using var tab = ImRaii.TabItem("Overlay");
-
-        //ImGui.EndDisabled();
-
         if (!tab) return;
 
+        //Overlay
+        var OverlayValue = this.plugin.Configuration.Overlay;
+        if (ImGui.Checkbox("Show Overlay", ref OverlayValue))
+        {
+            this.plugin.Configuration.Overlay = OverlayValue;
+            this.plugin.Configuration.Save();
+            if (OverlayValue)
+            {
+                this.plugin.WindowSystem.AddWindow(this.plugin.OverlayWindow);
+            }
+            else
+            {
+                this.plugin.WindowSystem.RemoveWindow(this.plugin.OverlayWindow);
+            }
+        }
+
+        if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
+
+        // OverlayClickThrough
         var OverlayClickThroughValue = this.plugin.Configuration.OverlayClickThrough;
         if (ImGui.Checkbox("Click through", ref OverlayClickThroughValue))
         {
@@ -136,6 +130,7 @@ public class ConfigWindow : Window, IDisposable
             this.plugin.OverlayWindow.Flags = this.plugin.OverlayWindow.Gerateflags();
         }
 
+        // OverlayBackground
         var OverlayBackgroundValue = this.plugin.Configuration.OverlayBackground;
         if (ImGui.Checkbox("Background", ref OverlayBackgroundValue))
         {
@@ -147,17 +142,24 @@ public class ConfigWindow : Window, IDisposable
         
         if(!this.plugin.Configuration.OverlayBackground) ImGui.BeginDisabled();
         
+        // OverlayBackgroundColor
         var OverlayBackgroundColorValue = this.plugin.Configuration.OverlayBackgroundColor;
         ImGui.Text("background color: ");
         ImGui.SameLine();
         
-        if (ImGui.ColorEdit4("background color", ref OverlayBackgroundColorValue, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel | ImGuiColorEditFlags.AlphaBar |  ImGuiColorEditFlags.OptionsDefault))
+        if (ImGui.ColorEdit4("background color", ref OverlayBackgroundColorValue, 
+            ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
         {
             this.plugin.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
             this.plugin.Configuration.Save();
         }    
 
         ImGui.EndDisabled();
+        
+        if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
+
+        // ...
+
     }
 
 

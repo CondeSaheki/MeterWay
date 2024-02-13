@@ -1,18 +1,8 @@
 using System;
-using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using Dalamud.Game.Command;
-using Dalamud.IoC;
-using Dalamud.Plugin;
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
-
-using Meterway.Windows;
-using System.Collections.Generic;
 
 namespace Meterway.Windows;
 
@@ -20,10 +10,7 @@ public class OverlayWindow : Window, IDisposable
 {
     private Plugin plugin;
 
-    public const ImGuiWindowFlags defaultflags =
-        ImGuiWindowFlags.NoTitleBar |
-        ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
-
+    public const ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
 
     public OverlayWindow(Plugin plugin) : base("OverlayWindow")
     {
@@ -49,10 +36,7 @@ public class OverlayWindow : Window, IDisposable
 
     public override void Draw()
     {
-
-
         // draw background
-        //var OverlayBackgroundColor = Color(0, 0, 0, 64);
         if (this.plugin.Configuration.OverlayBackground)
         {
             Backgound(this.plugin.Configuration.OverlayBackgroundColor);
