@@ -5,15 +5,15 @@
     "Punchline": "A DPS meter that doesn't rely on WebViews.",
     "Description": "description",
     "InternalName": "MeterWay",
-    "AssemblyVersion": "v0.0.1",
+    "AssemblyVersion": "v0.0.2",
     "RepoUrl": "https://github.com/CondeSaheki/MeterWay",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 9,
-    "DownloadLinkInstall": "https://github.com/CondeSaheki/MeterWay/releases/download/v0.0.1latest.zip",
+    "DownloadLinkInstall": "https://github.com/CondeSaheki/MeterWay/releases/download/v0.0.2/latest.zip",
     "IsHide": false,
     "IsTestingExclusive": false,
-    "DownloadLinkTesting": "https://github.com/CondeSaheki/MeterWay/releases/download/v0.0.1/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/CondeSaheki/MeterWay/releases/download/v0.0.1/latest.zip",
+    "DownloadLinkTesting": "https://github.com/CondeSaheki/MeterWay/releases/download/v0.0.2latest.zip",
+    "DownloadLinkUpdate": "https://github.com/CondeSaheki/MeterWay/releases/download/v0.0.2/latest.zip",
     "DownloadCount": 0
   }
 ]
