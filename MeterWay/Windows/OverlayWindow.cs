@@ -60,7 +60,7 @@ public class OverlayWindow : Window, IDisposable
 
     // helpers
 
-    public void Background(Vector4 color)
+    private void Background(Vector4 color)
     {
         Vector2 vMin = ImGui.GetWindowContentRegionMin();
         Vector2 vMax = ImGui.GetWindowContentRegionMax();

@@ -4,6 +4,8 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using Meterway.Utils;
+using Dalamud.Interface.Windowing;
+using System.ComponentModel;
 
 namespace Meterway.Overlays;
 
@@ -12,8 +14,13 @@ public class MaotOverlay : IMeterwayOverlay
     public string Name => "MaotOverlay";
     private Plugin plugin { get; init; }
 
+    private Vector2 WindowMin { get; set; }
+    private Vector2 WindowMax { get; set; }
+
     public MaotOverlay(Plugin plugin)
     {
+        this.WindowMin = new Vector2();
+        this.WindowMax = new Vector2();
         this.plugin = plugin;
     }
 
@@ -76,50 +83,73 @@ public class MaotOverlay : IMeterwayOverlay
         { "SGE", 40 }
     };
 
+    private void UpdateWindowSize()
+    {
+        Vector2 vMin = ImGui.GetWindowContentRegionMin();
+        Vector2 vMax = ImGui.GetWindowContentRegionMax();
+
+        vMin.X += ImGui.GetWindowPos().X;
+        vMin.Y += ImGui.GetWindowPos().Y;
+        vMax.X += ImGui.GetWindowPos().X;
+        vMax.Y += ImGui.GetWindowPos().Y;
+        this.WindowMin = vMin;
+        this.WindowMax = vMax;
+    }
+
     // Draw
 
     public void Draw()
     {
-        if (plugin.dataManager.Combat != null && plugin.dataManager.Combat.Count() != 0)
-        {
-            ImGui.Text("In combat for " + plugin.dataManager.Combat.Last().encounter.Duration.ToString() + " seconds.");
 
-            if (plugin.dataManager.Combat.Last().combatants != null && plugin.dataManager.Combat.Last().combatants.Count() != 0)
-            {
-                foreach (Combatant combatant in plugin.dataManager.Combat.Last().combatants)
-                {
-                    if (!formerInfo.ContainsKey(combatant.Name))
-                    {
-                        formerInfo[combatant.Name] = new TempCombatData { DPS = combatant.EncDps, PctDMG = combatant.DmgPct, TotalDMG = combatant.Dmg, Position = plugin.dataManager.Combat.Last().combatants.IndexOf(combatant) + 1 };
-                        targetInfo[combatant.Name] = new TempCombatData { DPS = combatant.EncDps, PctDMG = combatant.DmgPct, TotalDMG = combatant.Dmg, Position = plugin.dataManager.Combat.Last().combatants.IndexOf(combatant) + 1 };
-                    }
-
-                    if (transitionTimer < transitionDuration)
-                    {
-                        transitionTimer += ImGui.GetIO().DeltaTime;
-                        float t = Math.Min(1.0f, transitionTimer / transitionDuration);
-                        formerInfo[combatant.Name].DPS = Helpers.Lerp(formerInfo[combatant.Name].DPS, targetInfo[combatant.Name].DPS, t);
-                        formerInfo[combatant.Name].PctDMG = Helpers.Lerp(formerInfo[combatant.Name].PctDMG, targetInfo[combatant.Name].PctDMG, t);
-                        formerInfo[combatant.Name].TotalDMG = Helpers.Lerp(formerInfo[combatant.Name].TotalDMG, targetInfo[combatant.Name].TotalDMG, t);
-                        formerInfo[combatant.Name].Position = Helpers.Lerp(formerInfo[combatant.Name].Position, targetInfo[combatant.Name].Position, t);
-                    }
-
-                    if (targetInfo[combatant.Name].DPS != combatant.EncDps)
-                    {
-                        targetInfo[combatant.Name].DPS = combatant.EncDps;
-                        targetInfo[combatant.Name].PctDMG = combatant.DmgPct;
-                        targetInfo[combatant.Name].TotalDMG = combatant.Dmg;
-                        targetInfo[combatant.Name].Position = plugin.dataManager.Combat.Last().combatants.IndexOf(combatant) + 1;
-                        transitionTimer = 0.0f;
-                    }
-
-                    DrawCombatantLine(formerInfo[combatant.Name], combatant.Name, combatant.Job);
-                }
-            }
-        }
-        else
+        UpdateWindowSize();
+        if (plugin.dataManager.Combat == null || plugin.dataManager.Combat.Count() == 0)
         {
             ImGui.Text("Not in combat...");
+            return;
+        }
+
+        if (plugin.dataManager.Combat.Last().combatants == null || plugin.dataManager.Combat.Last().combatants.Count() == 0)
+        {
+            return;
+        }
+
+        var currentCombat = plugin.dataManager.Combat.Last();
+
+        // Add a background for the title and centralize the text
+        ImGui.GetWindowDrawList().AddRectFilled(new Vector2(WindowMin.X, WindowMin.Y), new Vector2(WindowMax.X, WindowMin.Y + ImGui.GetFontSize() + 5), Helpers.Color(26, 26, 39, 190));
+
+        var center = new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - (CalcTextSize(currentCombat.encounter.Name).X) / 2, WindowMin.Y + 2);
+        ImGui.GetWindowDrawList().AddText(center, Helpers.Color(255, 255, 255, 255), currentCombat.encounter.Name);
+        foreach (Combatant combatant in currentCombat.combatants)
+        {
+            if (!formerInfo.ContainsKey(combatant.Name))
+            {
+                formerInfo[combatant.Name] = new TempCombatData { DPS = combatant.EncDps, PctDMG = combatant.DmgPct, TotalDMG = combatant.Dmg, Position = currentCombat.combatants.IndexOf(combatant) + 1 };
+                targetInfo[combatant.Name] = new TempCombatData { DPS = combatant.EncDps, PctDMG = combatant.DmgPct, TotalDMG = combatant.Dmg, Position = currentCombat.combatants.IndexOf(combatant) + 1 };
+            }
+
+            if (transitionTimer < transitionDuration)
+            {
+                transitionTimer += ImGui.GetIO().DeltaTime;
+                float t = Math.Min(1.0f, transitionTimer / transitionDuration);
+                formerInfo[combatant.Name].DPS = Helpers.Lerp(formerInfo[combatant.Name].DPS, targetInfo[combatant.Name].DPS, t);
+                formerInfo[combatant.Name].PctDMG = Helpers.Lerp(formerInfo[combatant.Name].PctDMG, targetInfo[combatant.Name].PctDMG, t);
+                formerInfo[combatant.Name].TotalDMG = Helpers.Lerp(formerInfo[combatant.Name].TotalDMG, targetInfo[combatant.Name].TotalDMG, t);
+                formerInfo[combatant.Name].Position = Helpers.Lerp(formerInfo[combatant.Name].Position, targetInfo[combatant.Name].Position, t);
+            }
+
+            if (targetInfo[combatant.Name].DPS != combatant.EncDps)
+            {
+                targetInfo[combatant.Name].DPS = combatant.EncDps;
+                targetInfo[combatant.Name].PctDMG = combatant.DmgPct;
+                targetInfo[combatant.Name].TotalDMG = combatant.Dmg;
+                targetInfo[combatant.Name].Position = currentCombat.combatants.IndexOf(combatant) + 1;
+                transitionTimer = 0.0f;
+            }
+
+            DrawCombatantLine(formerInfo[combatant.Name], combatant.Name, combatant.Job);
+
+
         }
     }
 
@@ -131,26 +161,25 @@ public class MaotOverlay : IMeterwayOverlay
 
     private void DrawCombatantLine(TempCombatData data, string name, string job)
     {
-        float barHeight = ImGui.GetFontSize() + 5;
-        var windowMin = ImGui.GetCursorScreenPos();
-        var windowMax = new Vector2(ImGui.GetWindowSize().X + windowMin.X - 32, windowMin.Y + 32);
-        var rowPosition = windowMin.Y + (barHeight * (data.Position - 1));
+        float lineHeight = ImGui.GetFontSize() + 5;
+        var windowMin = new Vector2(WindowMin.X, WindowMin.Y + lineHeight);
+        var rowPosition = windowMin.Y + (lineHeight * (data.Position - 1));
 
-        var textRowPosition = rowPosition + barHeight / 2 - ImGui.GetFontSize() / 2;
+        var textRowPosition = rowPosition + lineHeight / 2 - ImGui.GetFontSize() / 2;
         var totalDPSStr = $"{Helpers.HumanizeNumber(data.DPS, 1)}/s";
         var totalDPMStr = $"{Helpers.HumanizeNumber(data.TotalDMG, 1)}";
 
         var drawList = ImGui.GetWindowDrawList();
-        DrawJobIcon(new Vector2(windowMin.X, rowPosition), barHeight, job);
-        windowMin.X += barHeight;
+        DrawJobIcon(new Vector2(windowMin.X, rowPosition), lineHeight, job);
+        windowMin.X += lineHeight;
 
-        drawList.AddRectFilled(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Helpers.Color(26, 26, 26, 190));
-        DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), name == "YOU" ? Helpers.Color(128, 170, 128, 255) : Helpers.Color(128, 128, 170, 255), data.PctDMG / 100.0f);
-        DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Helpers.Color(26, 26, 26, 222));
+        drawList.AddRectFilled(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 190));
+        DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), name == "YOU" ? Helpers.Color(128, 170, 128, 255) : Helpers.Color(128, 128, 170, 255), data.PctDMG / 100.0f);
+        DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 222));
 
         // scale down the font for the job and center it in the line
         ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
-        drawList.AddText(new Vector2(windowMin.X + 7, rowPosition + (barHeight / 2 - (CalcTextSize(job.ToUpper()).Y) / 2)), Helpers.Color(172, 172, 172, 255), job.ToUpper());
+        drawList.AddText(new Vector2(windowMin.X + 7, rowPosition + (lineHeight / 2 - (CalcTextSize(job.ToUpper()).Y) / 2)), Helpers.Color(172, 172, 172, 255), job.ToUpper());
         ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
 
         // Draw shadow for name
@@ -160,14 +189,14 @@ public class MaotOverlay : IMeterwayOverlay
 
         ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
         //shadow for total damage
-        drawList.AddText(new Vector2(windowMax.X - CalcTextSize(totalDPSStr).X - CalcTextSize(totalDPMStr).X - 5, rowPosition + (barHeight / 2 - (CalcTextSize(totalDPMStr).Y) / 2) + 1), Helpers.Color(0, 0, 0, 150), totalDPMStr);
-        drawList.AddText(new Vector2(windowMax.X - CalcTextSize(totalDPSStr).X - CalcTextSize(totalDPMStr).X - 5, rowPosition + (barHeight / 2 - (CalcTextSize(totalDPMStr).Y) / 2)), Helpers.Color(210, 210, 210, 255), totalDPMStr);
+        drawList.AddText(new Vector2(WindowMax.X - CalcTextSize(totalDPSStr).X - CalcTextSize(totalDPMStr).X - 5, rowPosition + (lineHeight / 2 - (CalcTextSize(totalDPMStr).Y) / 2) + 1), Helpers.Color(0, 0, 0, 150), totalDPMStr);
+        drawList.AddText(new Vector2(WindowMax.X - CalcTextSize(totalDPSStr).X - CalcTextSize(totalDPMStr).X - 5, rowPosition + (lineHeight / 2 - (CalcTextSize(totalDPMStr).Y) / 2)), Helpers.Color(210, 210, 210, 255), totalDPMStr);
         ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
 
         // Draw shadow for DPS
-        drawList.AddText(new Vector2(windowMax.X - CalcTextSize(totalDPSStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 255), totalDPSStr);
+        drawList.AddText(new Vector2(WindowMax.X - CalcTextSize(totalDPSStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 255), totalDPSStr);
         // Draw DPS
-        drawList.AddText(new Vector2(windowMax.X - CalcTextSize(totalDPSStr).X - 5, textRowPosition), Helpers.Color(255, 255, 255, 255), totalDPSStr);
+        drawList.AddText(new Vector2(WindowMax.X - CalcTextSize(totalDPSStr).X - 5, textRowPosition), Helpers.Color(255, 255, 255, 255), totalDPSStr);
     }
 
 
@@ -204,7 +233,7 @@ public class MaotOverlay : IMeterwayOverlay
 
         foreach (char c in text)
         {
-            width += ImGui.GetFont().GetCharAdvance(c) * ImGui.GetFont().Scale;
+            width += ImGui.GetFont().GetCharAdvance(c) * ImGui.GetIO().FontGlobalScale;
         }
         return new Vector2(width, height);
     }
