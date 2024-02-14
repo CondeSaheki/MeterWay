@@ -3,6 +3,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
+using System.Collections.Generic;
 
 namespace Meterway.Windows;
 
@@ -34,6 +35,14 @@ public class OverlayWindow : Window, IDisposable
 
     public void Dispose() { }
 
+    private float transitionDuration = 1f; // in seconds
+    private float transitionTimer = 0.0f;
+
+    private Dictionary<String, float> formerDPS = new Dictionary<string, float>();
+
+    private Dictionary<String, float> targetDPS = new Dictionary<string, float>();
+
+
     public override void Draw()
     {
         // draw background
@@ -44,30 +53,47 @@ public class OverlayWindow : Window, IDisposable
 
         if (plugin.dataManager.Combat != null && plugin.dataManager.Combat.Count() != 0)
         {
-            ImGui.Text("duration: " + plugin.dataManager.Combat.Last().encounter.Duration.ToString());
+            ImGui.Text("In combat for " + plugin.dataManager.Combat.Last().encounter.Duration.ToString() + " seconds.");
 
             if (plugin.dataManager.Combat.Last().combatants != null && plugin.dataManager.Combat.Last().combatants.Count() != 0)
             {
                 foreach (Combatant combatant in plugin.dataManager.Combat.Last().combatants)
                 {
-                    ImGui.Text(combatant.Job + " ");
-                    ImGui.SameLine();
-                    ImGui.Text(combatant.Name + " ");
-                    ImGui.SameLine();
-                    ImGui.Text(combatant.EncDps + " ");
-                    ImGui.SameLine();
-                    ImGui.Text(combatant.DmgPct + "%");
-                    //DrawProgressBarWithText(32, Color(255, 128, 128, 255), combatant.DmgPct / 100.0f, "");
+                    if (!formerDPS.ContainsKey(combatant.Name))
+                    {
+                        formerDPS[combatant.Name] = combatant.EncDps;
+                        targetDPS[combatant.Name] = combatant.EncDps;
+                    }
+
+                    if (transitionTimer < transitionDuration)
+                    {
+                        transitionTimer += ImGui.GetIO().DeltaTime;
+                        float t = Math.Min(1.0f, transitionTimer / transitionDuration);
+                        formerDPS[combatant.Name] = Lerp(formerDPS[combatant.Name], targetDPS[combatant.Name], t);
+                        this.plugin.PluginLog.Info($"Transtition Time: {transitionTimer}, {formerDPS[combatant.Name]}");
+                    }
+
+                    if (targetDPS[combatant.Name] != combatant.EncDps)
+                    {
+                        targetDPS[combatant.Name] = combatant.EncDps;
+                        transitionTimer = 0.0f;
+                    }
+
+                    ImGui.Text($"[{combatant.Job.ToUpper()}] {combatant.Name} {formerDPS[combatant.Name].ToString("0")}/s");
                 }
             }
-
         }
         else
         {
             ImGui.Text("empty");
         }
-
     }
+
+    float Lerp(float firstFloat, float secondFloat, float by)
+    {
+        return firstFloat + (secondFloat - firstFloat) * by;
+    }
+
 
     public void Backgound(Vector4 color)
     {
@@ -86,7 +112,7 @@ public class OverlayWindow : Window, IDisposable
 
     public static uint Color(Vector4 color)
     {
-        return Color(Convert.ToByte(Math.Min(Math.Round(color.X * 255), 255)), Convert.ToByte(Math.Min(Math.Round(color.Y * 255), 255)), 
-            Convert.ToByte(Math.Min(Math.Round(color.Z * 255), 255)), Convert.ToByte(Math.Min(Math.Round(color.W * 255), 255)));
+        return Color(Convert.ToByte(Math.Min(Math.Round(color.X * 255), 255)), Convert.ToByte(Math.Min(Math.Round(color.Y * 255), 255)),
+            Convert.ToByte(Math.Min(Math.Round(color.Z * 255), 255)), Convert.ToByte(Math.Round(color.W * 255)));
     }
 }
