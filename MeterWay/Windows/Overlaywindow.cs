@@ -87,7 +87,7 @@ public class OverlayWindow : Window, IDisposable
         }
         else
         {
-            ImGui.Text("empty");
+            ImGui.Text("Not in combat...");
         }
     }
 
