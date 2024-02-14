@@ -78,7 +78,7 @@ public class MaotOverlay : IMeterwayOverlay
 
     // Draw
 
-    public override void Draw()
+    public void Draw()
     {
         if (plugin.dataManager.Combat != null && plugin.dataManager.Combat.Count() != 0)
         {
@@ -123,7 +123,7 @@ public class MaotOverlay : IMeterwayOverlay
         }
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
     }
 
