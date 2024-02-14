@@ -4,6 +4,12 @@ using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using System.Collections.Generic;
+using System;
+using System.Numerics;
+using Dalamud.Interface.Windowing;
+using ImGuiNET;
+using Dalamud.Interface.Utility.Raii;
+using System.Collections.Generic;
 
 namespace Meterway.Windows;
 
@@ -24,6 +30,9 @@ public class OverlayWindow : Window, IDisposable
         this.IsOpen = true;
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
+
+        this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(this.plugin.Configuration.OverlayFontPath, this.plugin.Configuration.OverlayFontSize);
+
     }
     public ImGuiWindowFlags Gerateflags()
     {
@@ -49,11 +58,32 @@ public class OverlayWindow : Window, IDisposable
     private Dictionary<String, TempCombatData> formerInfo = new Dictionary<string, TempCombatData>();
 
     private Dictionary<String, TempCombatData> targetInfo = new Dictionary<string, TempCombatData>();
+    
+    public ImFontPtr font;
 
+    public void updatefont()
+    {
+        var conf = this.plugin.Configuration;
+        //this.plugin.PluginLog.Info("trying to load path: " + conf.OverlayFontPath);
+
+        //this.plugin.OverlayWindow.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(conf.OverlayFontPath, conf.OverlayFontSize);
+
+        //this.plugin.PluginLog.Info("font loaded ?");
+    }
 
     public override void Draw()
     {
+        
+        
         ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
+        ImGui.PushFont(this.font);
+        
+        ImGui.Text("AMOGUS mogu 01234");
+        ImGui.PopFont();
+        ImGui.Text("AMOGUS mogu 01234");
+
+        // ImGui.Text("sus");
+        
 
         // draw background
         if (this.plugin.Configuration.OverlayBackground)
@@ -102,7 +132,10 @@ public class OverlayWindow : Window, IDisposable
         {
             ImGui.Text("Not in combat...");
         }
+        
+        ImGui.PopFont();
     }
+
 
     float Lerp(float firstFloat, float secondFloat, float by)
     {

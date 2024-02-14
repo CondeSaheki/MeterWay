@@ -140,7 +140,7 @@ public class ConfigWindow : Window, IDisposable
             this.plugin.OverlayWindow.Flags = this.plugin.OverlayWindow.Gerateflags();
         }
 
-
+        ImGui.EndDisabled();
         if (!this.plugin.Configuration.OverlayBackground) ImGui.BeginDisabled();
 
         // OverlayBackgroundColor
@@ -156,45 +156,36 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.EndDisabled();
-
         if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
 
+        // text config
+        // OverlayFontPath
 
 
-        // ImGui::CheckboxFlags("ImGuiSliderFlags_AlwaysClamp", &flags, ImGuiSliderFlags_AlwaysClamp);
-        // ImGui::SameLine(); HelpMarker("Always clamp value to min/max bounds (if any) when input manually with CTRL+Click.");
-        // ImGui::CheckboxFlags("ImGuiSliderFlags_Logarithmic", &flags, ImGuiSliderFlags_Logarithmic);
-        // ImGui::SameLine(); HelpMarker("Enable logarithmic editing (more precision for small values).");
-        // ImGui::CheckboxFlags("ImGuiSliderFlags_NoRoundToFormat", &flags, ImGuiSliderFlags_NoRoundToFormat);
-        // ImGui::SameLine(); HelpMarker("Disable rounding underlying value to match precision of the format string (e.g. %.3f values are rounded to those 3 digits).");
-        // ImGui::CheckboxFlags("ImGuiSliderFlags_NoInput", &flags, ImGuiSliderFlags_NoInput);
-        // ImGui::SameLine(); HelpMarker("Disable CTRL+Click or Enter key allowing to input text directly into the widget.");
+        // /data/Inter-Bold.ttf
 
-        // Drags
 
-        // string label, ref float v, float v_speed, float v_min, float v_max, string format, ImGuiSliderFlags flags)
-
-        ImGui.Text("Overlay font size: ");
+        ImGui.Text("Font file path: ");
         ImGui.SameLine();
+        var OverlayFontPathValue = this.plugin.Configuration.OverlayFontPath;
+        if (ImGui.InputText("FontFile", ref OverlayFontPathValue, 1000))
+        {
+            this.plugin.Configuration.OverlayFontPath = OverlayFontPathValue;
+            this.plugin.Configuration.Save();
+            this.plugin.OverlayWindow.updatefont();
+        }
+
+        // OverlayFontSizeValue
         var OverlayFontSizeValue = this.plugin.Configuration.OverlayFontSize;
-        if (ImGui.SliderFloat("fontsize", ref OverlayFontSizeValue, 0.0f, 64.0f, "%.1f", ImGuiSliderFlags.None))
+        ImGui.Text("Font size: ");
+        ImGui.SameLine();
+        if (ImGui.SliderFloat("FontSize", ref OverlayFontSizeValue, 0.0f, 64.0f, "%.1f", ImGuiSliderFlags.None))
         {
             this.plugin.Configuration.OverlayFontSize = OverlayFontSizeValue;
             this.plugin.Configuration.Save();
+            this.plugin.OverlayWindow.updatefont();
         }
-
-        // text config
-
-        //
-        // var font1 = ImGui.GetIO().Fonts.AddFontFromFileTTF("asd", 1);
-
-
-        // ImGui.PushFont(font1);
-        // ImGui.Text("sus");
-        // ImGui.PopFont();
-
         ImGui.EndDisabled();
-
     }
 
 

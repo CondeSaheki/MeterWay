@@ -26,6 +26,7 @@ namespace Meterway
         public bool OverlayClickThrough { get; set; } = false;
         public bool OverlayBackground { get; set; } = true;
         public Vector4 OverlayBackgroundColor { get; set; } = new Vector4(0f, 0f, 0f, 0.25f);
+        public string OverlayFontPath { get; set; } = "Inter-Bold.ttf";
         public float OverlayFontSize { get; set; } = 15f;
 
 
