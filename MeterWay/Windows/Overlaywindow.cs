@@ -86,7 +86,7 @@ public class OverlayWindow : Window, IDisposable
 
     public static uint Color(Vector4 color)
     {
-        return Color(Convert.ToByte(Math.Round(color.X * 255)), Convert.ToByte(Math.Round(color.Y * 255)), 
-            Convert.ToByte(Math.Round(color.Z * 255)), Convert.ToByte(Math.Round(color.W * 255)));
+        return Color(Convert.ToByte(Math.Min(Math.Round(color.X * 255), 255)), Convert.ToByte(Math.Min(Math.Round(color.Y * 255), 255)), 
+            Convert.ToByte(Math.Min(Math.Round(color.Z * 255), 255)), Convert.ToByte(Math.Min(Math.Round(color.W * 255), 255)));
     }
 }
