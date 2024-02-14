@@ -159,6 +159,7 @@ public class ConfigWindow : Window, IDisposable
         
         if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
 
+        
         // text config
 
         //ImGui.SetWindowFontScale(30);
@@ -169,7 +170,7 @@ public class ConfigWindow : Window, IDisposable
         // ImGui.Text("sus");
         // ImGui.PopFont();
 
-
+        ImGui.EndDisabled();
 
     }
 
