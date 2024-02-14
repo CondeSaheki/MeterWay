@@ -40,3 +40,4 @@ public interface IOverlay
     public void Draw();
     public void Dispose();
 }
+

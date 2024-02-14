@@ -7,9 +7,15 @@ using Meterway.Utils;
 
 namespace Meterway.Overlays;
 
-public class MaotOverlay : Overlay
+public class MaotOverlay : IMeterwayOverlay
 {
-    public MaotOverlay(Plugin plugin) : base(plugin, "MaotOverlay") { }
+    public string Name => "MaotOverlay";
+    private Plugin plugin { get; init; }
+
+    public MaotOverlay(Plugin plugin)
+    {
+        this.plugin = plugin;
+    }
 
     class TempCombatData
     {
