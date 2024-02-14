@@ -9,15 +9,15 @@ using System.ComponentModel;
 
 namespace Meterway.Overlays;
 
-public class MaotOverlay : IMeterwayOverlay
+public class LazerOverlay : IMeterwayOverlay
 {
-    public string Name => "MaotOverlay";
+    public string Name => "LazerOverlay";
     private Plugin plugin { get; init; }
 
     private Vector2 WindowMin { get; set; }
     private Vector2 WindowMax { get; set; }
 
-    public MaotOverlay(Plugin plugin)
+    public LazerOverlay(Plugin plugin)
     {
         this.WindowMin = new Vector2();
         this.WindowMax = new Vector2();
