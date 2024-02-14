@@ -6,6 +6,7 @@ using Dalamud.Plugin.Services;
 
 using Meterway.Windows;
 using System.Collections.Generic;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 
 namespace Meterway
 {
@@ -24,6 +25,8 @@ namespace Meterway
         public IClientState ClientState { get; init; }
         public ICondition Condition { get; init; }
         public IPartyList PartyList { get; init; }
+
+        public ITextureProvider TextureProvider { get; init; }
 
         // window
         private ConfigWindow ConfigWindow { get; init; }
@@ -44,7 +47,8 @@ namespace Meterway
             [RequiredVersion("1.0")] IChatGui chatGui,
             [RequiredVersion("1.0")] IClientState clientState,
             [RequiredVersion("1.0")] ICondition condition,
-            [RequiredVersion("1.0")] IPartyList partyList
+            [RequiredVersion("1.0")] IPartyList partyList,
+            [RequiredVersion("1.0")] ITextureProvider textureProvider
             )
         {
             this.PluginInterface = pluginInterface;
@@ -54,6 +58,7 @@ namespace Meterway
             this.ClientState = clientState;
             this.Condition = condition;
             this.PartyList = partyList;
+            this.TextureProvider = textureProvider;
 
             this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             this.Configuration.Initialize(this.PluginInterface);
@@ -64,17 +69,17 @@ namespace Meterway
             ConfigWindow = new ConfigWindow(this);
             MainWindow = new MainWindow(this);
             OverlayWindow = new OverlayWindow(this);
-            
+
 
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
-            if(Configuration.Overlay)
-            {   
+            if (Configuration.Overlay)
+            {
                 WindowSystem.AddWindow(OverlayWindow);
             }
-                
 
-            
+
+
 
             this.CommandManager.AddHandler(CommandName,
                 new CommandInfo(OnCommand)
