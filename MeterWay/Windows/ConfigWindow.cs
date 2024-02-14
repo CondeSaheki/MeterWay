@@ -3,6 +3,7 @@ using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using Dalamud.Interface.Utility.Raii;
+using System.Collections.Generic;
 
 namespace Meterway.Windows;
 
@@ -158,7 +159,17 @@ public class ConfigWindow : Window, IDisposable
         
         if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
 
-        // ...
+        // text config
+
+        //ImGui.SetWindowFontScale(30);
+        // var font1 = ImGui.GetIO().Fonts.AddFontFromFileTTF("asd", 1);
+        
+
+        // ImGui.PushFont(font1);
+        // ImGui.Text("sus");
+        // ImGui.PopFont();
+
+
 
     }
 
