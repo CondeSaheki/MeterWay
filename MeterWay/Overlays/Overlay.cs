@@ -10,17 +10,32 @@ using System.Globalization;
 
 namespace Meterway.Overlays;
 
-public interface IOverlay
+public class Overlay : IOverlay
 {
     public string Name { get; }
 
-    private Plugin plugin { get; init; }
+    protected Plugin plugin { get; init; }
 
-    public IOverlay(Plugin plugin)
+    public Overlay(Plugin plugin, string name)
     {
         this.plugin = plugin;
+        this.Name = name;
     }
 
+    public void Draw()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public interface IOverlay
+{
+    public string Name { get; }
 
     public void Draw();
     public void Dispose();

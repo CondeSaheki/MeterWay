@@ -1,30 +1,16 @@
 using System;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using System.Collections.Generic;
-using Dalamud.Game.Gui.PartyFinder.Types;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using System.Globalization;
+using Meterway.Utils;
 
 namespace Meterway.Overlays;
 
-public class MaotOverlay : IOverlay
+public class MaotOverlay : Overlay
 {
-    // OverlayWindow
+    public MaotOverlay(Plugin plugin) : base(plugin, "MaotOverlay") { }
 
-    public string Name => "Maot Overlay";
-    private Plugin plugin { get; init; }
-
-    public MaotOverlay(Plugin plugin) : base(plugin)
-    {
-        
-        this.plugin = plugin;
-    }
-    
-    // MaotOverlay
-    
     class TempCombatData
     {
         public float DPS { get; set; }
@@ -84,54 +70,9 @@ public class MaotOverlay : IOverlay
         { "SGE", 40 }
     };
 
-    // fn
-
-    private float Lerp(float firstFloat, float secondFloat, float by)
-    {
-        return firstFloat + (secondFloat - firstFloat) * by;
-    }
-
-    private string HumanizeNumber(float number, int decimals = 1)
-    {
-        string[] suffixes = { "", "k", "M", "B", "T" };
-        int suffixIndex = 0;
-
-        while (number >= 1000 && suffixIndex < suffixes.Length - 1)
-        {
-            number /= 1000;
-            suffixIndex++;
-        }
-        // return with no decimais if below 1k
-        if (suffixIndex == 0)
-        {
-            return $"{number.ToString("0")}";
-        }
-
-        // use . for decimals
-        return $"{number.ToString($"0.{new string('0', decimals)}", CultureInfo.InvariantCulture)}{suffixes[suffixIndex]}";
-    }
-
-    public static uint Color(byte r, byte g, byte b, byte a)
-    {
-        uint ret = a;
-        ret <<= 8;
-        ret += b;
-        ret <<= 8;
-        ret += g;
-        ret <<= 8;
-        ret += r;
-        return ret;
-    }
-
-    public static uint Color(Vector4 color)
-    {
-        return Color(Convert.ToByte(Math.Min(Math.Round(color.X * 255), 255)), Convert.ToByte(Math.Min(Math.Round(color.Y * 255), 255)),
-            Convert.ToByte(Math.Min(Math.Round(color.Z * 255), 255)), Convert.ToByte(Math.Round(color.W * 255)));
-    }
-
     // Draw
 
-    public void Draw()
+    public new void Draw()
     {
         if (plugin.dataManager.Combat != null && plugin.dataManager.Combat.Count() != 0)
         {
@@ -151,10 +92,10 @@ public class MaotOverlay : IOverlay
                     {
                         transitionTimer += ImGui.GetIO().DeltaTime;
                         float t = Math.Min(1.0f, transitionTimer / transitionDuration);
-                        formerInfo[combatant.Name].DPS = Lerp(formerInfo[combatant.Name].DPS, targetInfo[combatant.Name].DPS, t);
-                        formerInfo[combatant.Name].PctDMG = Lerp(formerInfo[combatant.Name].PctDMG, targetInfo[combatant.Name].PctDMG, t);
-                        formerInfo[combatant.Name].TotalDMG = Lerp(formerInfo[combatant.Name].TotalDMG, targetInfo[combatant.Name].TotalDMG, t);
-                        formerInfo[combatant.Name].Position = Lerp(formerInfo[combatant.Name].Position, targetInfo[combatant.Name].Position, t);
+                        formerInfo[combatant.Name].DPS = Helpers.Lerp(formerInfo[combatant.Name].DPS, targetInfo[combatant.Name].DPS, t);
+                        formerInfo[combatant.Name].PctDMG = Helpers.Lerp(formerInfo[combatant.Name].PctDMG, targetInfo[combatant.Name].PctDMG, t);
+                        formerInfo[combatant.Name].TotalDMG = Helpers.Lerp(formerInfo[combatant.Name].TotalDMG, targetInfo[combatant.Name].TotalDMG, t);
+                        formerInfo[combatant.Name].Position = Helpers.Lerp(formerInfo[combatant.Name].Position, targetInfo[combatant.Name].Position, t);
                     }
 
                     if (targetInfo[combatant.Name].DPS != combatant.EncDps)
@@ -175,8 +116,10 @@ public class MaotOverlay : IOverlay
             ImGui.Text("Not in combat...");
         }
     }
-    
-    public void Dispose() { }
+
+    public new void Dispose()
+    {
+    }
 
     // Draw helpers
 
@@ -188,40 +131,45 @@ public class MaotOverlay : IOverlay
         var rowPosition = windowMin.Y + (barHeight * (data.Position - 1));
 
         var textRowPosition = rowPosition + barHeight / 2 - ImGui.GetFontSize() / 2;
-        var totalDPSStr = $"{HumanizeNumber(data.DPS, 1)}/s";
-        var totalDPMStr = $"{HumanizeNumber(data.TotalDMG, 1)}";
+        var totalDPSStr = $"{Helpers.HumanizeNumber(data.DPS, 1)}/s";
+        var totalDPMStr = $"{Helpers.HumanizeNumber(data.TotalDMG, 1)}";
+
+        var drawList = ImGui.GetWindowDrawList();
         DrawJobIcon(new Vector2(windowMin.X, rowPosition), barHeight, job);
         windowMin.X += barHeight;
 
-        ImGui.GetWindowDrawList().AddRectFilled(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Color(26, 26, 26, 190));
-        DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), name == "YOU" ? Color(128, 170, 128, 255) : Color(128, 128, 170, 255), data.PctDMG / 100.0f);
-        DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Color(26, 26, 26, 222));
+        drawList.AddRectFilled(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Helpers.Color(26, 26, 26, 190));
+        DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), name == "YOU" ? Helpers.Color(128, 170, 128, 255) : Helpers.Color(128, 128, 170, 255), data.PctDMG / 100.0f);
+        DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Helpers.Color(26, 26, 26, 222));
 
         // scale down the font for the job and center it in the line
         ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
-        ImGui.GetWindowDrawList().AddText(new Vector2(windowMin.X + 7, rowPosition + (barHeight / 2 - (ImGui.CalcTextSize(job.ToUpper()).Y) / 2)), Color(172, 172, 172, 255), job.ToUpper());
+        drawList.AddText(new Vector2(windowMin.X + 7, rowPosition + (barHeight / 2 - (ImGui.CalcTextSize(job.ToUpper()).Y) / 2)), Helpers.Color(172, 172, 172, 255), job.ToUpper());
         ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
 
         // Draw shadow for name
-        ImGui.GetWindowDrawList().AddText(new Vector2(windowMin.X + 10 + (0.8f * ImGui.CalcTextSize(job.ToUpper()).X), textRowPosition + 1), Color(0, 0, 0, 255), name);
+        drawList.AddText(new Vector2(windowMin.X + 10 + (0.8f * ImGui.CalcTextSize(job.ToUpper()).X), textRowPosition + 1), Helpers.Color(0, 0, 0, 255), name);
         // Draw name
-        ImGui.GetWindowDrawList().AddText(new Vector2(windowMin.X + 10 + (0.8f * ImGui.CalcTextSize(job.ToUpper()).X), textRowPosition), Color(255, 255, 255, 255), name);
+        drawList.AddText(new Vector2(windowMin.X + 10 + (0.8f * ImGui.CalcTextSize(job.ToUpper()).X), textRowPosition), Helpers.Color(255, 255, 255, 255), name);
 
         ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
         //shadow for total damage
-        ImGui.GetWindowDrawList().AddText(new Vector2(windowMax.X - (ImGui.CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - ImGui.CalcTextSize(totalDPMStr).X - 5, textRowPosition + 1), Color(0, 0, 0, 150), totalDPMStr);
-        ImGui.GetWindowDrawList().AddText(new Vector2(windowMax.X - (ImGui.CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - ImGui.CalcTextSize(totalDPMStr).X - 5, textRowPosition), Color(210, 210, 210, 255), totalDPMStr);
+        drawList.AddText(new Vector2(windowMax.X - (ImGui.CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - ImGui.CalcTextSize(totalDPMStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 150), totalDPMStr);
+        drawList.AddText(new Vector2(windowMax.X - (ImGui.CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - ImGui.CalcTextSize(totalDPMStr).X - 5, textRowPosition), Helpers.Color(210, 210, 210, 255), totalDPMStr);
         ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
 
         // Draw shadow for DPS
-        ImGui.GetWindowDrawList().AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(totalDPSStr).X - 5, textRowPosition + 1), Color(0, 0, 0, 255), totalDPSStr);
+        drawList.AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(totalDPSStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 255), totalDPSStr);
         // Draw DPS
-        ImGui.GetWindowDrawList().AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(totalDPSStr).X - 5, textRowPosition), Color(255, 255, 255, 255), totalDPSStr);
+        drawList.AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(totalDPSStr).X - 5, textRowPosition), Helpers.Color(255, 255, 255, 255), totalDPSStr);
     }
 
+
+
+    // Draw helpers
     private void DrawProgressBar(Vector2 pmin, Vector2 pmax, uint color, float progress)
     {
-        uint blackColor = Color(0, 0, 0, 255);
+        uint blackColor = Helpers.Color(0, 0, 0, 255);
         ImGui.GetWindowDrawList().AddRectFilledMultiColor(pmin, new Vector2(pmin.X + (pmax.X - pmin.X) * progress, pmax.Y), blackColor, color, color, blackColor);
     }
     private void DrawBorder(Vector2 windowmin, Vector2 windowmax, uint color)
@@ -236,9 +184,9 @@ public class MaotOverlay : IOverlay
         if (jobIcon != null)
         {
             // Draw a background for the icon
-            ImGui.GetWindowDrawList().AddRectFilled(position, new Vector2(position.X + size, position.Y + size), Color(26, 26, 39, 190));
-            ImGui.GetWindowDrawList().AddRect(position, new Vector2(position.X + size, position.Y + size), Color(160, 160, 160, 190));
-            ImGui.GetWindowDrawList().AddImage(jobIcon.ImGuiHandle, position, new Vector2(position.X + size, position.Y + size), new Vector2(0, 0), new Vector2(1, 1), Color(255, 255, 255, 255));
+            ImGui.GetWindowDrawList().AddRectFilled(position, new Vector2(position.X + size, position.Y + size), Helpers.Color(26, 26, 39, 190));
+            ImGui.GetWindowDrawList().AddRect(position, new Vector2(position.X + size, position.Y + size), Helpers.Color(160, 160, 160, 190));
+            ImGui.GetWindowDrawList().AddImage(jobIcon.ImGuiHandle, position, new Vector2(position.X + size, position.Y + size), new Vector2(0, 0), new Vector2(1, 1), Helpers.Color(255, 255, 255, 255));
         }
     }
 
