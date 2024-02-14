@@ -171,13 +171,13 @@ public class ConfigWindow : Window, IDisposable
         // ImGui::SameLine(); HelpMarker("Disable CTRL+Click or Enter key allowing to input text directly into the widget.");
 
         // Drags
-        
+
         // string label, ref float v, float v_speed, float v_min, float v_max, string format, ImGuiSliderFlags flags)
 
         ImGui.Text("Overlay font size: ");
         ImGui.SameLine();
         var OverlayFontSizeValue = this.plugin.Configuration.OverlayFontSize;
-        if(ImGui.DragFloat("fontsize",  ref OverlayFontSizeValue, 0.1f, 0.0f, 199.0f, "%.3f", ImGuiSliderFlags.None))
+        if (ImGui.SliderFloat("fontsize", ref OverlayFontSizeValue, 0.0f, 64.0f, "%.1f", ImGuiSliderFlags.None))
         {
             this.plugin.Configuration.OverlayFontSize = OverlayFontSizeValue;
             this.plugin.Configuration.Save();
