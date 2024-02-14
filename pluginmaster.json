@@ -5,7 +5,7 @@
     "Punchline": "A DPS meter that doesn't rely on WebViews.",
     "Description": "description",
     "InternalName": "MeterWay",
-    "AssemblyVersion": "v0.0.2",
+    "AssemblyVersion": "0.0.2",
     "RepoUrl": "https://github.com/CondeSaheki/MeterWay",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 9,
