@@ -160,8 +160,8 @@ public class MaotOverlay : IMeterwayOverlay
 
         ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
         //shadow for total damage
-        drawList.AddText(new Vector2(windowMax.X - (CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - CalcTextSize(totalDPMStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 150), totalDPMStr);
-        drawList.AddText(new Vector2(windowMax.X - (CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - CalcTextSize(totalDPMStr).X - 5, textRowPosition), Helpers.Color(210, 210, 210, 255), totalDPMStr);
+        drawList.AddText(new Vector2(windowMax.X - CalcTextSize(totalDPSStr).X - CalcTextSize(totalDPMStr).X - 5, rowPosition + (barHeight / 2 - (CalcTextSize(totalDPMStr).Y) / 2) + 1), Helpers.Color(0, 0, 0, 150), totalDPMStr);
+        drawList.AddText(new Vector2(windowMax.X - CalcTextSize(totalDPSStr).X - CalcTextSize(totalDPMStr).X - 5, rowPosition + (barHeight / 2 - (CalcTextSize(totalDPMStr).Y) / 2)), Helpers.Color(210, 210, 210, 255), totalDPMStr);
         ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
 
         // Draw shadow for DPS
