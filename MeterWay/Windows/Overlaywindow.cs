@@ -45,10 +45,12 @@ public class OverlayWindow : Window, IDisposable
 
     public override void Draw()
     {
+        ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
+
         // draw background
         if (this.plugin.Configuration.OverlayBackground)
         {
-            Backgound(this.plugin.Configuration.OverlayBackgroundColor);
+            Background(this.plugin.Configuration.OverlayBackgroundColor);
         }
 
         if (plugin.dataManager.Combat != null && plugin.dataManager.Combat.Count() != 0)
@@ -95,7 +97,7 @@ public class OverlayWindow : Window, IDisposable
     }
 
 
-    public void Backgound(Vector4 color)
+    public void Background(Vector4 color)
     {
         Vector2 vMin = ImGui.GetWindowContentRegionMin();
         Vector2 vMax = ImGui.GetWindowContentRegionMax();

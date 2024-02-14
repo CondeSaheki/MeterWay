@@ -14,9 +14,9 @@ public class ConfigWindow : Window, IDisposable
     public ConfigWindow(Plugin plugin) : base(
         "MeterWay Configurations",
         ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
-        ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollWithMouse)
+        ImGuiWindowFlags.NoScrollWithMouse) // ImGuiWindowFlags.NoResize | 
     {
-        this.Size = new Vector2(300, 200);
+        this.Size = new Vector2(400, 400);
         this.SizeCondition = ImGuiCond.Always;
 
         this.plugin = plugin;
@@ -138,33 +138,56 @@ public class ConfigWindow : Window, IDisposable
             this.plugin.Configuration.OverlayBackground = OverlayBackgroundValue;
             this.plugin.Configuration.Save();
             this.plugin.OverlayWindow.Flags = this.plugin.OverlayWindow.Gerateflags();
-        }        
-        
-        
-        if(!this.plugin.Configuration.OverlayBackground) ImGui.BeginDisabled();
-        
+        }
+
+
+        if (!this.plugin.Configuration.OverlayBackground) ImGui.BeginDisabled();
+
         // OverlayBackgroundColor
         var OverlayBackgroundColorValue = this.plugin.Configuration.OverlayBackgroundColor;
         ImGui.Text("background color: ");
         ImGui.SameLine();
-        
-        if (ImGui.ColorEdit4("background color", ref OverlayBackgroundColorValue, 
+
+        if (ImGui.ColorEdit4("background color", ref OverlayBackgroundColorValue,
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
         {
             this.plugin.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
             this.plugin.Configuration.Save();
-        }    
+        }
 
         ImGui.EndDisabled();
-        
+
         if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
 
+
+
+        // ImGui::CheckboxFlags("ImGuiSliderFlags_AlwaysClamp", &flags, ImGuiSliderFlags_AlwaysClamp);
+        // ImGui::SameLine(); HelpMarker("Always clamp value to min/max bounds (if any) when input manually with CTRL+Click.");
+        // ImGui::CheckboxFlags("ImGuiSliderFlags_Logarithmic", &flags, ImGuiSliderFlags_Logarithmic);
+        // ImGui::SameLine(); HelpMarker("Enable logarithmic editing (more precision for small values).");
+        // ImGui::CheckboxFlags("ImGuiSliderFlags_NoRoundToFormat", &flags, ImGuiSliderFlags_NoRoundToFormat);
+        // ImGui::SameLine(); HelpMarker("Disable rounding underlying value to match precision of the format string (e.g. %.3f values are rounded to those 3 digits).");
+        // ImGui::CheckboxFlags("ImGuiSliderFlags_NoInput", &flags, ImGuiSliderFlags_NoInput);
+        // ImGui::SameLine(); HelpMarker("Disable CTRL+Click or Enter key allowing to input text directly into the widget.");
+
+        // Drags
         
+        // string label, ref float v, float v_speed, float v_min, float v_max, string format, ImGuiSliderFlags flags)
+
+        ImGui.Text("Overlay font size: ");
+        ImGui.SameLine();
+        var OverlayFontSizeValue = this.plugin.Configuration.OverlayFontSize;
+        if(ImGui.DragFloat("fontsize",  ref OverlayFontSizeValue, 0.1f, 0.0f, 199.0f, "%.3f", ImGuiSliderFlags.None))
+        {
+            this.plugin.Configuration.OverlayFontSize = OverlayFontSizeValue;
+            this.plugin.Configuration.Save();
+        }
+
         // text config
 
-        //ImGui.SetWindowFontScale(30);
+        //
         // var font1 = ImGui.GetIO().Fonts.AddFontFromFileTTF("asd", 1);
-        
+
 
         // ImGui.PushFont(font1);
         // ImGui.Text("sus");
