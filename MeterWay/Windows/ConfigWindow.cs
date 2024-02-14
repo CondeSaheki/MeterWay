@@ -31,7 +31,7 @@ public class ConfigWindow : Window, IDisposable
 
         DrawGeneralTab();
         DrawOverlayTab();
-        DrawAparenceTab();
+        DrawAppearenceTab();
         DrawIINACTTab();
         DrawAboutTab();
     }
@@ -174,9 +174,9 @@ public class ConfigWindow : Window, IDisposable
     }
 
 
-    private void DrawAparenceTab()
+    private void DrawAppearenceTab()
     {
-        using var tab = ImRaii.TabItem("Aparence");
+        using var tab = ImRaii.TabItem("Appearence");
         if (!tab) return;
 
         ImGui.Text("WIP");
