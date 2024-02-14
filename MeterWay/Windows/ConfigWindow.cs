@@ -120,8 +120,6 @@ public class ConfigWindow : Window, IDisposable
             }
         }
 
-        if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
-
         // OverlayClickThrough
         var OverlayClickThroughValue = this.plugin.Configuration.OverlayClickThrough;
         if (ImGui.Checkbox("Click through", ref OverlayClickThroughValue))
@@ -140,24 +138,20 @@ public class ConfigWindow : Window, IDisposable
             this.plugin.OverlayWindow.Flags = this.plugin.OverlayWindow.Gerateflags();
         }
 
-        ImGui.EndDisabled();
-        if (!this.plugin.Configuration.OverlayBackground) ImGui.BeginDisabled();
-
-        // OverlayBackgroundColor
-        var OverlayBackgroundColorValue = this.plugin.Configuration.OverlayBackgroundColor;
-        ImGui.Text("background color: ");
-        ImGui.SameLine();
-
-        if (ImGui.ColorEdit4("background color", ref OverlayBackgroundColorValue,
-            ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
+        if (OverlayBackgroundValue)
         {
-            this.plugin.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
-            this.plugin.Configuration.Save();
+            // OverlayBackgroundColor
+            var OverlayBackgroundColorValue = this.plugin.Configuration.OverlayBackgroundColor;
+            ImGui.Text("background color: ");
+            ImGui.SameLine();
+
+            if (ImGui.ColorEdit4("background color", ref OverlayBackgroundColorValue,
+                ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
+            {
+                this.plugin.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
+                this.plugin.Configuration.Save();
+            }
         }
-
-        ImGui.EndDisabled();
-        if (!this.plugin.Configuration.Overlay) ImGui.BeginDisabled();
-
         // text config
         // OverlayFontPath
 
@@ -190,13 +184,12 @@ public class ConfigWindow : Window, IDisposable
         var OverlayFontScaleValue = this.plugin.Configuration.OverlayFontScale;
         ImGui.Text("Font scale: ");
         ImGui.SameLine();
-        if (ImGui.SliderFloat("FontScale", ref OverlayFontScaleValue, 0.1f, 5.0f, "%.05f", ImGuiSliderFlags.None))
+        if (ImGui.SliderFloat("##FontScale", ref OverlayFontScaleValue, 0.1f, 5.0f, "%.1f", ImGuiSliderFlags.None))
         {
             this.plugin.Configuration.OverlayFontScale = OverlayFontScaleValue;
             this.plugin.Configuration.Save();
             this.plugin.OverlayWindow.updatefont();
         }
-        ImGui.EndDisabled();
     }
 
 
