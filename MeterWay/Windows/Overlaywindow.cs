@@ -112,18 +112,33 @@ public class OverlayWindow : Window, IDisposable
     void DrawCombatantLine(TempCombatData data, string name, string job)
     {
         float barHeight = ImGui.GetFontSize() + 5;
-        //Draw a progress bar using the percentage from the combatant data, show the info overlapping the bar.
         var windowMin = ImGui.GetCursorScreenPos();
         var windowMax = new Vector2(ImGui.GetWindowSize().X + windowMin.X - 32, windowMin.Y + 32);
-        var rowPosition = windowMin.Y + (barHeight * (data.Position - 1)); // Modify the row position calculation
+        var rowPosition = windowMin.Y + (barHeight * (data.Position - 1));
+        var totalDPSStr = $"({HumanizeNumber(data.TotalDMG)}) {HumanizeNumber(data.DPS)}/s";
 
         ImGui.GetWindowDrawList().AddRectFilled(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Color(26, 26, 26, 190));
         DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), name == "YOU" ? Color(128, 170, 128, 255) : Color(128, 128, 170, 255), data.PctDMG / 100.0f);
         DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Color(26, 26, 26, 222));
         ImGui.GetWindowDrawList().AddText(new Vector2(windowMin.X + 5, rowPosition), Color(172, 172, 172, 255), job.ToUpper());
         ImGui.GetWindowDrawList().AddText(new Vector2(windowMin.X + 35, rowPosition), Color(255, 255, 255, 255), name);
-        ImGui.GetWindowDrawList().AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(data.DPS.ToString("0") + "/s").X - 5, rowPosition), Color(255, 255, 255, 255), data.DPS.ToString("0") + "/s");
+        ImGui.GetWindowDrawList().AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(totalDPSStr).X - 5, rowPosition), Color(255, 255, 255, 255), totalDPSStr);
     }
+    public string HumanizeNumber(float number)
+    {
+        string[] suffixes = { "", "k", "M", "B", "T" };
+        int suffixIndex = 0;
+
+        while (number >= 1000 && suffixIndex < suffixes.Length - 1)
+        {
+            number /= 1000;
+            suffixIndex++;
+        }
+
+        return $"{number.ToString("0.0")}{suffixes[suffixIndex]}";
+    }
+
+
 
     private void DrawProgressBar(Vector2 pmin, Vector2 pmax, uint color, float progress)
     {
