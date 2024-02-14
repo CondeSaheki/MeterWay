@@ -150,24 +150,24 @@ public class MaotOverlay : IMeterwayOverlay
 
         // scale down the font for the job and center it in the line
         ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
-        drawList.AddText(new Vector2(windowMin.X + 7, rowPosition + (barHeight / 2 - (ImGui.CalcTextSize(job.ToUpper()).Y) / 2)), Helpers.Color(172, 172, 172, 255), job.ToUpper());
+        drawList.AddText(new Vector2(windowMin.X + 7, rowPosition + (barHeight / 2 - (CalcTextSize(job.ToUpper()).Y) / 2)), Helpers.Color(172, 172, 172, 255), job.ToUpper());
         ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
 
         // Draw shadow for name
-        drawList.AddText(new Vector2(windowMin.X + 10 + (0.8f * ImGui.CalcTextSize(job.ToUpper()).X), textRowPosition + 1), Helpers.Color(0, 0, 0, 255), name);
+        drawList.AddText(new Vector2(windowMin.X + 10 + (0.8f * CalcTextSize(job.ToUpper()).X), textRowPosition + 1), Helpers.Color(0, 0, 0, 255), name);
         // Draw name
-        drawList.AddText(new Vector2(windowMin.X + 10 + (0.8f * ImGui.CalcTextSize(job.ToUpper()).X), textRowPosition), Helpers.Color(255, 255, 255, 255), name);
+        drawList.AddText(new Vector2(windowMin.X + 10 + (0.8f * CalcTextSize(job.ToUpper()).X), textRowPosition), Helpers.Color(255, 255, 255, 255), name);
 
         ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
         //shadow for total damage
-        drawList.AddText(new Vector2(windowMax.X - (ImGui.CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - ImGui.CalcTextSize(totalDPMStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 150), totalDPMStr);
-        drawList.AddText(new Vector2(windowMax.X - (ImGui.CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - ImGui.CalcTextSize(totalDPMStr).X - 5, textRowPosition), Helpers.Color(210, 210, 210, 255), totalDPMStr);
+        drawList.AddText(new Vector2(windowMax.X - (CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - CalcTextSize(totalDPMStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 150), totalDPMStr);
+        drawList.AddText(new Vector2(windowMax.X - (CalcTextSize(totalDPSStr).X * (1 / 0.8f)) - CalcTextSize(totalDPMStr).X - 5, textRowPosition), Helpers.Color(210, 210, 210, 255), totalDPMStr);
         ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
 
         // Draw shadow for DPS
-        drawList.AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(totalDPSStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 255), totalDPSStr);
+        drawList.AddText(new Vector2(windowMax.X - CalcTextSize(totalDPSStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 255), totalDPSStr);
         // Draw DPS
-        drawList.AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(totalDPSStr).X - 5, textRowPosition), Helpers.Color(255, 255, 255, 255), totalDPSStr);
+        drawList.AddText(new Vector2(windowMax.X - CalcTextSize(totalDPSStr).X - 5, textRowPosition), Helpers.Color(255, 255, 255, 255), totalDPSStr);
     }
 
 
@@ -194,6 +194,22 @@ public class MaotOverlay : IMeterwayOverlay
             ImGui.GetWindowDrawList().AddRect(position, new Vector2(position.X + size, position.Y + size), Helpers.Color(160, 160, 160, 190));
             ImGui.GetWindowDrawList().AddImage(jobIcon.ImGuiHandle, position, new Vector2(position.X + size, position.Y + size), new Vector2(0, 0), new Vector2(1, 1), Helpers.Color(255, 255, 255, 255));
         }
+    }
+
+    // Implement CalcTextSize() manually;
+    private Vector2 CalcTextSize(string text)
+    {
+        float height = ImGui.GetFontSize();
+        float width = 0;
+
+        foreach (char c in text)
+        {
+            width += ImGui.GetFont().GetCharAdvance(c) * height * ImGui.GetIO().FontGlobalScale;
+            this.plugin.PluginLog.Info("Char: " + c + " Width: " + width);
+        }
+
+
+        return new Vector2(width, height);
     }
 
 }
