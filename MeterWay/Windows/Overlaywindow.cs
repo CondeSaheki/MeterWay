@@ -33,14 +33,22 @@ public class OverlayWindow : Window, IDisposable
         return flags;
     }
 
+    class TempCombatData
+    {
+        public float DPS { get; set; }
+        public float PctDMG { get; set; }
+        public float TotalDMG { get; set; }
+        public float Position { get; set; }
+    }
+
     public void Dispose() { }
 
     private float transitionDuration = 1f; // in seconds
     private float transitionTimer = 0.0f;
 
-    private Dictionary<String, float> formerDPS = new Dictionary<string, float>();
+    private Dictionary<String, TempCombatData> formerInfo = new Dictionary<string, TempCombatData>();
 
-    private Dictionary<String, float> targetDPS = new Dictionary<string, float>();
+    private Dictionary<String, TempCombatData> targetInfo = new Dictionary<string, TempCombatData>();
 
 
     public override void Draw()
@@ -61,27 +69,32 @@ public class OverlayWindow : Window, IDisposable
             {
                 foreach (Combatant combatant in plugin.dataManager.Combat.Last().combatants)
                 {
-                    if (!formerDPS.ContainsKey(combatant.Name))
+                    if (!formerInfo.ContainsKey(combatant.Name))
                     {
-                        formerDPS[combatant.Name] = combatant.EncDps;
-                        targetDPS[combatant.Name] = combatant.EncDps;
+                        formerInfo[combatant.Name] = new TempCombatData { DPS = combatant.EncDps, PctDMG = combatant.DmgPct, TotalDMG = combatant.Dmg, Position = plugin.dataManager.Combat.Last().combatants.IndexOf(combatant) + 1 };
+                        targetInfo[combatant.Name] = new TempCombatData { DPS = combatant.EncDps, PctDMG = combatant.DmgPct, TotalDMG = combatant.Dmg, Position = plugin.dataManager.Combat.Last().combatants.IndexOf(combatant) + 1 };
                     }
 
                     if (transitionTimer < transitionDuration)
                     {
                         transitionTimer += ImGui.GetIO().DeltaTime;
                         float t = Math.Min(1.0f, transitionTimer / transitionDuration);
-                        formerDPS[combatant.Name] = Lerp(formerDPS[combatant.Name], targetDPS[combatant.Name], t);
-                        this.plugin.PluginLog.Info($"Transtition Time: {transitionTimer}, {formerDPS[combatant.Name]}");
+                        formerInfo[combatant.Name].DPS = Lerp(formerInfo[combatant.Name].DPS, targetInfo[combatant.Name].DPS, t);
+                        formerInfo[combatant.Name].PctDMG = Lerp(formerInfo[combatant.Name].PctDMG, targetInfo[combatant.Name].PctDMG, t);
+                        formerInfo[combatant.Name].TotalDMG = Lerp(formerInfo[combatant.Name].TotalDMG, targetInfo[combatant.Name].TotalDMG, t);
+                        formerInfo[combatant.Name].Position = Lerp(formerInfo[combatant.Name].Position, targetInfo[combatant.Name].Position, t);
                     }
 
-                    if (targetDPS[combatant.Name] != combatant.EncDps)
+                    if (targetInfo[combatant.Name].DPS != combatant.EncDps)
                     {
-                        targetDPS[combatant.Name] = combatant.EncDps;
+                        targetInfo[combatant.Name].DPS = combatant.EncDps;
+                        targetInfo[combatant.Name].PctDMG = combatant.DmgPct;
+                        targetInfo[combatant.Name].TotalDMG = combatant.Dmg;
+                        targetInfo[combatant.Name].Position = plugin.dataManager.Combat.Last().combatants.IndexOf(combatant) + 1;
                         transitionTimer = 0.0f;
                     }
 
-                    ImGui.Text($"[{combatant.Job.ToUpper()}] {combatant.Name} {formerDPS[combatant.Name].ToString("0")}/s");
+                    DrawCombatantLine(formerInfo[combatant.Name], combatant.Name, combatant.Job);
                 }
             }
         }
@@ -96,6 +109,31 @@ public class OverlayWindow : Window, IDisposable
         return firstFloat + (secondFloat - firstFloat) * by;
     }
 
+    void DrawCombatantLine(TempCombatData data, string name, string job)
+    {
+        float barHeight = ImGui.GetFontSize() + 5;
+        //Draw a progress bar using the percentage from the combatant data, show the info overlapping the bar.
+        var windowMin = ImGui.GetCursorScreenPos();
+        var windowMax = new Vector2(ImGui.GetWindowSize().X + windowMin.X - 32, windowMin.Y + 32);
+        var rowPosition = windowMin.Y + (barHeight * (data.Position - 1)); // Modify the row position calculation
+
+        ImGui.GetWindowDrawList().AddRectFilled(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Color(26, 26, 26, 190));
+        DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), name == "YOU" ? Color(128, 170, 128, 255) : Color(128, 128, 170, 255), data.PctDMG / 100.0f);
+        DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(windowMax.X, rowPosition + barHeight), Color(26, 26, 26, 222));
+        ImGui.GetWindowDrawList().AddText(new Vector2(windowMin.X + 5, rowPosition), Color(172, 172, 172, 255), job.ToUpper());
+        ImGui.GetWindowDrawList().AddText(new Vector2(windowMin.X + 35, rowPosition), Color(255, 255, 255, 255), name);
+        ImGui.GetWindowDrawList().AddText(new Vector2(windowMax.X - ImGui.CalcTextSize(data.DPS.ToString("0") + "/s").X - 5, rowPosition), Color(255, 255, 255, 255), data.DPS.ToString("0") + "/s");
+    }
+
+    private void DrawProgressBar(Vector2 pmin, Vector2 pmax, uint color, float progress)
+    {
+        uint blackColor = Color(0, 0, 0, 255);
+        ImGui.GetWindowDrawList().AddRectFilledMultiColor(pmin, new Vector2(pmin.X + (pmax.X - pmin.X) * progress, pmax.Y), blackColor, color, color, blackColor);
+    }
+    private void DrawBorder(Vector2 windowmin, Vector2 windowmax, uint color)
+    {
+        ImGui.GetWindowDrawList().AddRect(windowmin, windowmax, color);
+    }
 
     public void Background(Vector4 color)
     {
