@@ -204,11 +204,8 @@ public class MaotOverlay : IMeterwayOverlay
 
         foreach (char c in text)
         {
-            width += ImGui.GetFont().GetCharAdvance(c) * height * ImGui.GetIO().FontGlobalScale;
-            this.plugin.PluginLog.Info("Char: " + c + " Width: " + width);
+            width += ImGui.GetFont().GetCharAdvance(c) * ImGui.GetFont().Scale;
         }
-
-
         return new Vector2(width, height);
     }
 
