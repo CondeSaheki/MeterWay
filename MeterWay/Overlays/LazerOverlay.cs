@@ -102,9 +102,10 @@ public class LazerOverlay : IMeterwayOverlay
     {
 
         UpdateWindowSize();
+
         if (plugin.dataManager.Combat == null || plugin.dataManager.Combat.Count() == 0)
         {
-            ImGui.Text("Not in combat...");
+            ImGui.GetWindowDrawList().AddText(new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - (CalcTextSize("Not in combat...").X) / 2, WindowMin.Y + 2), Helpers.Color(255, 255, 255, 255), "Not in combat...");
             return;
         }
 
