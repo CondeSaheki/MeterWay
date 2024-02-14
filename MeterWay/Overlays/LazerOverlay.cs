@@ -179,20 +179,20 @@ public class LazerOverlay : IMeterwayOverlay
         DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 222));
 
         // scale down the font for the job and center it in the line
-        ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
+        ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontScale);
         drawList.AddText(new Vector2(windowMin.X + 7, rowPosition + (lineHeight / 2 - (CalcTextSize(job.ToUpper()).Y) / 2)), Helpers.Color(172, 172, 172, 255), job.ToUpper());
-        ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
+        ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontScale);
 
         // Draw shadow for name
         drawList.AddText(new Vector2(windowMin.X + 10 + (0.8f * CalcTextSize(job.ToUpper()).X), textRowPosition + 1), Helpers.Color(0, 0, 0, 255), name);
         // Draw name
         drawList.AddText(new Vector2(windowMin.X + 10 + (0.8f * CalcTextSize(job.ToUpper()).X), textRowPosition), Helpers.Color(255, 255, 255, 255), name);
 
-        ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontSize);
+        ImGui.SetWindowFontScale(0.8f * this.plugin.Configuration.OverlayFontScale);
         //shadow for total damage
         drawList.AddText(new Vector2(WindowMax.X - CalcTextSize(totalDPSStr).X - CalcTextSize(totalDPMStr).X - 5, rowPosition + (lineHeight / 2 - (CalcTextSize(totalDPMStr).Y) / 2) + 1), Helpers.Color(0, 0, 0, 150), totalDPMStr);
         drawList.AddText(new Vector2(WindowMax.X - CalcTextSize(totalDPSStr).X - CalcTextSize(totalDPMStr).X - 5, rowPosition + (lineHeight / 2 - (CalcTextSize(totalDPMStr).Y) / 2)), Helpers.Color(210, 210, 210, 255), totalDPMStr);
-        ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
+        ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontScale);
 
         // Draw shadow for DPS
         drawList.AddText(new Vector2(WindowMax.X - CalcTextSize(totalDPSStr).X - 5, textRowPosition + 1), Helpers.Color(0, 0, 0, 255), totalDPSStr);
@@ -234,7 +234,7 @@ public class LazerOverlay : IMeterwayOverlay
 
         foreach (char c in text)
         {
-            width += ImGui.GetFont().GetCharAdvance(c) * ImGui.GetIO().FontGlobalScale;
+            width += ImGui.GetFont().GetCharAdvance(c) * this.plugin.Configuration.OverlayFontScale;
         }
         return new Vector2(width, height);
     }

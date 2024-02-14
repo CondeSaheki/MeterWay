@@ -47,7 +47,7 @@ public class OverlayWindow : Window, IDisposable
         }
 
         // font
-        ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontSize);
+        ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontScale);
 
         // Custom Overlay
         overlays[this.plugin.Configuration.OverlayType].Draw();

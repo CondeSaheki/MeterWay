@@ -165,23 +165,34 @@ public class ConfigWindow : Window, IDisposable
         // /data/Inter-Bold.ttf
 
 
-        ImGui.Text("Font file path: ");
-        ImGui.SameLine();
-        var OverlayFontPathValue = this.plugin.Configuration.OverlayFontPath;
-        if (ImGui.InputText("FontFile", ref OverlayFontPathValue, 1000))
-        {
-            this.plugin.Configuration.OverlayFontPath = OverlayFontPathValue;
-            this.plugin.Configuration.Save();
-            this.plugin.OverlayWindow.updatefont();
-        }
+        // ImGui.Text("Font file path: ");
+        // ImGui.SameLine();
+        // var OverlayFontPathValue = this.plugin.Configuration.OverlayFontPath;
+        // if (ImGui.InputText("FontFile", ref OverlayFontPathValue, 1000))
+        // {
+        //     this.plugin.Configuration.OverlayFontPath = OverlayFontPathValue;
+        //     this.plugin.Configuration.Save();
+        //     this.plugin.OverlayWindow.updatefont();
+        // }
 
-        // OverlayFontSizeValue
-        var OverlayFontSizeValue = this.plugin.Configuration.OverlayFontSize;
-        ImGui.Text("Font size: ");
+        // // OverlayFontSizeValue
+        // var OverlayFontSizeValue = this.plugin.Configuration.OverlayFontSize;
+        // ImGui.Text("Font size: ");
+        // ImGui.SameLine();
+        // if (ImGui.SliderFloat("FontSize", ref OverlayFontSizeValue, 0.0f, 64.0f, "%.1f", ImGuiSliderFlags.None))
+        // {
+        //     this.plugin.Configuration.OverlayFontSize = OverlayFontSizeValue;
+        //     this.plugin.Configuration.Save();
+        //     this.plugin.OverlayWindow.updatefont();
+        // }
+
+        // // OverlayFontScaleValue
+        var OverlayFontScaleValue = this.plugin.Configuration.OverlayFontScale;
+        ImGui.Text("Font scale: ");
         ImGui.SameLine();
-        if (ImGui.SliderFloat("FontSize", ref OverlayFontSizeValue, 0.0f, 64.0f, "%.1f", ImGuiSliderFlags.None))
+        if (ImGui.SliderFloat("FontScale", ref OverlayFontScaleValue, 0.1f, 5.0f, "%.05f", ImGuiSliderFlags.None))
         {
-            this.plugin.Configuration.OverlayFontSize = OverlayFontSizeValue;
+            this.plugin.Configuration.OverlayFontScale = OverlayFontScaleValue;
             this.plugin.Configuration.Save();
             this.plugin.OverlayWindow.updatefont();
         }
