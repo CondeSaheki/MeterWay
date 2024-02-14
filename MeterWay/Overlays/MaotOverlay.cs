@@ -72,7 +72,7 @@ public class MaotOverlay : Overlay
 
     // Draw
 
-    public new void Draw()
+    public override void Draw()
     {
         if (plugin.dataManager.Combat != null && plugin.dataManager.Combat.Count() != 0)
         {
@@ -117,7 +117,7 @@ public class MaotOverlay : Overlay
         }
     }
 
-    public new void Dispose()
+    public override void Dispose()
     {
     }
 

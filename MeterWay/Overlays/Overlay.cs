@@ -22,12 +22,12 @@ public class Overlay : IOverlay
         this.Name = name;
     }
 
-    public void Draw()
+    public virtual void Draw()
     {
         throw new NotImplementedException();
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         throw new NotImplementedException();
     }

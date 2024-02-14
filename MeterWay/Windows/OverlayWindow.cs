@@ -11,13 +11,15 @@ namespace Meterway.Windows;
 public class OverlayWindow : Window, IDisposable
 {
     private Plugin plugin;
-    private static ImGuiWindowFlags DefaultFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
+    private ImGuiWindowFlags DefaultFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
 
     private List<IOverlay> overlays;
     public ImFontPtr font;
 
     public OverlayWindow(Plugin plugin) : base("OverlayWindow")
     {
+        this.plugin = plugin;
+
         // window configs
         this.SizeConstraints = new WindowSizeConstraints
         {
@@ -27,10 +29,6 @@ public class OverlayWindow : Window, IDisposable
         this.IsOpen = true;
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
-
-        // data
-        this.plugin = plugin;
-
 
         this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(this.plugin.Configuration.OverlayFontPath, this.plugin.Configuration.OverlayFontSize);
 
