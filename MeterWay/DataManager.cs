@@ -29,9 +29,51 @@ public class DataManager
         combatstate = plugin.Condition[ConditionFlag.InCombat];
     }
 
+    private bool partyincomabat()
+    {
+        foreach (var player in this.plugin.PartyList)
+        {
+            if (player.GameObject == null) continue;
+
+            var teste = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
+            if ((teste.StatusFlags & Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat) == Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public bool Receiver(JObject json)
     {
-        if (plugin.Condition[ConditionFlag.InCombat] == false)
+        bool combatstatevalue = false;
+
+        if (this.plugin.PartyList.Length == 0)
+        {
+            combatstatevalue = plugin.Condition[ConditionFlag.InCombat];
+        }
+        else
+        {
+            combatstatevalue = partyincomabat();
+        }
+
+        // last data
+        if (combatstate == true && combatstatevalue == false)
+        {
+            // end combat
+            this.plugin.PluginLog.Info("meterway detected end of combat");
+            combatstate = false;
+        }
+
+        if (combatstate == false && combatstatevalue == true)
+        {
+            // start combat
+            this.plugin.PluginLog.Info("meterway detected start of combat");
+            combatstate = true;
+        }
+
+        // ignore all data when not in combat 
+        if (combatstatevalue == false)
         {
             return true;
         }
@@ -39,24 +81,17 @@ public class DataManager
         // parse data
         try
         {
+            //Combat.Add(new CombatData(plugin, json));
             CurrentCombatData = new CombatData(plugin, json);
+            //plugin.PluginLog.Info("data: " + json.ToString());
+            //plugin.PluginLog.Info("Meterway received data!");
         }
-
         catch (Exception ex)
         {
             plugin.PluginLog.Error(ex.ToString());
             return false;
         }
-
         return true;
-    }
-    // wip create chat link notifications
-    public void RecapChatLinkCreate()
-    {
-        var chatLinkPayload = plugin.PluginInterface.AddChatLinkHandler(0, RecapChatLinkHandler);
-        var teste = new SeString(chatLinkPayload, new UIForegroundPayload(578), new TextPayload("Description Show damage Recap"), new UIForegroundPayload(0), RawPayload.LinkTerminator);
-
-        plugin.ChatGui.Print(teste);
     }
 
     public void RecapChatLinkHandler(uint cmdId, SeString msg)
