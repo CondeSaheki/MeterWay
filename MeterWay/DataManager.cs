@@ -20,6 +20,8 @@ public class DataManager
     public List<CombatData> Combat;
     private bool combatstate;
 
+    public CombatData? CurrentCombatData;
+
     public DataManager(Plugin plugin)
     {
         this.plugin = plugin;
@@ -29,16 +31,6 @@ public class DataManager
 
     public bool Receiver(JObject json)
     {
-
-        // // last data
-        // if (combatstate == true && plugin.Condition[ConditionFlag.InCombat] == false)
-        // {
-
-
-        //     combatstate = false;
-        // }
-
-        // ignore all data when not in combat 
         if (plugin.Condition[ConditionFlag.InCombat] == false)
         {
             return true;
@@ -47,18 +39,17 @@ public class DataManager
         // parse data
         try
         {
-            Combat.Add(new CombatData(plugin, json));
-            //plugin.PluginLog.Info("data: " + json.ToString());
-            //plugin.PluginLog.Info("Meterway received data!");
+            CurrentCombatData = new CombatData(plugin, json);
         }
+
         catch (Exception ex)
         {
             plugin.PluginLog.Error(ex.ToString());
             return false;
         }
+
         return true;
     }
-
     // wip create chat link notifications
     public void RecapChatLinkCreate()
     {

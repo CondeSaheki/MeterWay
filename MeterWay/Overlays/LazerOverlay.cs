@@ -103,18 +103,19 @@ public class LazerOverlay : IMeterwayOverlay
 
         UpdateWindowSize();
 
-        if (plugin.dataManager.Combat == null || plugin.dataManager.Combat.Count() == 0)
+        if (plugin.dataManager.CurrentCombatData == null)
         {
             ImGui.GetWindowDrawList().AddText(new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - (CalcTextSize("Not in combat...").X) / 2, WindowMin.Y + 2), Helpers.Color(255, 255, 255, 255), "Not in combat...");
             return;
         }
 
-        if (plugin.dataManager.Combat.Last().combatants == null || plugin.dataManager.Combat.Last().combatants.Count() == 0)
+        if (plugin.dataManager.CurrentCombatData.combatants == null || plugin.dataManager.CurrentCombatData.combatants.Count() == 0)
         {
+            ImGui.GetWindowDrawList().AddText(new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - (CalcTextSize("No combatents in combat...").X) / 2, WindowMin.Y + 2), Helpers.Color(255, 255, 255, 255), "Not in combat...");
             return;
         }
 
-        var currentCombat = plugin.dataManager.Combat.Last();
+        var currentCombat = plugin.dataManager.CurrentCombatData;
 
         // Add a background for the title and centralize the text
         ImGui.GetWindowDrawList().AddRectFilled(new Vector2(WindowMin.X, WindowMin.Y), new Vector2(WindowMax.X, WindowMin.Y + ImGui.GetFontSize() + 5), Helpers.Color(26, 26, 39, 190));
@@ -149,7 +150,6 @@ public class LazerOverlay : IMeterwayOverlay
             }
 
             DrawCombatantLine(formerInfo[combatant.Name], combatant.Name, combatant.Job);
-
 
         }
     }
