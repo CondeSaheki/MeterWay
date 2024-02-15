@@ -4,8 +4,6 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using Meterway.Utils;
-using Dalamud.Interface.Windowing;
-using System.ComponentModel;
 
 namespace Meterway.Overlays;
 
@@ -95,8 +93,6 @@ public class LazerOverlay : IMeterwayOverlay
         this.WindowMin = vMin;
         this.WindowMax = vMax;
     }
-
-    // Draw
 
     public void Draw()
     {
@@ -219,14 +215,12 @@ public class LazerOverlay : IMeterwayOverlay
         var jobIcon = this.plugin.TextureProvider.GetIcon(jobIconId, Dalamud.Plugin.Services.ITextureProvider.IconFlags.None);
         if (jobIcon != null)
         {
-            // Draw a background for the icon
             ImGui.GetWindowDrawList().AddRectFilled(position, new Vector2(position.X + size, position.Y + size), Helpers.Color(26, 26, 39, 190));
             ImGui.GetWindowDrawList().AddRect(position, new Vector2(position.X + size, position.Y + size), Helpers.Color(160, 160, 160, 190));
             ImGui.GetWindowDrawList().AddImage(jobIcon.ImGuiHandle, position, new Vector2(position.X + size, position.Y + size), new Vector2(0, 0), new Vector2(1, 1), Helpers.Color(255, 255, 255, 255));
         }
     }
 
-    // Implement CalcTextSize() manually;
     private Vector2 CalcTextSize(string text)
     {
         float height = ImGui.GetFontSize();
