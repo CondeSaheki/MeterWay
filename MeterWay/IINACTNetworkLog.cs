@@ -13,6 +13,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.ClientState.Conditions;
 
 using MeterWay;
+using MeterWay.managers;
 
 namespace MeterWay;
 
@@ -53,20 +54,14 @@ public class IINACTNetworkLog
 
         var a = json["list"]?.First?.Value<string>();
 
-        for ()
-        {
-
-        }
+        // for ()
+        // {
+        // }
     }
-
-
-
 }
 
 public class Encounter
 {
-
-    private Plugin plugin;
 
     public string Name { get; set; }
 
@@ -79,25 +74,24 @@ public class Encounter
 
     public List<Player> Players { get; set; }
 
-    public Encounter(Plugin plugin)
+    public Encounter( )
     {
-        this.plugin = plugin;
         
         this.Name = "";
 
-        var asdsa = plugin.ClientState.LocalContentId;
+        var asdsa = PluginManager.Instance.ClientState.LocalContentId;
 
         // curent timestamp
         this.Start = DateTime.Now;
-        this.End = "";
+        this.End = DateTime.Now;
         this.active = true;
 
 
         // generate players
         var playerstemp = new List<Player>();
-        if (this.plugin.PartyList.Length != 0)
+        if (PluginManager.Instance.PartyList.Length != 0)
         {
-            foreach (var player in this.plugin.PartyList)
+            foreach (var player in PluginManager.Instance.PartyList)
             {
                 if (player.GameObject == null) continue;
 
@@ -110,12 +104,12 @@ public class Encounter
     }
 
 
-    public string duration => End - Start;
+    public TimeSpan duration => End - Start;
 
     void EndEncounter()
     {
         // curent timestamp
-        this.End = "";
+        this.End = DateTime.Now;
         this.active = false;
 
     }
@@ -124,20 +118,20 @@ public class Encounter
 public class Player
 {
     public string Name { get; set; }
-    public uint job { get; set; }
+    public uint Job { get; set; }
 
     public string Data { get; set; }
 
     public Player(Dalamud.Game.ClientState.Objects.Types.Character character)
     {
         this.Name = character.Name.ToString();
-        this.job = character.ClassJob.Id;
+        this.Job = character.ClassJob.Id;
         this.Data = "";
     }
 }
 
 
-public class susdata()
+public class susdata
 {
     public uint damage { get; set; }
     public uint hitcount { get; set; }

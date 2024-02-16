@@ -10,14 +10,11 @@ namespace MeterWay.Overlays;
 public class MoguOverlay : IMeterwayOverlay
 {
     public string Name => "MoguOverlay";
-    private Plugin plugin;
     private Encounter data;
-
 
     public MoguOverlay(Plugin plugin)
     {
-        this.plugin = plugin;
-        data = new Encounter(this.plugin);
+        data = new Encounter();
     }
 
     public void DataProcess(Encounter data)

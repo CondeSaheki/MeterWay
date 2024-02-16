@@ -10,7 +10,6 @@ namespace MeterWay.Windows;
 
 public class MainWindow : Window, IDisposable
 {
-    private Plugin plugin;
     // ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize
     // ImGuiWindowFlags.NoTitleBar |
     // ImGuiWindowFlags.NoScrollbar |
@@ -19,16 +18,14 @@ public class MainWindow : Window, IDisposable
     // ImGuiWindowFlags.NoInputs |
     // ImGuiWindowFlags.NoBringToFrontOnFocus |
     // ImGuiWindowFlags.NoSavedSettings;
-    
-    public MainWindow(Plugin plugin) : base("MeterWay", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+
+    public MainWindow() : base("MeterWay", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         this.SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(375, 330),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
-
-        this.plugin = plugin;
     }
 
     public void Dispose() { }

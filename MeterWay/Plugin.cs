@@ -7,7 +7,7 @@ using Dalamud.Plugin.Services;
 using MeterWay.Windows;
 using MeterWay.IINACT;
 using MeterWay.commands;
-using MeterWay;
+using MeterWay.managers;
 
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
@@ -19,7 +19,7 @@ namespace MeterWay
     {
         public string Name => "MeterWay";
 
-        public Configuration Configuration { get; init; }
+        //public Configuration Configuration { get; init; }
         public WindowSystem WindowSystem = new("MeterWay");
 
         // window
@@ -35,6 +35,7 @@ namespace MeterWay
         private List<MeterWayCommand> commands { get; init; }
 
         private readonly PluginManager pluginManager;
+        private readonly ConfigurationManager configurationManager;
 
         public Plugin(
             [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
@@ -49,26 +50,26 @@ namespace MeterWay
         {
             // add all interfaces to the manager
             this.pluginManager = new PluginManager(pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, textureProvider);
+            this.configurationManager = new ConfigurationManager();
 
+            this.dataManager = new DataManager();
             
-            this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            this.Configuration.Initialize(this.PluginInterface);
+            this.IpcClient = new IINACTIpcClient();
+            IpcClient.receivers.Add(dataManager.Receiver);
 
-            this.dataManager = new DataManager(this);
-            this.IpcClient = new IINACTIpcClient(this, dataManager.Receiver);
-
-            ConfigWindow = new ConfigWindow(this);
-            MainWindow = new MainWindow(this);
-            OverlayWindow = new OverlayWindow(this);
+            ConfigWindow = new ConfigWindow(this.IpcClient);
+            MainWindow = new MainWindow();
+            OverlayWindow = new OverlayWindow();
 
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
-            if (Configuration.Overlay)
+            
+            if (ConfigurationManager.Instance.Configuration.Overlay)
             {
                 WindowSystem.AddWindow(OverlayWindow);
             }
 
-            this.CommandManager.AddHandler(CommandName,
+            PluginManager.Instance.CommandManager.AddHandler(CommandName,
                 new CommandInfo(OnCommand)
                 {
                     HelpMessage = "Display MeterWay main window.\nAditional help with the command \'" + CommandName + " help\'."
@@ -76,8 +77,8 @@ namespace MeterWay
             );
             this.commands = RegisterCommands();
 
-            this.PluginInterface.UiBuilder.Draw += DrawUI;
-            this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            PluginManager.Instance.PluginInterface.UiBuilder.Draw += DrawUI;
+            PluginManager.Instance.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
         }
 
         public void Dispose()
@@ -86,7 +87,7 @@ namespace MeterWay
             IpcClient.Dispose();
             ConfigWindow.Dispose();
             MainWindow.Dispose();
-            this.CommandManager.RemoveHandler(CommandName);
+            PluginManager.Instance.CommandManager.RemoveHandler(CommandName);
         }
 
         private List<MeterWayCommand> RegisterCommands()
@@ -106,7 +107,7 @@ namespace MeterWay
                 {
                     var msg = "MeterWay is " + (IpcClient.Status() ? "connected" : "disconnected") + " to IINACT.";
                     //ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload(msg), new UIForegroundPayload(0)));
-                    ChatGui.Print(msg);
+                    PluginManager.Instance.ChatGui.Print(msg);
                 }
             ));
             commandlist.Add(new MeterWayCommand("start", "Try to connect to IINACT.", () =>
@@ -127,7 +128,7 @@ namespace MeterWay
             string HelpMessage = "";
             commandlist.Add(new MeterWayCommand("help", "Display this help message", () =>
                 {
-                    ChatGui.Print(HelpMessage);
+                    PluginManager.Instance.ChatGui.Print(HelpMessage);
                 }
             ));
 

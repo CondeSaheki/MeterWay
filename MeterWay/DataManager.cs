@@ -13,29 +13,29 @@ using System;
 using System.Collections.Generic;
 
 using MeterWay;
+using MeterWay.managers;
+
 using System.Linq;
 
 namespace MeterWay;
 
 public class DataManager
 {
-    private Plugin plugin;
 
     public List<Encounter> encounters;
     public Encounter current => encounters.Last();
 
     private bool lastcombatstate;
 
-    public DataManager(Plugin plugin)
+    public DataManager() 
     {
-        this.plugin = plugin;
         this.encounters = new List<Encounter>();
         this.lastcombatstate = false;
     }
 
     void StartEncounter()
     {
-        if (current != new Encounter(plugin))
+        if (current != new Encounter())
         {
             EndEncounter();
         }
@@ -45,17 +45,17 @@ public class DataManager
     void EndEncounter()
     {
         // finalize the encounter
-        this.current.End = "";
+        this.current.End = DateTime.Now;
     }
 
 
     private bool GetInCombat()
     {
-        if (this.plugin.PartyList.Length == 0)
+        if (PluginManager.Instance.PartyList.Length == 0)
         {
-            return plugin.Condition[ConditionFlag.InCombat];
+            return PluginManager.Instance.Condition[ConditionFlag.InCombat];
         }
-        foreach (var player in this.plugin.PartyList)
+        foreach (var player in PluginManager.Instance.PartyList)
         {
             if (player.GameObject == null) continue;
 
@@ -69,7 +69,7 @@ public class DataManager
         return false;
     }
 
-    public bool Receiver(JObject json)
+    public void Receiver(JObject json)
     {
 
         PluginManager.Instance.ChatGui.Print("a");
@@ -80,8 +80,8 @@ public class DataManager
         if (combatstate == true && lastcombatstate == false)
         {
 
-            this.plugin.PluginLog.Info("meterway detected start of combat");
-            encounters.Add(new Encounter(this.plugin));
+            PluginManager.Instance.PluginLog.Info("meterway detected start of combat");
+            encounters.Add(new Encounter());
             lastcombatstate = true;
         }
 
@@ -89,18 +89,18 @@ public class DataManager
         if (combatstate == false && lastcombatstate == true)
         {
 
-            this.plugin.PluginLog.Info("meterway detected end of combat");
-            current.End();
+            PluginManager.Instance.PluginLog.Info("meterway detected end of combat");
+            //current.End();
             lastcombatstate = false;
         }
 
         // ignore all data when not in combat 
         if (combatstate == false)
         {
-            return true;
+            return;
         }
 
-        plugin.PluginLog.Info(json.ToString());
+        PluginManager.Instance.PluginLog.Info(json.ToString());
 
         // parse data
         try
@@ -109,18 +109,18 @@ public class DataManager
 
             foreach (string val in log.data)
             {
-                plugin.PluginLog.Info(val);
+                PluginManager.Instance.PluginLog.Info(val);
             }
 
         }
         catch (Exception ex)
         {
-            plugin.PluginLog.Error(ex.ToString());
-            return false;
+            PluginManager.Instance.PluginLog.Error(ex.ToString());
+            return;
         }
 
 
-        return true;
+        return;
     }
 
 

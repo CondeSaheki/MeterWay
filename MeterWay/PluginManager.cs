@@ -9,15 +9,14 @@ using System.Numerics;
 
 using MeterWay;
 
-namespace MeterWay;
+namespace MeterWay.managers;
 
-public class PluginManager : IDisposable
+public class PluginManager
 {
 
     //private readonly ConfigWindow _configRoot;
 
-    private readonly WindowSystem _windowSystem;
-    
+
     // dalamud interfaces
     public readonly DalamudPluginInterface PluginInterface;
     public readonly ICommandManager CommandManager;
@@ -27,7 +26,6 @@ public class PluginManager : IDisposable
     public readonly ICondition Condition;
     public readonly IPartyList PartyList;
     public readonly ITextureProvider TextureProvider;
-
 
     // // sus
     // public Configuration Configuration { get; init; }
@@ -44,14 +42,6 @@ public class PluginManager : IDisposable
 
     // private const string CommandName = "/meterway";
     // private List<MeterWayCommand> commands { get; init; }
-
-
-
-
-
-
-
-
 
     public static PluginManager Instance { get; private set; } = null!;
 
@@ -77,4 +67,41 @@ public class PluginManager : IDisposable
 
         PluginManager.Instance = this;
     }
+}
+
+public class ConfigurationManager
+{
+    public readonly Configuration Configuration;
+
+    public static ConfigurationManager Instance { get; private set; } = null!;
+
+    public ConfigurationManager()
+    {
+        this.Configuration = PluginManager.Instance.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        this.Configuration.Initialize(PluginManager.Instance.PluginInterface);
+        
+        ConfigurationManager.Instance = this;
+    }
+}
+
+public class WindowManager : IDisposable
+{
+
+    private readonly WindowSystem windowsystem;
+
+    public static WindowManager Instance { get; private set; } = null!;
+
+    public WindowManager(WindowSystem windowsystem)
+    {
+        this.windowsystem = windowsystem;
+        
+
+        WindowManager.Instance = this;
+    }
+
+    public void Dispose()
+    {
+        windowsystem.RemoveAllWindows();
+    }
+    
 }
