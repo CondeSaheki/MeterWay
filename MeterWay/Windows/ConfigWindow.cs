@@ -106,7 +106,7 @@ public class ConfigWindow : Window, IDisposable
         var OverlayFontScaleValue = ConfigurationManager.Instance.Configuration.OverlayFontScale;
         ImGui.Text("Font scale: ");
         ImGui.SameLine();
-        if (ImGui.SliderFloat("##FontScale", ref OverlayFontScaleValue, 0.1f, 5.0f, "%.1f", ImGuiSliderFlags.None))
+        if (ImGui.SliderFloat("##FontScale", ref OverlayFontScaleValue, 1f, 5.0f, "%.1f", ImGuiSliderFlags.None))
         {
             ConfigurationManager.Instance.Configuration.OverlayFontScale = OverlayFontScaleValue;
             ConfigurationManager.Instance.Configuration.Save();

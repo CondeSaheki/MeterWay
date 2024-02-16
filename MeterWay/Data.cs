@@ -75,10 +75,18 @@ public class Encounter
                 playerstemp.Add(new Player(character));
             }
         }
+        else
+        {
+            if (PluginManager.Instance.ClientState.LocalPlayer != null)
+            {
+                var character = (Dalamud.Game.ClientState.Objects.Types.Character)PluginManager.Instance.ClientState.LocalPlayer;
+                playerstemp.Add(new Player(character));
+            }
+        }
         this.Players = playerstemp;
 
     }
-    
+
     public void Update(JObject json)
     {
         List<KeyValuePair<string, System.Action>> handler = new List<KeyValuePair<string, System.Action>>();
@@ -106,7 +114,7 @@ public class Encounter
         var locationRow = PluginManager.Instance.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(PluginManager.Instance.ClientState.TerritoryType);
         var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();
         var placeName = locationRow?.PlaceName.Value?.Name?.ToString();
-        
+
         return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
     }
 

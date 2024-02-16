@@ -11,7 +11,7 @@ namespace MeterWay.Windows;
 
 public class OverlayWindow : Window, IDisposable
 {
-    
+
     private ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
 
     private List<IMeterwayOverlay> overlays;
@@ -37,7 +37,7 @@ public class OverlayWindow : Window, IDisposable
         // precisamos de achar uma forma dele adicionar isso sem ser manualmente
 
         this.overlays = [new LazerOverlay(), new MoguOverlay()];
-        
+
 
     }
 
@@ -78,21 +78,4 @@ public class OverlayWindow : Window, IDisposable
         //PluginManager.Instance.PluginLog.Info("font loaded ?");
     }
 
-    public static uint Color(byte r, byte g, byte b, byte a)
-    {
-        uint ret = a;
-        ret <<= 8;
-        ret += b;
-        ret <<= 8;
-        ret += g;
-        ret <<= 8;
-        ret += r;
-        return ret;
-    }
-
-    public static uint Color(Vector4 color)
-    {
-        return Color(Convert.ToByte(Math.Min(Math.Round(color.X * 255), 255)), Convert.ToByte(Math.Min(Math.Round(color.Y * 255), 255)),
-            Convert.ToByte(Math.Min(Math.Round(color.Z * 255), 255)), Convert.ToByte(Math.Round(color.W * 255)));
-    }
 }
