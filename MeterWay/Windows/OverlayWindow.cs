@@ -32,7 +32,7 @@ public class OverlayWindow : Window, IDisposable
 
         this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(this.plugin.Configuration.OverlayFontPath, this.plugin.Configuration.OverlayFontSize);
 
-        this.overlays = [new LazerOverlay(this.plugin)];
+        this.overlays = [new LazerOverlay()];
 
     }
 
