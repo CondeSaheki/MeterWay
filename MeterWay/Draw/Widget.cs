@@ -1,6 +1,7 @@
 
 using System.Numerics;
 using ImGuiNET;
+using MeterWay.managers;
 using MeterWay.Utils;
 
 public static class Widget
@@ -14,7 +15,9 @@ public static class Widget
 
     public static void Text(string text, Vector2 position, uint color, bool fullLine = true, TextAnchor anchor = TextAnchor.Right, bool dropShadow = false, float scale = 1f)
     {
-        var formerScale = ImGui.GetFont().Scale;
+        // r
+        var formerScale = ConfigurationManager.Instance.Configuration.OverlayFontScale;
+        //
         ImGui.SetWindowFontScale(scale * formerScale);
         var size = CalcTextSize(text) * scale;
         switch (anchor)
@@ -46,19 +49,22 @@ public static class Widget
     {
         var jobIcon = Job.GetIcon(job);
 
-        var size = new Vector2(32 * scale, 32 * scale);
+        var size = new Vector2(scale, scale);
         ImGui.GetWindowDrawList().AddImage(jobIcon, position, position + size);
     }
 
 
     public static Vector2 CalcTextSize(string text)
     {
-        float height = ImGui.GetFontSize();
+        float height = ConfigurationManager.Instance.Configuration.OverlayFontSize;
         float width = 0;
+        // r
+        float scale = ConfigurationManager.Instance.Configuration.OverlayFontScale;
+        //
 
         foreach (char c in text)
         {
-            width += ImGui.GetFont().GetCharAdvance(c) * ImGui.GetFont().Scale;
+            width += ImGui.GetFont().GetCharAdvance(c) * scale;
         }
         return new Vector2(width, height);
     }
