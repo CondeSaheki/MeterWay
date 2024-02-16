@@ -4,6 +4,7 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using MeterWay.Utils;
+using MeterWay.managers;
 
 namespace MeterWay.Overlays;
 
@@ -100,7 +101,10 @@ public class LazerOverlay : IMeterwayOverlay
             return;
         }
         // Add a background for the title and centralize the text
-        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + ImGui.GetFontSize() + 5), Helpers.Color(26, 26, 39, 190));
+
+        // r
+        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ConfigurationManager.Instance.Configuration.OverlayFontSize * ConfigurationManager.Instance.Configuration.OverlayFontScale) + 5), Helpers.Color(26, 26, 39, 190));
+        //
 
         var center = new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(this.encounterData.Name).X / 2, WindowMin.Y + 2);
         Widget.Text(this.encounterData.Name, center, Helpers.Color(255, 255, 255, 255), anchor: Widget.TextAnchor.Center);
@@ -116,24 +120,30 @@ public class LazerOverlay : IMeterwayOverlay
     }
     private void DrawPlayerLine(LerpPlayerData data, Player player)
     {
-        float lineHeight = ImGui.GetFontSize() + 5;
+        // r
+        float OverlayFontScale = ConfigurationManager.Instance.Configuration.OverlayFontScale;
+        float OverlayFontSize = ConfigurationManager.Instance.Configuration.OverlayFontSize;
+        float lineHeight = (OverlayFontSize * OverlayFontScale) + 5;
+        //
         var windowMin = new Vector2(WindowMin.X, WindowMin.Y + lineHeight);
         var rowPosition = windowMin.Y + (lineHeight * (data.Position - 1));
 
-        var textRowPosition = rowPosition + lineHeight / 2 - ImGui.GetFontSize() / 2;
+        var textRowPosition = rowPosition + lineHeight / 2 - (OverlayFontSize * OverlayFontScale) / 2;
         var dps = $"{Helpers.HumanizeNumber(data.DPS, 1)}/s";
         var totalDMG = $"{Helpers.HumanizeNumber(data.TotalDMG, 1)}";
-        windowMin.X += lineHeight;
-
+        // r
         Widget.JobIcon(player.Job, new Vector2(windowMin.X, rowPosition), lineHeight);
+        windowMin.X += lineHeight;
+        //
 
         ImGui.GetWindowDrawList().AddRectFilled(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 190));
         Widget.DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), player.Name == "YOU" ? Helpers.Color(128, 170, 128, 255) : Helpers.Color(128, 128, 170, 255), data.PctDMG / 100.0f);
         Widget.DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 222));
 
-        Widget.Text(player.Name, new Vector2(windowMin.X + 10 + (0.8f * Widget.CalcTextSize(Job.GetName(player.Job).ToUpper()).X), textRowPosition), Helpers.Color(255, 255, 255, 255), false, Widget.TextAnchor.Left, false);
-
-        Widget.Text(totalDMG, new Vector2(WindowMax.X - Widget.CalcTextSize(dps).X - Widget.CalcTextSize(totalDMG).X - 5, rowPosition + (lineHeight / 2 - (Widget.CalcTextSize(totalDMG).Y) / 2)), Helpers.Color(210, 210, 210, 255), false, Widget.TextAnchor.Right, false);
+        // r
+        Widget.Text(player.Name, new Vector2(windowMin.X + (Widget.CalcTextSize(player.Name).X + 5), textRowPosition), Helpers.Color(255, 255, 255, 255), false, Widget.TextAnchor.Left, false);
+        Widget.Text(totalDMG, new Vector2(WindowMax.X - Widget.CalcTextSize(dps).X - Widget.CalcTextSize(totalDMG).X - 20, rowPosition + (Widget.CalcTextSize(totalDMG).Y / 6)), Helpers.Color(210, 210, 210, 255), false, Widget.TextAnchor.Right, false);
+        //
 
         Widget.Text(dps, new Vector2(WindowMax.X - Widget.CalcTextSize(dps).X - 5, textRowPosition), Helpers.Color(255, 255, 255, 255), false, Widget.TextAnchor.Right, false);
     }
