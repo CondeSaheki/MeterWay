@@ -146,9 +146,9 @@ public class Player
         this.Name = character.Name.ToString();
         this.Job = character.ClassJob.Id;
         this.Data = "";
-        this.DPS = 0;
-        this.TotalDamage = 0;
-        this.DamagePercentage = 0;
+        this.DPS = 1000;
+        this.TotalDamage = 81299;
+        this.DamagePercentage = 74;
     }
 }
 
