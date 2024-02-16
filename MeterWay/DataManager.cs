@@ -23,11 +23,19 @@ public class DataManager
 {
 
     public List<Encounter> encounters;
-    public Encounter current => encounters.Last();
+    public Encounter current()
+    {
+        if (encounters.Count == 0)
+        {
+            return new Encounter();
+        }
+        return encounters.Last();
+    }
+
 
     private bool lastcombatstate;
 
-    public DataManager() 
+    public DataManager()
     {
         this.encounters = new List<Encounter>();
         this.lastcombatstate = false;
@@ -35,7 +43,7 @@ public class DataManager
 
     void StartEncounter()
     {
-        if (current != new Encounter())
+        if (current() != new Encounter())
         {
             EndEncounter();
         }
@@ -45,7 +53,7 @@ public class DataManager
     void EndEncounter()
     {
         // finalize the encounter
-        this.current.End = DateTime.Now;
+        //this.current.End = DateTime.Now;
     }
 
 
@@ -65,7 +73,6 @@ public class DataManager
                 return true;
             }
         }
-
         return false;
     }
 

@@ -17,7 +17,9 @@ public class OverlayWindow : Window, IDisposable
     private List<IMeterwayOverlay> overlays;
     public ImFontPtr font;
 
-    public OverlayWindow() : base("OverlayWindow")
+    private readonly Encounter data;
+
+    public OverlayWindow(Encounter data) : base("OverlayWindow")
     {
 
         // window configs
@@ -29,12 +31,13 @@ public class OverlayWindow : Window, IDisposable
         this.IsOpen = true;
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
-
+        this.data = data;
         this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(ConfigurationManager.Instance.Configuration.OverlayFontPath, ConfigurationManager.Instance.Configuration.OverlayFontSize);
 
         // precisamos de achar uma forma dele adicionar isso sem ser manualmente
 
-        this.overlays = [new LazerOverlay()];
+        this.overlays = [new LazerOverlay(), new MoguOverlay()];
+        
 
     }
 
@@ -42,40 +45,19 @@ public class OverlayWindow : Window, IDisposable
 
     public override void Draw()
     {
-        // background
-        if (ConfigurationManager.Instance.Configuration.OverlayBackground)
-        {
-            Background(ConfigurationManager.Instance.Configuration.OverlayBackgroundColor);
-        }
-
         // font
         ImGui.SetWindowFontScale(ConfigurationManager.Instance.Configuration.OverlayFontScale);
 
+        // adicionar isso aqui ou no handler ?? 
+        overlays[ConfigurationManager.Instance.Configuration.OverlayType].DataProcess(data);
+
         // Custom Overlay
         overlays[ConfigurationManager.Instance.Configuration.OverlayType].Draw();
-
-        // adicionar isso aqui ou no handler ?? 
-        //overlays[PluginManager.Instance.Configuration.OverlayType].DataProcess();
     }
 
     public void Dispose()
     {
         overlays[ConfigurationManager.Instance.Configuration.OverlayType].Dispose();
-    }
-
-    // helpers
-
-    private void Background(Vector4 color)
-    {
-        Vector2 vMin = ImGui.GetWindowContentRegionMin();
-        Vector2 vMax = ImGui.GetWindowContentRegionMax();
-
-        vMin.X += ImGui.GetWindowPos().X;
-        vMin.Y += ImGui.GetWindowPos().Y;
-        vMax.X += ImGui.GetWindowPos().X;
-        vMax.Y += ImGui.GetWindowPos().Y;
-
-        ImGui.GetWindowDrawList().AddRectFilled(vMin, vMax, Color(color));
     }
 
     public ImGuiWindowFlags Gerateflags()

@@ -121,7 +121,16 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("Appearence");
         if (!tab) return;
 
-        ImGui.Text("WIP");
+        ImGui.Text("select overlay type");
+        var OverlayTypeValue = ConfigurationManager.Instance.Configuration.OverlayType;
+        if (ImGui.InputInt("Overlay Type", ref OverlayTypeValue))
+        {
+            if (OverlayTypeValue == 1 || OverlayTypeValue == 0)
+            {
+                ConfigurationManager.Instance.Configuration.OverlayType = OverlayTypeValue;
+                ConfigurationManager.Instance.Configuration.Save();
+            }
+        }
     }
 
     private void DrawIINACTTab()
@@ -130,7 +139,7 @@ public class ConfigWindow : Window, IDisposable
         if (!tab) return;
 
         var status = iinactclient.Status();
-        
+
         ImGui.Text("State: ");
         ImGui.SameLine();
         ImGui.Text(status ? "Connected" : "Disconnected");
