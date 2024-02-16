@@ -37,16 +37,17 @@ public class MoguOverlay : IMeterwayOverlay
 
         var info = $"encounter: {data.Name} duration: {data.Name}";
         ImGui.GetWindowDrawList().AddText(cursor, Helpers.Color(255, 255, 255, 255), info);
-        cursor.Y += Widget.CalcTextSize(info).Y;
+        
+        cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 
         foreach (Player p in data.Players)
         {
             Widget.JobIcon(p.Job, cursor, 15f);
             var playerinfo = $"{p.Name} TotalDamage: {p.TotalDamage}";
             ImGui.GetWindowDrawList().AddText(cursor + new Vector2(20, 0), Helpers.Color(255, 255, 255, 255), playerinfo);
-            cursor.Y += Widget.CalcTextSize(info).Y;
+            cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
         }
-
+        
     }
 
     public void Dispose() { }
