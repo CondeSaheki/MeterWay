@@ -4,29 +4,23 @@ using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 
-using Meterway.Windows;
+using MeterWay.Windows;
+using MeterWay.IINACT;
+using MeterWay.commands;
+using MeterWay.managers;
+
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
+using System;
 
-namespace Meterway
+namespace MeterWay
 {
     public sealed class Plugin : IDalamudPlugin
     {
         public string Name => "MeterWay";
 
-        public Configuration Configuration { get; init; }
-        public WindowSystem WindowSystem = new("Meterway");
-
-        // dalamud interfaces
-        public DalamudPluginInterface PluginInterface { get; init; }
-        public ICommandManager CommandManager { get; init; }
-        public IPluginLog PluginLog { get; init; }
-        public IChatGui ChatGui { get; init; }
-        public IClientState ClientState { get; init; }
-        public ICondition Condition { get; init; }
-        public IPartyList PartyList { get; init; }
-
-        public ITextureProvider TextureProvider { get; init; }
+        //public Configuration Configuration { get; init; }
+        public WindowSystem WindowSystem = new("MeterWay");
 
         // window
         private ConfigWindow ConfigWindow { get; init; }
@@ -40,6 +34,9 @@ namespace Meterway
         private const string CommandName = "/meterway";
         private List<MeterWayCommand> commands { get; init; }
 
+        private readonly PluginManager pluginManager;
+        private readonly ConfigurationManager configurationManager;
+
         public Plugin(
             [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
             [RequiredVersion("1.0")] ICommandManager commandManager,
@@ -51,37 +48,28 @@ namespace Meterway
             [RequiredVersion("1.0")] ITextureProvider textureProvider
             )
         {
-            this.PluginInterface = pluginInterface;
-            this.CommandManager = commandManager;
-            this.PluginLog = pluginLog;
-            this.ChatGui = chatGui;
-            this.ClientState = clientState;
-            this.Condition = condition;
-            this.PartyList = partyList;
-            this.TextureProvider = textureProvider;
+            // add all interfaces to the manager
+            this.pluginManager = new PluginManager(pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, textureProvider);
+            this.configurationManager = new ConfigurationManager();
 
-            this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            this.Configuration.Initialize(this.PluginInterface);
+            this.dataManager = new DataManager();
+            
+            this.IpcClient = new IINACTIpcClient();
+            IpcClient.receivers.Add(dataManager.Receiver);
 
-            this.dataManager = new DataManager(this);
-            this.IpcClient = new IINACTIpcClient(this, dataManager.Receiver);
-
-            ConfigWindow = new ConfigWindow(this);
-            MainWindow = new MainWindow(this);
-            OverlayWindow = new OverlayWindow(this);
-
+            ConfigWindow = new ConfigWindow(this.IpcClient);
+            MainWindow = new MainWindow();
+            OverlayWindow = new OverlayWindow();
 
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
-            if (Configuration.Overlay)
+            
+            if (ConfigurationManager.Instance.Configuration.Overlay)
             {
                 WindowSystem.AddWindow(OverlayWindow);
             }
 
-
-
-
-            this.CommandManager.AddHandler(CommandName,
+            PluginManager.Instance.CommandManager.AddHandler(CommandName,
                 new CommandInfo(OnCommand)
                 {
                     HelpMessage = "Display MeterWay main window.\nAditional help with the command \'" + CommandName + " help\'."
@@ -89,8 +77,8 @@ namespace Meterway
             );
             this.commands = RegisterCommands();
 
-            this.PluginInterface.UiBuilder.Draw += DrawUI;
-            this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            PluginManager.Instance.PluginInterface.UiBuilder.Draw += DrawUI;
+            PluginManager.Instance.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
         }
 
         public void Dispose()
@@ -99,7 +87,7 @@ namespace Meterway
             IpcClient.Dispose();
             ConfigWindow.Dispose();
             MainWindow.Dispose();
-            this.CommandManager.RemoveHandler(CommandName);
+            PluginManager.Instance.CommandManager.RemoveHandler(CommandName);
         }
 
         private List<MeterWayCommand> RegisterCommands()
@@ -119,7 +107,7 @@ namespace Meterway
                 {
                     var msg = "MeterWay is " + (IpcClient.Status() ? "connected" : "disconnected") + " to IINACT.";
                     //ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload(msg), new UIForegroundPayload(0)));
-                    ChatGui.Print(msg);
+                    PluginManager.Instance.ChatGui.Print(msg);
                 }
             ));
             commandlist.Add(new MeterWayCommand("start", "Try to connect to IINACT.", () =>
@@ -140,7 +128,7 @@ namespace Meterway
             string HelpMessage = "";
             commandlist.Add(new MeterWayCommand("help", "Display this help message", () =>
                 {
-                    ChatGui.Print(HelpMessage);
+                    PluginManager.Instance.ChatGui.Print(HelpMessage);
                 }
             ));
 

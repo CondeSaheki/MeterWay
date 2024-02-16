@@ -12,92 +12,117 @@ using Dalamud.Game.ClientState.Conditions;
 using System;
 using System.Collections.Generic;
 
-namespace Meterway;
+using MeterWay;
+using MeterWay.managers;
+
+using System.Linq;
+
+namespace MeterWay;
 
 public class DataManager
 {
-    private Plugin plugin;
-    public List<CombatData> Combat;
-    private bool combatstate;
 
-    public CombatData? CurrentCombatData;
+    public List<Encounter> encounters;
+    public Encounter current => encounters.Last();
 
-    public DataManager(Plugin plugin)
+    private bool lastcombatstate;
+
+    public DataManager() 
     {
-        this.plugin = plugin;
-        this.Combat = new List<CombatData>();
-        combatstate = plugin.Condition[ConditionFlag.InCombat];
+        this.encounters = new List<Encounter>();
+        this.lastcombatstate = false;
     }
 
-    private bool partyincomabat()
+    void StartEncounter()
     {
-        foreach (var player in this.plugin.PartyList)
+        if (current != new Encounter())
+        {
+            EndEncounter();
+        }
+
+        //encounters.Add();
+    }
+    void EndEncounter()
+    {
+        // finalize the encounter
+        this.current.End = DateTime.Now;
+    }
+
+
+    private bool GetInCombat()
+    {
+        if (PluginManager.Instance.PartyList.Length == 0)
+        {
+            return PluginManager.Instance.Condition[ConditionFlag.InCombat];
+        }
+        foreach (var player in PluginManager.Instance.PartyList)
         {
             if (player.GameObject == null) continue;
 
-            var teste = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
-            if ((teste.StatusFlags & Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat) == Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat)
+            var character = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
+            if ((character.StatusFlags & Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat) == Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat)
             {
                 return true;
             }
         }
+
         return false;
     }
 
-    public bool Receiver(JObject json)
+    public void Receiver(JObject json)
     {
-        bool combatstatevalue = false;
 
-        if (this.plugin.PartyList.Length == 0)
-        {
-            combatstatevalue = plugin.Condition[ConditionFlag.InCombat];
-        }
-        else
-        {
-            combatstatevalue = partyincomabat();
-        }
+        PluginManager.Instance.ChatGui.Print("a");
 
-        // last data
-        if (combatstate == true && combatstatevalue == false)
+        var combatstate = GetInCombat();
+
+        // start combat
+        if (combatstate == true && lastcombatstate == false)
         {
-            // end combat
-            this.plugin.PluginLog.Info("meterway detected end of combat");
-            combatstate = false;
+
+            PluginManager.Instance.PluginLog.Info("meterway detected start of combat");
+            encounters.Add(new Encounter());
+            lastcombatstate = true;
         }
 
-        if (combatstate == false && combatstatevalue == true)
+        // end combat
+        if (combatstate == false && lastcombatstate == true)
         {
-            // start combat
-            this.plugin.PluginLog.Info("meterway detected start of combat");
-            combatstate = true;
+
+            PluginManager.Instance.PluginLog.Info("meterway detected end of combat");
+            //current.End();
+            lastcombatstate = false;
         }
 
         // ignore all data when not in combat 
-        if (combatstatevalue == false)
+        if (combatstate == false)
         {
-            return true;
+            return;
         }
+
+        PluginManager.Instance.PluginLog.Info(json.ToString());
 
         // parse data
         try
         {
-            //Combat.Add(new CombatData(plugin, json));
-            CurrentCombatData = new CombatData(plugin, json);
-            //plugin.PluginLog.Info("data: " + json.ToString());
-            //plugin.PluginLog.Info("Meterway received data!");
+            var log = new IINACTNetworkLog(json);
+
+            foreach (string val in log.data)
+            {
+                PluginManager.Instance.PluginLog.Info(val);
+            }
+
         }
         catch (Exception ex)
         {
-            plugin.PluginLog.Error(ex.ToString());
-            return false;
+            PluginManager.Instance.PluginLog.Error(ex.ToString());
+            return;
         }
-        return true;
+
+
+        return;
     }
 
-    public void RecapChatLinkHandler(uint cmdId, SeString msg)
-    {
-        plugin.PluginInterface.RemoveChatLinkHandler(cmdId);
-        plugin.ChatGui.Print("RecapChatLinkHandler id: " + cmdId.ToString());
 
-    }
+
 }

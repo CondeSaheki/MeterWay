@@ -9,7 +9,7 @@ using Dalamud.Interface.Windowing;
 using System.Xml.Serialization;
 using System.Runtime.InteropServices;
 
-namespace Meterway.Overlays;
+namespace MeterWay.Overlays;
 
 public class LazerOverlay : IMeterwayOverlay
 {
@@ -33,6 +33,10 @@ public class LazerOverlay : IMeterwayOverlay
         public float TotalDMG { get; set; }
         public float Position { get; set; }
     }
+    
+    private Encounter data;
+
+    public void DataProcess(Encounter data) { }
 
     private float transitionDuration = 1f; // in seconds
     private float transitionTimer = 0.0f;
@@ -52,6 +56,7 @@ public class LazerOverlay : IMeterwayOverlay
         this.WindowMin = vMin;
         this.WindowMax = vMax;
     }
+    
 
     private void GenerateCombatLerping(Combatant combatant)
     {
@@ -146,7 +151,6 @@ public class LazerOverlay : IMeterwayOverlay
         DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 222));
 
         // scale down the font for the job and center it in the line
-        Widget.Text(job.ToUpper(), new Vector2(windowMin.X + 7, rowPosition + (lineHeight / 2 - (Widget.CalcTextSize(job.ToUpper()).Y) / 2)), Helpers.Color(172, 172, 172, 255), anchor: Widget.TextAnchor.Left);
 
         Widget.Text(name, new Vector2(windowMin.X + 10 + (0.8f * Widget.CalcTextSize(job.ToUpper()).X), textRowPosition), Helpers.Color(255, 255, 255, 255), false, Widget.TextAnchor.Left, false);
 

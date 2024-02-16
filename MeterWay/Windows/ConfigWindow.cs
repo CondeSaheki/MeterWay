@@ -5,21 +5,23 @@ using ImGuiNET;
 using Dalamud.Interface.Utility.Raii;
 using System.Collections.Generic;
 
-namespace Meterway.Windows;
+using MeterWay.managers;
+using MeterWay.IINACT;
+
+namespace MeterWay.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
-    private Plugin plugin;
+    private IINACTIpcClient iinactclient;
 
-    public ConfigWindow(Plugin plugin) : base(
+    public ConfigWindow(IINACTIpcClient iinactclient) : base(
         "MeterWay Configurations",
         ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
         ImGuiWindowFlags.NoScrollWithMouse) // ImGuiWindowFlags.NoResize | 
     {
         this.Size = new Vector2(400, 400);
         this.SizeCondition = ImGuiCond.Always;
-
-        this.plugin = plugin;
+        this.iinactclient = ;
     }
 
     public void Dispose() { }
@@ -48,53 +50,53 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Text("On end of Combats");
         ImGui.PushItemWidth(130f);
         string[] interactions = { "Open recap", "Show Popup", "Chat Message", "Do nothing" };
-        var InteractionValue = this.plugin.Configuration.Interaction;
+        var InteractionValue = PluginManager.Instance.Configuration.Interaction;
         if (ImGui.Combo(" ", ref InteractionValue, interactions, interactions.Length))
         {
-            this.plugin.Configuration.Interaction = InteractionValue;
-            this.plugin.Configuration.Save();
+            PluginManager.Instance.Configuration.Interaction = InteractionValue;
+            PluginManager.Instance.Configuration.Save();
         }
         ImGui.PopItemWidth();
 
         // b
-        var SaveCombatsValue = this.plugin.Configuration.SaveCombats;
+        var SaveCombatsValue = PluginManager.Instance.Configuration.SaveCombats;
         if (ImGui.Checkbox("Save last", ref SaveCombatsValue))
         {
-            this.plugin.Configuration.SaveCombats = SaveCombatsValue;
-            this.plugin.Configuration.Save();
+            PluginManager.Instance.Configuration.SaveCombats = SaveCombatsValue;
+            PluginManager.Instance.Configuration.Save();
         }
         ImGui.SameLine();
         ImGui.PushItemWidth(80f);
-        var CombatsValue = this.plugin.Configuration.Combats;
+        var CombatsValue = PluginManager.Instance.Configuration.Combats;
         if (ImGui.InputInt("combat(s)", ref CombatsValue) && CombatsValue > 0)
         {
-            this.plugin.Configuration.Combats = CombatsValue;
-            this.plugin.Configuration.Save();
+            PluginManager.Instance.Configuration.Combats = CombatsValue;
+            PluginManager.Instance.Configuration.Save();
         }
         ImGui.PopItemWidth();
 
         // c
-        var CombatCloseValue = this.plugin.Configuration.CombatClose;
+        var CombatCloseValue = PluginManager.Instance.Configuration.CombatClose;
         if (ImGui.Checkbox("Automatically close when in combat", ref CombatCloseValue))
         {
-            this.plugin.Configuration.CombatClose = CombatCloseValue;
-            this.plugin.Configuration.Save();
+            PluginManager.Instance.Configuration.CombatClose = CombatCloseValue;
+            PluginManager.Instance.Configuration.Save();
         }
 
         // d
-        var PvPValue = this.plugin.Configuration.PvP;
+        var PvPValue = PluginManager.Instance.Configuration.PvP;
         if (ImGui.Checkbox("Disable in PVP", ref PvPValue))
         {
-            this.plugin.Configuration.PvP = PvPValue;
-            this.plugin.Configuration.Save();
+            PluginManager.Instance.Configuration.PvP = PvPValue;
+            PluginManager.Instance.Configuration.Save();
         }
 
         // e
-        var OverlayValue = this.plugin.Configuration.Overlay;
+        var OverlayValue = PluginManager.Instance.Configuration.Overlay;
         if (ImGui.Checkbox("Overlay Mode", ref PvPValue))
         {
-            this.plugin.Configuration.Overlay = OverlayValue;
-            this.plugin.Configuration.Save();
+            PluginManager.Instance.Configuration.Overlay = OverlayValue;
+            PluginManager.Instance.Configuration.Save();
         }
         */
     }
@@ -105,51 +107,52 @@ public class ConfigWindow : Window, IDisposable
         if (!tab) return;
 
         //Overlay
-        var OverlayValue = this.plugin.Configuration.Overlay;
+        var OverlayValue = ConfigurationManager.Instance.Configuration.Overlay;
         if (ImGui.Checkbox("Show Overlay", ref OverlayValue))
         {
-            this.plugin.Configuration.Overlay = OverlayValue;
-            this.plugin.Configuration.Save();
+            ConfigurationManager.Instance.Configuration.Overlay = OverlayValue;
+            ConfigurationManager.Instance.Configuration.Save();
             if (OverlayValue)
             {
-                this.plugin.WindowSystem.AddWindow(this.plugin.OverlayWindow);
+                WindowSystem.AddWindow(PluginManager.Instance.OverlayWindow);
             }
             else
             {
-                this.plugin.WindowSystem.RemoveWindow(this.plugin.OverlayWindow);
+                WindowSystem.RemoveWindow(PluginManager.Instance.OverlayWindow);
             }
         }
 
         // OverlayClickThrough
-        var OverlayClickThroughValue = this.plugin.Configuration.OverlayClickThrough;
+        var OverlayClickThroughValue = ConfigurationManager.Instance.Configuration.OverlayClickThrough;
         if (ImGui.Checkbox("Click through", ref OverlayClickThroughValue))
         {
-            this.plugin.Configuration.OverlayClickThrough = OverlayClickThroughValue;
-            this.plugin.Configuration.Save();
-            this.plugin.OverlayWindow.Flags = this.plugin.OverlayWindow.Gerateflags();
+            ConfigurationManager.Instance.Configuration.OverlayClickThrough = OverlayClickThroughValue;
+            ConfigurationManager.Instance.Configuration.Save();
+            OverlayWindow.Flags = PluginManager.Instance.OverlayWindow.Gerateflags();
+            
         }
 
         // OverlayBackground
-        var OverlayBackgroundValue = this.plugin.Configuration.OverlayBackground;
+        var OverlayBackgroundValue = PluginManager.Instance.Configuration.OverlayBackground;
         if (ImGui.Checkbox("Background", ref OverlayBackgroundValue))
         {
-            this.plugin.Configuration.OverlayBackground = OverlayBackgroundValue;
-            this.plugin.Configuration.Save();
-            this.plugin.OverlayWindow.Flags = this.plugin.OverlayWindow.Gerateflags();
+            ConfigurationManager.Instance.Configuration.OverlayBackground = OverlayBackgroundValue;
+            ConfigurationManager.Instance.Configuration.Save();
+            OverlayWindow.Flags = PluginManager.Instance.OverlayWindow.Gerateflags();
         }
 
         if (OverlayBackgroundValue)
         {
             // OverlayBackgroundColor
-            var OverlayBackgroundColorValue = this.plugin.Configuration.OverlayBackgroundColor;
+            var OverlayBackgroundColorValue = ConfigurationManager.Instance.Configuration.OverlayBackgroundColor;
             ImGui.Text("background color: ");
             ImGui.SameLine();
 
             if (ImGui.ColorEdit4("background color", ref OverlayBackgroundColorValue,
                 ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
             {
-                this.plugin.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
-                this.plugin.Configuration.Save();
+                ConfigurationManager.Instance.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
+                ConfigurationManager.Instance.Configuration.Save();
             }
         }
         // text config
@@ -161,34 +164,35 @@ public class ConfigWindow : Window, IDisposable
 
         // ImGui.Text("Font file path: ");
         // ImGui.SameLine();
-        // var OverlayFontPathValue = this.plugin.Configuration.OverlayFontPath;
+        // var OverlayFontPathValue = PluginManager.Instance.Configuration.OverlayFontPath;
         // if (ImGui.InputText("FontFile", ref OverlayFontPathValue, 1000))
         // {
-        //     this.plugin.Configuration.OverlayFontPath = OverlayFontPathValue;
-        //     this.plugin.Configuration.Save();
-        //     this.plugin.OverlayWindow.updatefont();
+        //     PluginManager.Instance.Configuration.OverlayFontPath = OverlayFontPathValue;
+        //     PluginManager.Instance.Configuration.Save();
+        //     PluginManager.Instance.OverlayWindow.updatefont();
         // }
 
         // // OverlayFontSizeValue
-        // var OverlayFontSizeValue = this.plugin.Configuration.OverlayFontSize;
+        // var OverlayFontSizeValue = PluginManager.Instance.Configuration.OverlayFontSize;
         // ImGui.Text("Font size: ");
         // ImGui.SameLine();
         // if (ImGui.SliderFloat("FontSize", ref OverlayFontSizeValue, 0.0f, 64.0f, "%.1f", ImGuiSliderFlags.None))
         // {
-        //     this.plugin.Configuration.OverlayFontSize = OverlayFontSizeValue;
-        //     this.plugin.Configuration.Save();
-        //     this.plugin.OverlayWindow.updatefont();
+        //     PluginManager.Instance.Configuration.OverlayFontSize = OverlayFontSizeValue;
+        //     PluginManager.Instance.Configuration.Save();
+        //     PluginManager.Instance.OverlayWindow.updatefont();
         // }
 
         // // OverlayFontScaleValue
-        var OverlayFontScaleValue = this.plugin.Configuration.OverlayFontScale;
+        var OverlayFontScaleValue = ConfigurationManager.Instance.Configuration.OverlayFontScale;
         ImGui.Text("Font scale: ");
         ImGui.SameLine();
         if (ImGui.SliderFloat("##FontScale", ref OverlayFontScaleValue, 0.1f, 5.0f, "%.1f", ImGuiSliderFlags.None))
         {
-            this.plugin.Configuration.OverlayFontScale = OverlayFontScaleValue;
-            this.plugin.Configuration.Save();
-            this.plugin.OverlayWindow.updatefont();
+            ConfigurationManager.Instance.Configuration.OverlayFontScale = OverlayFontScaleValue;
+            ConfigurationManager.Instance.Configuration.Save();
+            
+            OverlayWindow.updatefont();
         }
     }
 
@@ -206,7 +210,7 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("IINACT");
         if (!tab) return;
 
-        var status = this.plugin.IpcClient.Status();
+        var status = PluginManager.Instance.IpcClient.Status();
 
         //a
         ImGui.Text("State: ");
@@ -219,11 +223,11 @@ public class ConfigWindow : Window, IDisposable
         {
             if (status)
             {
-                this.plugin.IpcClient.Reconnect();
+                PluginManager.Instance.IpcClient.Reconnect();
             }
             else
             {
-                this.plugin.IpcClient.Connect();
+                PluginManager.Instance.IpcClient.Connect();
             }
         }
 
@@ -232,7 +236,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.SameLine();
         if (ImGui.Button("Stop"))
         {
-            this.plugin.IpcClient.Disconnect();
+            PluginManager.Instance.IpcClient.Disconnect();
         }
         ImGui.EndDisabled();
     }

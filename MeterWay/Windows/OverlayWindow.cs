@@ -4,21 +4,21 @@ using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using System.Collections.Generic;
 
-using Meterway.Overlays;
+using MeterWay.Overlays;
+using MeterWay.managers;
 
-namespace Meterway.Windows;
+namespace MeterWay.Windows;
 
 public class OverlayWindow : Window, IDisposable
 {
-    private Plugin plugin;
-    private ImGuiWindowFlags DefaultFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
+    
+    private ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
 
     private List<IMeterwayOverlay> overlays;
     public ImFontPtr font;
 
-    public OverlayWindow(Plugin plugin) : base("OverlayWindow")
+    public OverlayWindow() : base("OverlayWindow")
     {
-        this.plugin = plugin;
 
         // window configs
         this.SizeConstraints = new WindowSizeConstraints
@@ -30,7 +30,9 @@ public class OverlayWindow : Window, IDisposable
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
 
-        this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(this.plugin.Configuration.OverlayFontPath, this.plugin.Configuration.OverlayFontSize);
+        this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(ConfigurationManager.Instance.Configuration.OverlayFontPath, ConfigurationManager.Instance.Configuration.OverlayFontSize);
+
+        // precisamos de achar uma forma dele adicionar isso sem ser manualmente
 
         this.overlays = [new LazerOverlay()];
 
@@ -41,21 +43,24 @@ public class OverlayWindow : Window, IDisposable
     public override void Draw()
     {
         // background
-        if (this.plugin.Configuration.OverlayBackground)
+        if (ConfigurationManager.Instance.Configuration.OverlayBackground)
         {
-            Background(this.plugin.Configuration.OverlayBackgroundColor);
+            Background(ConfigurationManager.Instance.Configuration.OverlayBackgroundColor);
         }
 
         // font
-        ImGui.SetWindowFontScale(this.plugin.Configuration.OverlayFontScale);
+        ImGui.SetWindowFontScale(ConfigurationManager.Instance.Configuration.OverlayFontScale);
 
         // Custom Overlay
-        overlays[this.plugin.Configuration.OverlayType].Draw();
+        overlays[ConfigurationManager.Instance.Configuration.OverlayType].Draw();
+
+        // adicionar isso aqui ou no handler ?? 
+        //overlays[PluginManager.Instance.Configuration.OverlayType].DataProcess();
     }
 
     public void Dispose()
     {
-        overlays[this.plugin.Configuration.OverlayType].Dispose();
+        overlays[ConfigurationManager.Instance.Configuration.OverlayType].Dispose();
     }
 
     // helpers
@@ -75,20 +80,20 @@ public class OverlayWindow : Window, IDisposable
 
     public ImGuiWindowFlags Gerateflags()
     {
-        var flags = DefaultFlags;
-        flags |= this.plugin.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
-        //flags |= !this.plugin.Configuration.OverlayBackground ? ImGuiWindowFlags.NoBackground : ImGuiWindowFlags.None;
+        var flags = defaultflags;
+        flags |= ConfigurationManager.Instance.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
+        //flags |= !PluginManager.Instance.Configuration.OverlayBackground ? ImGuiWindowFlags.NoBackground : ImGuiWindowFlags.None;
         return flags;
     }
 
     public void updatefont()
     {
-        var conf = this.plugin.Configuration;
-        //this.plugin.PluginLog.Info("trying to load path: " + conf.OverlayFontPath);
+        var conf = ConfigurationManager.Instance.Configuration;
+        //PluginManager.Instance.PluginLog.Info("trying to load path: " + conf.OverlayFontPath);
 
-        //this.plugin.OverlayWindow.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(conf.OverlayFontPath, conf.OverlayFontSize);
+        //PluginManager.Instance.OverlayWindow.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(conf.OverlayFontPath, conf.OverlayFontSize);
 
-        //this.plugin.PluginLog.Info("font loaded ?");
+        //PluginManager.Instance.PluginLog.Info("font loaded ?");
     }
 
     public static uint Color(byte r, byte g, byte b, byte a)
