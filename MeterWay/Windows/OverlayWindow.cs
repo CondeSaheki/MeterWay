@@ -32,8 +32,8 @@ public class OverlayWindow : Window, IDisposable
 
         this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(ConfigurationManager.Instance.Configuration.OverlayFontPath, ConfigurationManager.Instance.Configuration.OverlayFontSize);
 
-
         // precisamos de achar uma forma dele adicionar isso sem ser manualmente
+
         this.overlays = [new LazerOverlay()];
 
     }
