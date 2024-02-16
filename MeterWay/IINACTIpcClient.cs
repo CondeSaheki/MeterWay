@@ -4,14 +4,15 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Ipc;
 
-namespace Meterway;
+namespace MeterWay.IINACT;
 
 public class IINACTIpcClient : IDisposable
 {
     private Plugin plugin;
 
     private readonly ICallGateProvider<JObject, bool> subscriptionReceiver;
-    private static readonly JObject IINACTSubscribeMessage = JObject.Parse("""{"call":"subscribe","events":["CombatData"]}""");
+    // CombatData json ->  JObject.Parse("""{"call":"subscribe","events":["CombatData"]}""");
+    private static readonly JObject IINACTSubscribeMessage = JObject.Parse("""{"call":"subscribe","events":["LogLine"]}""");
     private const string MeterwaySubscriptionReceiver = "Meterway.SubscriptionReceiver";
     private const string IINACTSubscribe = "IINACT.IpcProvider." + MeterwaySubscriptionReceiver;
     private const string IINACTUnubscribe = "IINACT.Unsubscribe";
@@ -59,14 +60,14 @@ public class IINACTIpcClient : IDisposable
 
 
     }
-    
+
     public void Disconnect()
     {
         if (!connectionStatus)
         {
             return;
         }
-        
+
         try
         {
             connectionStatus = !plugin.PluginInterface.GetIpcSubscriber<string, bool>(IINACTUnubscribe).InvokeFunc(MeterwaySubscriptionReceiver);

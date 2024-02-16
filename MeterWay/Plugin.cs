@@ -4,29 +4,23 @@ using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 
-using Meterway.Windows;
+using MeterWay.Windows;
+using MeterWay.IINACT;
+using MeterWay.commands;
+using MeterWay;
+
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
+using System;
 
-namespace Meterway
+namespace MeterWay
 {
     public sealed class Plugin : IDalamudPlugin
     {
         public string Name => "MeterWay";
 
         public Configuration Configuration { get; init; }
-        public WindowSystem WindowSystem = new("Meterway");
-
-        // dalamud interfaces
-        public DalamudPluginInterface PluginInterface { get; init; }
-        public ICommandManager CommandManager { get; init; }
-        public IPluginLog PluginLog { get; init; }
-        public IChatGui ChatGui { get; init; }
-        public IClientState ClientState { get; init; }
-        public ICondition Condition { get; init; }
-        public IPartyList PartyList { get; init; }
-
-        public ITextureProvider TextureProvider { get; init; }
+        public WindowSystem WindowSystem = new("MeterWay");
 
         // window
         private ConfigWindow ConfigWindow { get; init; }
@@ -40,6 +34,8 @@ namespace Meterway
         private const string CommandName = "/meterway";
         private List<MeterWayCommand> commands { get; init; }
 
+        private readonly PluginManager pluginManager;
+
         public Plugin(
             [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
             [RequiredVersion("1.0")] ICommandManager commandManager,
@@ -51,15 +47,10 @@ namespace Meterway
             [RequiredVersion("1.0")] ITextureProvider textureProvider
             )
         {
-            this.PluginInterface = pluginInterface;
-            this.CommandManager = commandManager;
-            this.PluginLog = pluginLog;
-            this.ChatGui = chatGui;
-            this.ClientState = clientState;
-            this.Condition = condition;
-            this.PartyList = partyList;
-            this.TextureProvider = textureProvider;
+            // add all interfaces to the manager
+            this.pluginManager = new PluginManager(pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, textureProvider);
 
+            
             this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             this.Configuration.Initialize(this.PluginInterface);
 
@@ -70,16 +61,12 @@ namespace Meterway
             MainWindow = new MainWindow(this);
             OverlayWindow = new OverlayWindow(this);
 
-
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
             if (Configuration.Overlay)
             {
                 WindowSystem.AddWindow(OverlayWindow);
             }
-
-
-
 
             this.CommandManager.AddHandler(CommandName,
                 new CommandInfo(OnCommand)

@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Numerics;
 
-namespace Meterway.Utils
+namespace MeterWay.Utils
 {
     public static class Helpers
     {

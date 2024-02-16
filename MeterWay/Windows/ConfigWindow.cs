@@ -5,7 +5,7 @@ using ImGuiNET;
 using Dalamud.Interface.Utility.Raii;
 using System.Collections.Generic;
 
-namespace Meterway.Windows;
+namespace MeterWay.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {

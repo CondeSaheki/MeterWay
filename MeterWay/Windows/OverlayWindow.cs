@@ -4,14 +4,14 @@ using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using System.Collections.Generic;
 
-using Meterway.Overlays;
+using MeterWay.Overlays;
 
-namespace Meterway.Windows;
+namespace MeterWay.Windows;
 
 public class OverlayWindow : Window, IDisposable
 {
     private Plugin plugin;
-    private ImGuiWindowFlags DefaultFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
+    private ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
 
     private List<IMeterwayOverlay> overlays;
     public ImFontPtr font;
@@ -32,6 +32,8 @@ public class OverlayWindow : Window, IDisposable
 
         this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(this.plugin.Configuration.OverlayFontPath, this.plugin.Configuration.OverlayFontSize);
 
+
+        // precisamos de achar uma forma dele adicionar isso sem ser manualmente
         this.overlays = [new LazerOverlay(this.plugin)];
 
     }
@@ -51,6 +53,9 @@ public class OverlayWindow : Window, IDisposable
 
         // Custom Overlay
         overlays[this.plugin.Configuration.OverlayType].Draw();
+
+        // adicionar isso aqui ou no handler ?? 
+        //overlays[this.plugin.Configuration.OverlayType].DataProcess();
     }
 
     public void Dispose()
@@ -75,7 +80,7 @@ public class OverlayWindow : Window, IDisposable
 
     public ImGuiWindowFlags Gerateflags()
     {
-        var flags = DefaultFlags;
+        var flags = defaultflags;
         flags |= this.plugin.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
         //flags |= !this.plugin.Configuration.OverlayBackground ? ImGuiWindowFlags.NoBackground : ImGuiWindowFlags.None;
         return flags;

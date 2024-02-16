@@ -3,9 +3,9 @@ using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
-using Meterway.Utils;
+using MeterWay.Utils;
 
-namespace Meterway.Overlays;
+namespace MeterWay.Overlays;
 
 public class LazerOverlay : IMeterwayOverlay
 {
@@ -29,6 +29,8 @@ public class LazerOverlay : IMeterwayOverlay
         public float TotalDMG { get; set; }
         public float Position { get; set; }
     }
+
+    public void DataProcess(Encounter data) { }
 
     private float transitionDuration = 1f; // in seconds
     private float transitionTimer = 0.0f;
@@ -99,19 +101,19 @@ public class LazerOverlay : IMeterwayOverlay
 
         UpdateWindowSize();
 
-        if (plugin.dataManager.CurrentCombatData == null)
-        {
-            ImGui.GetWindowDrawList().AddText(new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - (CalcTextSize("Not in combat...").X) / 2, WindowMin.Y + 2), Helpers.Color(255, 255, 255, 255), "Not in combat...");
-            return;
-        }
+        // if (plugin.dataManager.CurrentCombatData == null)
+        // {
+        //     ImGui.GetWindowDrawList().AddText(new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - (CalcTextSize("Not in combat...").X) / 2, WindowMin.Y + 2), Helpers.Color(255, 255, 255, 255), "Not in combat...");
+        //     return;
+        // }
 
-        if (plugin.dataManager.CurrentCombatData.combatants == null || plugin.dataManager.CurrentCombatData.combatants.Count() == 0)
-        {
-            ImGui.GetWindowDrawList().AddText(new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - (CalcTextSize("No combatents in combat...").X) / 2, WindowMin.Y + 2), Helpers.Color(255, 255, 255, 255), "Not in combat...");
-            return;
-        }
+        // if (plugin.dataManager.CurrentCombatData.combatants == null || plugin.dataManager.CurrentCombatData.combatants.Count() == 0)
+        // {
+        //     ImGui.GetWindowDrawList().AddText(new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - (CalcTextSize("No combatents in combat...").X) / 2, WindowMin.Y + 2), Helpers.Color(255, 255, 255, 255), "Not in combat...");
+        //     return;
+        // }
 
-        var currentCombat = plugin.dataManager.CurrentCombatData;
+        var currentCombat = plugin.dataManager.current;
 
         // Add a background for the title and centralize the text
         ImGui.GetWindowDrawList().AddRectFilled(new Vector2(WindowMin.X, WindowMin.Y), new Vector2(WindowMax.X, WindowMin.Y + ImGui.GetFontSize() + 5), Helpers.Color(26, 26, 39, 190));

@@ -1,7 +1,7 @@
 
 using System;
 
-namespace Meterway;
+namespace MeterWay.commands;
 
 public class MeterWayCommand
 {
