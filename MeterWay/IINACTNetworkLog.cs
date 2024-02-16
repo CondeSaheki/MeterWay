@@ -12,6 +12,9 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.ClientState.Conditions;
 
+using Lumina.Excel.GeneratedSheets;
+
+
 using MeterWay;
 using MeterWay.managers;
 
@@ -38,14 +41,14 @@ public class IINACTNetworkLog
 
     void a(JObject json)
     {
-        List<KeyValuePair<string, Action>> handler = new List<KeyValuePair<string, Action>>();
-        handler.Add(new KeyValuePair<string, Action>(
+        List<KeyValuePair<string, System.Action>> handler = new List<KeyValuePair<string, System.Action>>();
+        handler.Add(new KeyValuePair<string, System.Action>(
             "21", () =>
             {
 
             }
         ));
-        handler.Add(new KeyValuePair<string, Action>(
+        handler.Add(new KeyValuePair<string, System.Action>(
             "22", () =>
             {
 
@@ -77,7 +80,7 @@ public class Encounter
     public Encounter()
     {
 
-        this.Name = "";
+        this.Name = GetCharacterLocation().territoryName ?? "";
 
         var asdsa = PluginManager.Instance.ClientState.LocalContentId;
 
@@ -102,6 +105,26 @@ public class Encounter
         this.Players = playerstemp;
 
     }
+
+
+
+    public static (ushort territoryId, string? territoryName) GetCharacterLocation()
+    {
+        var locationId = PluginManager.Instance.ClientState.TerritoryType;
+        if (locationId < 4) return (0, null);
+
+        var locationRow = PluginManager.Instance.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(locationId);
+
+        var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();
+        
+        var placeName = locationRow?.PlaceName.Value?.Name?.ToString();
+
+        return
+        (
+            locationId, string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName
+        );
+    }
+
 
 
     public TimeSpan duration => End - Start;
@@ -174,3 +197,8 @@ public class damagesus
 
     }
 }
+
+
+
+
+
