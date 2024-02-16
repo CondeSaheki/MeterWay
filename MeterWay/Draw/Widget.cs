@@ -1,8 +1,7 @@
 
 using System.Numerics;
 using ImGuiNET;
-using Meterway;
-using Meterway.Utils;
+using MeterWay.Utils;
 
 public static class Widget
 {
@@ -43,7 +42,7 @@ public static class Widget
         ImGui.SetWindowFontScale(formerScale);
     }
 
-    public static void JobIcon(string job, Vector2 position, float scale = 1f)
+    public static void JobIcon(uint job, Vector2 position, float scale = 1f)
     {
         var jobIcon = Job.GetIcon(job);
 
@@ -62,5 +61,16 @@ public static class Widget
             width += ImGui.GetFont().GetCharAdvance(c) * ImGui.GetFont().Scale;
         }
         return new Vector2(width, height);
+    }
+
+    public static void DrawProgressBar(Vector2 startPoint, Vector2 endPoint, uint color, float progress)
+    {
+        uint blackColor = Helpers.Color(0, 0, 0, 255);
+        ImGui.GetWindowDrawList().AddRectFilledMultiColor(startPoint, new Vector2(startPoint.X + (endPoint.X - startPoint.X) * progress, endPoint.Y), blackColor, color, color, blackColor);
+    }
+
+    public static void DrawBorder(Vector2 startPoint, Vector2 endPoint, uint color)
+    {
+        ImGui.GetWindowDrawList().AddRect(startPoint, endPoint, color);
     }
 }

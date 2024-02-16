@@ -25,8 +25,8 @@ public class IINACTNetworkLog
     public IINACTNetworkLog(JObject json)
     {
         List<string>? dataline = json["line"]?.ToObject<List<string>>();
-        
-        if(dataline == null)
+
+        if (dataline == null)
         {
             this.data = new List<string>();
             return;
@@ -74,9 +74,9 @@ public class Encounter
 
     public List<Player> Players { get; set; }
 
-    public Encounter( )
+    public Encounter()
     {
-        
+
         this.Name = "";
 
         var asdsa = PluginManager.Instance.ClientState.LocalContentId;
@@ -119,14 +119,22 @@ public class Player
 {
     public string Name { get; set; }
     public uint Job { get; set; }
-
     public string Data { get; set; }
+
+    public float DPS { get; set; }
+
+    public int TotalDamage { get; set; }
+
+    public int DamagePercentage { get; set; }
 
     public Player(Dalamud.Game.ClientState.Objects.Types.Character character)
     {
         this.Name = character.Name.ToString();
         this.Job = character.ClassJob.Id;
         this.Data = "";
+        this.DPS = 0;
+        this.TotalDamage = 0;
+        this.DamagePercentage = 0;
     }
 }
 
@@ -138,14 +146,14 @@ public class susdata
     public uint crtcount { get; set; }
     public uint dhcount { get; set; }
     public uint crtdhcount { get; set; }
-    
+
     public uint crtpct { get; set; }
     public uint dhpct { get; set; }
     public uint crtdhct { get; set; }
 
     public string dps { get; set; }
 
-    
+
     public susdata()
     {
 
@@ -153,7 +161,7 @@ public class susdata
 
 
 
-    
+
 
 }
 
@@ -165,9 +173,9 @@ public class damagesus
     public bool directhit;
 
     public uint Value;
-    
+
     public damagesus()
     {
 
-    }   
+    }
 }

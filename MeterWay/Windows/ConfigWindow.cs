@@ -21,7 +21,7 @@ public class ConfigWindow : Window, IDisposable
     {
         this.Size = new Vector2(400, 400);
         this.SizeCondition = ImGuiCond.Always;
-        this.iinactclient = ;
+        this.iinactclient = iinactclient;
     }
 
     public void Dispose() { }
@@ -44,61 +44,6 @@ public class ConfigWindow : Window, IDisposable
         if (!tab) return;
 
         ImGui.Text("WIP");
-
-        /*
-        // a
-        ImGui.Text("On end of Combats");
-        ImGui.PushItemWidth(130f);
-        string[] interactions = { "Open recap", "Show Popup", "Chat Message", "Do nothing" };
-        var InteractionValue = PluginManager.Instance.Configuration.Interaction;
-        if (ImGui.Combo(" ", ref InteractionValue, interactions, interactions.Length))
-        {
-            PluginManager.Instance.Configuration.Interaction = InteractionValue;
-            PluginManager.Instance.Configuration.Save();
-        }
-        ImGui.PopItemWidth();
-
-        // b
-        var SaveCombatsValue = PluginManager.Instance.Configuration.SaveCombats;
-        if (ImGui.Checkbox("Save last", ref SaveCombatsValue))
-        {
-            PluginManager.Instance.Configuration.SaveCombats = SaveCombatsValue;
-            PluginManager.Instance.Configuration.Save();
-        }
-        ImGui.SameLine();
-        ImGui.PushItemWidth(80f);
-        var CombatsValue = PluginManager.Instance.Configuration.Combats;
-        if (ImGui.InputInt("combat(s)", ref CombatsValue) && CombatsValue > 0)
-        {
-            PluginManager.Instance.Configuration.Combats = CombatsValue;
-            PluginManager.Instance.Configuration.Save();
-        }
-        ImGui.PopItemWidth();
-
-        // c
-        var CombatCloseValue = PluginManager.Instance.Configuration.CombatClose;
-        if (ImGui.Checkbox("Automatically close when in combat", ref CombatCloseValue))
-        {
-            PluginManager.Instance.Configuration.CombatClose = CombatCloseValue;
-            PluginManager.Instance.Configuration.Save();
-        }
-
-        // d
-        var PvPValue = PluginManager.Instance.Configuration.PvP;
-        if (ImGui.Checkbox("Disable in PVP", ref PvPValue))
-        {
-            PluginManager.Instance.Configuration.PvP = PvPValue;
-            PluginManager.Instance.Configuration.Save();
-        }
-
-        // e
-        var OverlayValue = PluginManager.Instance.Configuration.Overlay;
-        if (ImGui.Checkbox("Overlay Mode", ref PvPValue))
-        {
-            PluginManager.Instance.Configuration.Overlay = OverlayValue;
-            PluginManager.Instance.Configuration.Save();
-        }
-        */
     }
 
     private void DrawOverlayTab()
@@ -129,7 +74,7 @@ public class ConfigWindow : Window, IDisposable
             ConfigurationManager.Instance.Configuration.OverlayClickThrough = OverlayClickThroughValue;
             ConfigurationManager.Instance.Configuration.Save();
             OverlayWindow.Flags = PluginManager.Instance.OverlayWindow.Gerateflags();
-            
+
         }
 
         // OverlayBackground
@@ -155,35 +100,6 @@ public class ConfigWindow : Window, IDisposable
                 ConfigurationManager.Instance.Configuration.Save();
             }
         }
-        // text config
-        // OverlayFontPath
-
-
-        // /data/Inter-Bold.ttf
-
-
-        // ImGui.Text("Font file path: ");
-        // ImGui.SameLine();
-        // var OverlayFontPathValue = PluginManager.Instance.Configuration.OverlayFontPath;
-        // if (ImGui.InputText("FontFile", ref OverlayFontPathValue, 1000))
-        // {
-        //     PluginManager.Instance.Configuration.OverlayFontPath = OverlayFontPathValue;
-        //     PluginManager.Instance.Configuration.Save();
-        //     PluginManager.Instance.OverlayWindow.updatefont();
-        // }
-
-        // // OverlayFontSizeValue
-        // var OverlayFontSizeValue = PluginManager.Instance.Configuration.OverlayFontSize;
-        // ImGui.Text("Font size: ");
-        // ImGui.SameLine();
-        // if (ImGui.SliderFloat("FontSize", ref OverlayFontSizeValue, 0.0f, 64.0f, "%.1f", ImGuiSliderFlags.None))
-        // {
-        //     PluginManager.Instance.Configuration.OverlayFontSize = OverlayFontSizeValue;
-        //     PluginManager.Instance.Configuration.Save();
-        //     PluginManager.Instance.OverlayWindow.updatefont();
-        // }
-
-        // // OverlayFontScaleValue
         var OverlayFontScaleValue = ConfigurationManager.Instance.Configuration.OverlayFontScale;
         ImGui.Text("Font scale: ");
         ImGui.SameLine();
@@ -191,7 +107,7 @@ public class ConfigWindow : Window, IDisposable
         {
             ConfigurationManager.Instance.Configuration.OverlayFontScale = OverlayFontScaleValue;
             ConfigurationManager.Instance.Configuration.Save();
-            
+
             OverlayWindow.updatefont();
         }
     }
