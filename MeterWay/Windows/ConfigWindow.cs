@@ -13,8 +13,9 @@ namespace MeterWay.Windows;
 public class ConfigWindow : Window, IDisposable
 {
     private IINACTIpcClient iinactclient;
+    private OverlayWindow OverlayWindow;
 
-    public ConfigWindow(IINACTIpcClient iinactclient) : base(
+    public ConfigWindow(IINACTIpcClient iinactclient, OverlayWindow OverlayWindow) : base(
         "MeterWay Configurations",
         ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
         ImGuiWindowFlags.NoScrollWithMouse) // ImGuiWindowFlags.NoResize | 
@@ -22,6 +23,8 @@ public class ConfigWindow : Window, IDisposable
         this.Size = new Vector2(400, 400);
         this.SizeCondition = ImGuiCond.Always;
         this.iinactclient = iinactclient;
+
+        this.OverlayWindow = OverlayWindow;
     }
 
     public void Dispose() { }
@@ -59,11 +62,11 @@ public class ConfigWindow : Window, IDisposable
             ConfigurationManager.Instance.Configuration.Save();
             if (OverlayValue)
             {
-                WindowSystem.AddWindow(PluginManager.Instance.OverlayWindow);
+                PluginManager.Instance.WindowSystem.AddWindow(OverlayWindow);
             }
             else
             {
-                WindowSystem.RemoveWindow(PluginManager.Instance.OverlayWindow);
+                PluginManager.Instance.WindowSystem.RemoveWindow(OverlayWindow);
             }
         }
 
@@ -73,17 +76,17 @@ public class ConfigWindow : Window, IDisposable
         {
             ConfigurationManager.Instance.Configuration.OverlayClickThrough = OverlayClickThroughValue;
             ConfigurationManager.Instance.Configuration.Save();
-            OverlayWindow.Flags = PluginManager.Instance.OverlayWindow.Gerateflags();
+            OverlayWindow.Flags = OverlayWindow.Gerateflags();
 
         }
 
         // OverlayBackground
-        var OverlayBackgroundValue = PluginManager.Instance.Configuration.OverlayBackground;
+        var OverlayBackgroundValue = ConfigurationManager.Instance.Configuration.OverlayBackground;
         if (ImGui.Checkbox("Background", ref OverlayBackgroundValue))
         {
             ConfigurationManager.Instance.Configuration.OverlayBackground = OverlayBackgroundValue;
             ConfigurationManager.Instance.Configuration.Save();
-            OverlayWindow.Flags = PluginManager.Instance.OverlayWindow.Gerateflags();
+            OverlayWindow.Flags = OverlayWindow.Gerateflags();
         }
 
         if (OverlayBackgroundValue)
@@ -126,24 +129,22 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("IINACT");
         if (!tab) return;
 
-        var status = PluginManager.Instance.IpcClient.Status();
-
-        //a
+        var status = iinactclient.Status();
+        
         ImGui.Text("State: ");
         ImGui.SameLine();
         ImGui.Text(status ? "Connected" : "Disconnected");
 
-        //b
         ImGui.Separator();
         if (ImGui.Button(status ? "Restart" : "Start"))
         {
             if (status)
             {
-                PluginManager.Instance.IpcClient.Reconnect();
+                iinactclient.Reconnect();
             }
             else
             {
-                PluginManager.Instance.IpcClient.Connect();
+                iinactclient.Connect();
             }
         }
 
@@ -152,7 +153,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.SameLine();
         if (ImGui.Button("Stop"))
         {
-            PluginManager.Instance.IpcClient.Disconnect();
+            iinactclient.Disconnect();
         }
         ImGui.EndDisabled();
     }

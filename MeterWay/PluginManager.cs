@@ -13,11 +13,7 @@ namespace MeterWay.managers;
 
 public class PluginManager
 {
-
-    //private readonly ConfigWindow _configRoot;
-
-
-    // dalamud interfaces
+    public readonly WindowSystem WindowSystem;
     public readonly DalamudPluginInterface PluginInterface;
     public readonly ICommandManager CommandManager;
     public readonly IPluginLog PluginLog;
@@ -27,25 +23,9 @@ public class PluginManager
     public readonly IPartyList PartyList;
     public readonly ITextureProvider TextureProvider;
 
-    // // sus
-    // public Configuration Configuration { get; init; }
-    // public WindowSystem WindowSystem = new("MeterWay");
-
-    // // window
-    // private ConfigWindow ConfigWindow { get; init; }
-    // private MainWindow MainWindow { get; init; }
-    // public OverlayWindow OverlayWindow { get; init; }
-
-    // // meterway stuff
-    // public IINACTIpcClient IpcClient { get; init; }
-    // public DataManager dataManager { get; init; }
-
-    // private const string CommandName = "/meterway";
-    // private List<MeterWayCommand> commands { get; init; }
-
     public static PluginManager Instance { get; private set; } = null!;
 
-    public PluginManager(
+    public PluginManager(WindowSystem windowsystem,
         DalamudPluginInterface pluginInterface,
         ICommandManager commandManager,
         IPluginLog pluginLog,
@@ -56,6 +36,7 @@ public class PluginManager
         ITextureProvider textureProvider
     )
     {
+        this.WindowSystem = windowsystem;
         this.PluginInterface = pluginInterface;
         this.CommandManager = commandManager;
         this.PluginLog = pluginLog;
@@ -82,26 +63,4 @@ public class ConfigurationManager
         
         ConfigurationManager.Instance = this;
     }
-}
-
-public class WindowManager : IDisposable
-{
-
-    private readonly WindowSystem windowsystem;
-
-    public static WindowManager Instance { get; private set; } = null!;
-
-    public WindowManager(WindowSystem windowsystem)
-    {
-        this.windowsystem = windowsystem;
-        
-
-        WindowManager.Instance = this;
-    }
-
-    public void Dispose()
-    {
-        windowsystem.RemoveAllWindows();
-    }
-    
 }

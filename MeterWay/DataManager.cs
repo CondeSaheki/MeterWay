@@ -71,9 +71,6 @@ public class DataManager
 
     public void Receiver(JObject json)
     {
-
-        PluginManager.Instance.ChatGui.Print("a");
-
         var combatstate = GetInCombat();
 
         // start combat

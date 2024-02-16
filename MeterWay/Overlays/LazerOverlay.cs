@@ -43,7 +43,6 @@ public class LazerOverlay : IMeterwayOverlay
     private Dictionary<string, LerpPlayerData> lerpedInfo = new Dictionary<string, LerpPlayerData>();
     private Dictionary<string, LerpPlayerData> targetInfo = new Dictionary<string, LerpPlayerData>();
 
-    // For now we hardcode the jobId's, but we should probably get them from the game data
     private void UpdateWindowSize()
     {
         Vector2 vMin = ImGui.GetWindowContentRegionMin();
@@ -101,7 +100,7 @@ public class LazerOverlay : IMeterwayOverlay
             return;
         }
         // Add a background for the title and centralize the text
-        ImGui.GetWindowDrawList().AddRectFilled(new Vector2(WindowMin.X, WindowMin.Y), new Vector2(WindowMax.X, WindowMin.Y + ImGui.GetFontSize() + 5), Helpers.Color(26, 26, 39, 190));
+        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + ImGui.GetFontSize() + 5), Helpers.Color(26, 26, 39, 190));
 
         var center = new Vector2(WindowMin.X + (WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(this.encounterData.Name).X / 2, WindowMin.Y + 2);
         Widget.Text(this.encounterData.Name, center, Helpers.Color(255, 255, 255, 255), anchor: Widget.TextAnchor.Center);

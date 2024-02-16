@@ -70,7 +70,7 @@ public class Encounter
 
     public bool active { get; set; }
 
-    public string Data { get; set; }
+    //public string Data { get; set; }
 
     public List<Player> Players { get; set; }
 
@@ -158,11 +158,6 @@ public class susdata
     {
 
     }
-
-
-
-
-
 }
 
 public class damagesus

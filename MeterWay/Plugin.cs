@@ -20,12 +20,12 @@ namespace MeterWay
         public string Name => "MeterWay";
 
         //public Configuration Configuration { get; init; }
-        public WindowSystem WindowSystem = new("MeterWay");
+        private WindowSystem WindowSystem = new("MeterWay");
 
         // window
         private ConfigWindow ConfigWindow { get; init; }
         private MainWindow MainWindow { get; init; }
-        public OverlayWindow OverlayWindow { get; init; }
+        private OverlayWindow OverlayWindow { get; init; }
 
         // meterway stuff
         public IINACTIpcClient IpcClient { get; init; }
@@ -49,7 +49,7 @@ namespace MeterWay
             )
         {
             // add all interfaces to the manager
-            this.pluginManager = new PluginManager(pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, textureProvider);
+            this.pluginManager = new PluginManager(WindowSystem, pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, textureProvider);
             this.configurationManager = new ConfigurationManager();
 
             this.dataManager = new DataManager();
@@ -57,9 +57,9 @@ namespace MeterWay
             this.IpcClient = new IINACTIpcClient();
             IpcClient.receivers.Add(dataManager.Receiver);
 
-            ConfigWindow = new ConfigWindow(this.IpcClient);
             MainWindow = new MainWindow();
             OverlayWindow = new OverlayWindow();
+            ConfigWindow = new ConfigWindow(this.IpcClient, OverlayWindow);
 
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
