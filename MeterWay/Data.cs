@@ -38,8 +38,48 @@ public class IINACTNetworkLog
     }
 
 
+}
 
-    void a(JObject json)
+public class Encounter
+{
+
+    public string Name { get; set; }
+
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+
+    public bool active { get; set; }
+
+    //public string Data { get; set; }
+
+    public List<Player> Players { get; set; }
+
+    public Encounter()
+    {
+        this.Name = GetEncounterName();
+
+        // curent timestamp
+        this.Start = DateTime.Now;
+        this.End = DateTime.Now;
+        this.active = true;
+
+        // generate players
+        var playerstemp = new List<Player>();
+        if (PluginManager.Instance.PartyList.Length != 0)
+        {
+            foreach (var player in PluginManager.Instance.PartyList)
+            {
+                if (player.GameObject == null) continue;
+
+                var character = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
+                playerstemp.Add(new Player(character));
+            }
+        }
+        this.Players = playerstemp;
+
+    }
+    
+    public void Update(JObject json)
     {
         List<KeyValuePair<string, System.Action>> handler = new List<KeyValuePair<string, System.Action>>();
         handler.Add(new KeyValuePair<string, System.Action>(
@@ -61,71 +101,14 @@ public class IINACTNetworkLog
         // {
         // }
     }
-}
-
-public class Encounter
-{
-
-    public string Name { get; set; }
-
-    public DateTime Start { get; set; }
-    public DateTime End { get; set; }
-
-    public bool active { get; set; }
-
-    //public string Data { get; set; }
-
-    public List<Player> Players { get; set; }
-
-    public Encounter()
+    private string GetEncounterName()
     {
-
-        this.Name = GetCharacterLocation().territoryName ?? "";
-
-        var asdsa = PluginManager.Instance.ClientState.LocalContentId;
-
-        // curent timestamp
-        this.Start = DateTime.Now;
-        this.End = DateTime.Now;
-        this.active = true;
-
-
-        // generate players
-        var playerstemp = new List<Player>();
-        if (PluginManager.Instance.PartyList.Length != 0)
-        {
-            foreach (var player in PluginManager.Instance.PartyList)
-            {
-                if (player.GameObject == null) continue;
-
-                var character = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
-                playerstemp.Add(new Player(character));
-            }
-        }
-        this.Players = playerstemp;
-
-    }
-
-
-
-    public static (ushort territoryId, string? territoryName) GetCharacterLocation()
-    {
-        var locationId = PluginManager.Instance.ClientState.TerritoryType;
-        if (locationId < 4) return (0, null);
-
-        var locationRow = PluginManager.Instance.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(locationId);
-
+        var locationRow = PluginManager.Instance.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(PluginManager.Instance.ClientState.TerritoryType);
         var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();
-        
         var placeName = locationRow?.PlaceName.Value?.Name?.ToString();
-
-        return
-        (
-            locationId, string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName
-        );
+        
+        return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
     }
-
-
 
     public TimeSpan duration => End - Start;
 

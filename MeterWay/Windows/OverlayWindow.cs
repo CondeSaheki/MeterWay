@@ -17,9 +17,9 @@ public class OverlayWindow : Window, IDisposable
     private List<IMeterwayOverlay> overlays;
     public ImFontPtr font;
 
-    private readonly Encounter data;
+    private readonly Func<Encounter> GetEncounter;
 
-    public OverlayWindow(Encounter data) : base("OverlayWindow")
+    public OverlayWindow(Func<Encounter> GetEncounter) : base("OverlayWindow")
     {
 
         // window configs
@@ -31,7 +31,7 @@ public class OverlayWindow : Window, IDisposable
         this.IsOpen = true;
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
-        this.data = data;
+        this.GetEncounter = GetEncounter;
         this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(ConfigurationManager.Instance.Configuration.OverlayFontPath, ConfigurationManager.Instance.Configuration.OverlayFontSize);
 
         // precisamos de achar uma forma dele adicionar isso sem ser manualmente
@@ -49,7 +49,7 @@ public class OverlayWindow : Window, IDisposable
         ImGui.SetWindowFontScale(ConfigurationManager.Instance.Configuration.OverlayFontScale);
 
         // adicionar isso aqui ou no handler ?? 
-        overlays[ConfigurationManager.Instance.Configuration.OverlayType].DataProcess(data);
+        overlays[ConfigurationManager.Instance.Configuration.OverlayType].DataProcess(GetEncounter());
 
         // Custom Overlay
         overlays[ConfigurationManager.Instance.Configuration.OverlayType].Draw();

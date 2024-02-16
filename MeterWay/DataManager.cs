@@ -23,12 +23,9 @@ public class DataManager
 {
 
     public List<Encounter> encounters;
-    public Encounter current()
+    public Encounter current => encounters.Last();
+    public Encounter Current()
     {
-        if (encounters.Count == 0)
-        {
-            return new Encounter();
-        }
         return encounters.Last();
     }
 
@@ -38,12 +35,13 @@ public class DataManager
     public DataManager()
     {
         this.encounters = new List<Encounter>();
+        encounters.Add(new Encounter());
         this.lastcombatstate = false;
     }
 
     void StartEncounter()
     {
-        if (current() != new Encounter())
+        if (current != new Encounter())
         {
             EndEncounter();
         }
@@ -113,7 +111,7 @@ public class DataManager
 
             foreach (string val in log.data)
             {
-                PluginManager.Instance.PluginLog.Info(val);
+                //PluginManager.Instance.PluginLog.Info(val);
             }
 
         }
