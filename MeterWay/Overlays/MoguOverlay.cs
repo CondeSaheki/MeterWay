@@ -4,6 +4,8 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using MeterWay.Utils;
+using MeterWay.managers;
+using Lumina.Excel.GeneratedSheets;
 
 namespace MeterWay.Overlays;
 
@@ -35,19 +37,18 @@ public class MoguOverlay : IMeterwayOverlay
 
         Vector2 cursor = WindowMin;
 
-        var info = $"encounter: {data.Name} duration: {data.Name}";
+        var info = $"{data.Name} | {data.Start.ToString()}";
         ImGui.GetWindowDrawList().AddText(cursor, Helpers.Color(255, 255, 255, 255), info);
         
         cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 
         foreach (Player p in data.Players)
         {
-            Widget.JobIcon(p.Job, cursor, 15f);
-            var playerinfo = $"{p.Name} TotalDamage: {p.TotalDamage}";
-            ImGui.GetWindowDrawList().AddText(cursor + new Vector2(20, 0), Helpers.Color(255, 255, 255, 255), playerinfo);
+            Widget.JobIcon(p.Job, cursor, ImGui.GetFontSize());
+            var playerinfo = $"{p.Name} | {p.TotalDamage.ToString()}";
+            ImGui.GetWindowDrawList().AddText(cursor + new Vector2(ImGui.GetFontSize(), 0), Helpers.Color(255, 255, 255, 255), playerinfo);
             cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
         }
-        
     }
 
     public void Dispose() { }
