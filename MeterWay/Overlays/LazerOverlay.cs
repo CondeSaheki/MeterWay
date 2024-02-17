@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
@@ -12,7 +11,7 @@ public class LazerOverlay : IMeterwayOverlay
 {
     public string Name => "LazerOverlay";
 
-    private Encounter data;
+    private Encounter combat;
 
     private Vector2 WindowMin { get; set; }
     private Vector2 WindowMax { get; set; }
@@ -22,7 +21,7 @@ public class LazerOverlay : IMeterwayOverlay
         this.WindowMin = new Vector2();
         this.WindowMax = new Vector2();
 
-        this.data = new Encounter();
+        this.combat = new Encounter();
     }
 
     class LerpPlayerData
@@ -36,7 +35,7 @@ public class LazerOverlay : IMeterwayOverlay
 
     public void DataProcess(Encounter data)
     {
-        this.data = data;
+        this.combat = data;
     }
 
     private float transitionDuration = 1f; // in seconds
@@ -60,8 +59,8 @@ public class LazerOverlay : IMeterwayOverlay
 
     private void GenerateCombatLerping(Player player)
     {
-        lerpedInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = this.data.Players.IndexOf(player) + 1 };
-        targetInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = this.data.Players.IndexOf(player) + 1 };
+        lerpedInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = this.combat.Players.IndexOf(player) + 1 };
+        targetInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = this.combat.Players.IndexOf(player) + 1 };
     }
 
     private void DoLerpPlayerData(Player player)
@@ -86,7 +85,7 @@ public class LazerOverlay : IMeterwayOverlay
             targetInfo[player.Name].DPS = player.DPS;
             targetInfo[player.Name].PctDMG = player.DamagePercentage;
             targetInfo[player.Name].TotalDMG = player.TotalDamage;
-            targetInfo[player.Name].Position = this.data.Players.IndexOf(player) + 1;
+            targetInfo[player.Name].Position = this.combat.Players.IndexOf(player) + 1;
             transitionTimer = 0.0f;
         }
     }
@@ -96,16 +95,17 @@ public class LazerOverlay : IMeterwayOverlay
         UpdateWindowSize();
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Instance.Configuration.OverlayBackgroundColor));
 
-        if (!this.data.active)
-        {
-            Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, fullLine: true, anchor: Widget.TextAnchor.Center, dropShadow: true);
-            return;
-        }
-
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * ConfigurationManager.Instance.Configuration.OverlayFontScale), Helpers.Color(26, 26, 39, 190));
 
-        Widget.Text(this.data.Name, WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
-        foreach (Player player in this.data.Players)
+
+        if (!this.combat.active && this.combat.duration.Seconds == 0) {
+           Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center, dropShadow: true);
+           return;
+        }
+
+
+        Widget.Text($"{this.combat.Name} - ({(!this.combat.active ? "Completed in " : "")}{this.combat.duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
+        foreach (Player player in this.combat.Players)
         {
             DoLerpPlayerData(player);
             DrawPlayerLine(lerpedInfo[player.Name], player);
