@@ -35,6 +35,8 @@ public class LazerOverlay : IMeterwayOverlay
 
     public void DataProcess(Encounter data)
     {
+        data.Players.Sort((p1, p2) => p2.DPS.CompareTo(p1.DPS));
+
         this.combat = data;
     }
 
