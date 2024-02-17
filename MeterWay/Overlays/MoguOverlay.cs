@@ -36,8 +36,7 @@ public class MoguOverlay : IMeterwayOverlay
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(0, 0, 0, 64));
 
         Vector2 cursor = WindowMin;
-
-        var info = $"{data.Name} | {data.Start.ToString()}";
+        var info = $"{data.Name} | {data.duration.ToString()}";
         ImGui.GetWindowDrawList().AddText(cursor, Helpers.Color(255, 255, 255, 255), info);
         
         cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());

@@ -36,6 +36,8 @@ public class DataManager
     {
         this.encounters = new List<Encounter>();
         encounters.Add(new Encounter());
+        current.EndEncounter();
+        
         this.lastcombatstate = false;
     }
 
@@ -50,10 +52,8 @@ public class DataManager
     }
     void EndEncounter()
     {
-        // finalize the encounter
-        //this.current.End = DateTime.Now;
+        current.EndEncounter();
     }
-
 
     private bool GetInCombat()
     {
@@ -92,7 +92,7 @@ public class DataManager
         {
 
             PluginManager.Instance.PluginLog.Info("meterway detected end of combat");
-            //current.End();
+            current.EndEncounter();
             lastcombatstate = false;
         }
 

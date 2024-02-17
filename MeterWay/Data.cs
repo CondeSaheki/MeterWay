@@ -46,13 +46,15 @@ public class Encounter
     public string Name { get; set; }
 
     public DateTime Start { get; set; }
-    public DateTime End { get; set; }
+    public DateTime? End { get; set; }
 
     public bool active { get; set; }
+    public TimeSpan duration => (End != null) ? (TimeSpan)(End - Start) : DateTime.Now - Start;
 
     //public string Data { get; set; }
 
     public List<Player> Players { get; set; }
+
 
     public Encounter()
     {
@@ -60,10 +62,16 @@ public class Encounter
 
         // curent timestamp
         this.Start = DateTime.Now;
-        this.End = DateTime.Now;
         this.active = true;
 
         // generate players
+
+        this.Players = GetPlayers();
+
+    }
+
+    private List<Player> GetPlayers()
+    {
         var playerstemp = new List<Player>();
         if (PluginManager.Instance.PartyList.Length != 0)
         {
@@ -83,8 +91,15 @@ public class Encounter
                 playerstemp.Add(new Player(character));
             }
         }
-        this.Players = playerstemp;
+        return playerstemp;
+    }
+    private string GetEncounterName()
+    {
+        var locationRow = PluginManager.Instance.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(PluginManager.Instance.ClientState.TerritoryType);
+        var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();
+        var placeName = locationRow?.PlaceName.Value?.Name?.ToString();
 
+        return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
     }
 
     public void Update(JObject json)
@@ -109,18 +124,8 @@ public class Encounter
         // {
         // }
     }
-    private string GetEncounterName()
-    {
-        var locationRow = PluginManager.Instance.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(PluginManager.Instance.ClientState.TerritoryType);
-        var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();
-        var placeName = locationRow?.PlaceName.Value?.Name?.ToString();
 
-        return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
-    }
-
-    public TimeSpan duration => End - Start;
-
-    void EndEncounter()
+    public void EndEncounter()
     {
         // curent timestamp
         this.End = DateTime.Now;
