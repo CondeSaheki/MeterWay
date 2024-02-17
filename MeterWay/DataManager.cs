@@ -96,7 +96,7 @@ public class DataManager
         // ignore all data when not in combat 
         if (combatstate == false)
         {
-            return;
+            //return;
         }
 
         // parse data

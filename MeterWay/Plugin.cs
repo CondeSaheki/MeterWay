@@ -28,13 +28,9 @@ namespace MeterWay
         private MainWindow MainWindow { get; init; }
         private OverlayWindow OverlayWindow { get; init; }
 
-        private List<IMeterwayOverlay> overlays;
-
         // meterway stuff
         public IINACTIpcClient IpcClient { get; init; }
         public DataManager MWDataManager { get; init; }
-
-        
 
         private const string CommandName = "/meterway";
         private List<MeterWayCommand> commands { get; init; }
@@ -72,7 +68,6 @@ namespace MeterWay
             // register any overlay here
             OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay()];
             
-
             if (ConfigurationManager.Instance.Configuration.Overlay)
             {
                 WindowSystem.AddWindow(OverlayWindow);

@@ -17,6 +17,7 @@ using Lumina.Excel.GeneratedSheets;
 
 using MeterWay;
 using MeterWay.managers;
+using System.Text;
 
 namespace MeterWay;
 
@@ -30,7 +31,7 @@ public class Encounter
     public DateTime? End { get; set; }
     public TimeSpan duration => Duration();
 
-        // all other data here
+    // all other data here
 
     public List<Player> Players { get; set; }
 
@@ -178,25 +179,55 @@ public class Tests
 {
     public static void parse(JObject json)
     {
-        List<KeyValuePair<string, System.Action>> handler = new List<KeyValuePair<string, System.Action>>();
+        List<KeyValuePair<uint, System.Action<JToken>>> handlers = new List<KeyValuePair<uint, System.Action<JToken>>>();
 
-        handler.Add(new KeyValuePair<string, System.Action>(
-            "21", () =>
+        handlers.Add(new KeyValuePair<uint, System.Action<JToken>>(
+            21, (JToken line) =>
             {
-                PluginManager.Instance.PluginLog.Info("recieved 21: \"" + "\"");
+                // var time = line[1];
+                // var playerid = Convert.ToInt32(line[2].ToString(), 16);
+                // var player = line[3].ToString();
+                // var actionhexcode = Convert.ToInt32(line[4].ToString(), 16);
+                // var action = line[5].ToString();
+                // var targetid = Convert.ToInt32(line[6].ToString(), 16);
+                // var target = line[7].ToString();
+
+                // var type = line[8];
+
+                // int valuehex = Convert.ToInt32(line[9].ToString(), 16);
+                // UInt32 value = (UInt32)((UInt32)(valuehex >> 16) | (UInt32)((valuehex << 16) ) & 0x0FFFFFFF);
+
+                // PluginManager.Instance.PluginLog.Info($"22: {player} | {value.ToString()} | {type.ToString()}");
             }
         ));
-        handler.Add(new KeyValuePair<string, System.Action>(
-            "22", () =>
+        handlers.Add(new KeyValuePair<uint, System.Action<JToken>>(
+            22, (JToken line) =>
             {
-                PluginManager.Instance.PluginLog.Info("recieved 22: \"" + "\"");
+
             }
         ));
-    
+
+        var line = json["line"];
+        if (line == null) return;
+        var linefirst = line[0];
+        if (linefirst == null) return;
+        var messagetype = linefirst.ToObject<int>();
+
+        //debug
+        var message = json["rawLine"]?.ToString() ?? "";
+        PluginManager.Instance.PluginLog.Info($"parsed a: \"{messagetype}\" | \"{message}\"");
+
         try
         {
-            var a = json["list"]?.First?.Value<string>();
-            PluginManager.Instance.PluginLog.Info("parsed: \"" + a + "\"");
+            foreach (KeyValuePair<uint, System.Action<JToken>> handler in handlers)
+            {
+                if (handler.Key == messagetype)
+                {
+                    
+                    //handler.Value.Invoke(line);
+                    break;
+                }
+            }
         }
         catch
         {
