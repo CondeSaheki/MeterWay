@@ -14,7 +14,7 @@ public class OverlayWindow : Window, IDisposable
 
     private ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
 
-    private List<IMeterwayOverlay> overlays;
+    public List<IMeterwayOverlay> Overlays;
     public ImFontPtr font;
 
     private readonly Func<Encounter> GetEncounter;
@@ -32,13 +32,8 @@ public class OverlayWindow : Window, IDisposable
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
         this.GetEncounter = GetEncounter;
-        this.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(ConfigurationManager.Instance.Configuration.OverlayFontPath, ConfigurationManager.Instance.Configuration.OverlayFontSize);
 
-        // precisamos de achar uma forma dele adicionar isso sem ser manualmente
-
-        this.overlays = [new LazerOverlay(), new MoguOverlay()];
-
-
+        this.Overlays = new List<IMeterwayOverlay>();
     }
 
     // draw
@@ -49,15 +44,15 @@ public class OverlayWindow : Window, IDisposable
         ImGui.SetWindowFontScale(ConfigurationManager.Instance.Configuration.OverlayFontScale);
 
         // adicionar isso aqui ou no handler ?? 
-        overlays[ConfigurationManager.Instance.Configuration.OverlayType].DataProcess(GetEncounter());
+        Overlays[ConfigurationManager.Instance.Configuration.OverlayType].DataProcess(GetEncounter());
 
         // Custom Overlay
-        overlays[ConfigurationManager.Instance.Configuration.OverlayType].Draw();
+        Overlays[ConfigurationManager.Instance.Configuration.OverlayType].Draw();
     }
 
     public void Dispose()
     {
-        overlays[ConfigurationManager.Instance.Configuration.OverlayType].Dispose();
+        Overlays[ConfigurationManager.Instance.Configuration.OverlayType].Dispose();
     }
 
     public ImGuiWindowFlags Gerateflags()

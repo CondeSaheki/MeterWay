@@ -12,6 +12,7 @@ using MeterWay.managers;
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using System;
+using MeterWay.Overlays;
 
 namespace MeterWay
 {
@@ -22,14 +23,18 @@ namespace MeterWay
         //public Configuration Configuration { get; init; }
         private WindowSystem WindowSystem = new("MeterWay");
 
-        // window
+        // windows
         private ConfigWindow ConfigWindow { get; init; }
         private MainWindow MainWindow { get; init; }
         private OverlayWindow OverlayWindow { get; init; }
 
+        private List<IMeterwayOverlay> overlays;
+
         // meterway stuff
         public IINACTIpcClient IpcClient { get; init; }
         public DataManager MWDataManager { get; init; }
+
+        
 
         private const string CommandName = "/meterway";
         private List<MeterWayCommand> commands { get; init; }
@@ -54,16 +59,19 @@ namespace MeterWay
             this.configurationManager = new ConfigurationManager();
 
             this.MWDataManager = new DataManager();
-
             this.IpcClient = new IINACTIpcClient();
             IpcClient.receivers.Add(MWDataManager.Receiver);
 
             MainWindow = new MainWindow();
             OverlayWindow = new OverlayWindow(this.MWDataManager.Current);
             ConfigWindow = new ConfigWindow(this.IpcClient, OverlayWindow);
-
+            
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
+
+            // register any overlay here
+            OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay()];
+            
 
             if (ConfigurationManager.Instance.Configuration.Overlay)
             {

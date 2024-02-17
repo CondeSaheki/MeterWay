@@ -21,40 +21,37 @@ namespace MeterWay;
 
 public class DataManager
 {
-
+    // data
     public List<Encounter> encounters;
-    public Encounter current => encounters.Last();
-    public Encounter Current()
-    {
-        return encounters.Last();
-    }
-
-
     private bool lastcombatstate;
+    public Encounter current => encounters.Last();
 
+    // constructor
     public DataManager()
     {
         this.encounters = new List<Encounter>();
         encounters.Add(new Encounter());
-        current.EndEncounter();
-        
         this.lastcombatstate = false;
     }
 
+    // metods
     void StartEncounter()
     {
-        if (current != new Encounter())
+        if (current.active)
         {
             EndEncounter();
         }
-
-        //encounters.Add();
+        encounters.Add(new Encounter());
+        current.StartEncounter();
     }
+
     void EndEncounter()
     {
         current.EndEncounter();
     }
 
+    public Encounter Current() { return current; }
+    
     private bool GetInCombat()
     {
         if (PluginManager.Instance.PartyList.Length == 0)
@@ -83,7 +80,7 @@ public class DataManager
         {
 
             PluginManager.Instance.PluginLog.Info("meterway detected start of combat");
-            encounters.Add(new Encounter());
+            StartEncounter();
             lastcombatstate = true;
         }
 
@@ -92,7 +89,7 @@ public class DataManager
         {
 
             PluginManager.Instance.PluginLog.Info("meterway detected end of combat");
-            current.EndEncounter();
+            EndEncounter();
             lastcombatstate = false;
         }
 
@@ -102,17 +99,10 @@ public class DataManager
             return;
         }
 
-        PluginManager.Instance.PluginLog.Info(json.ToString());
-
         // parse data
         try
         {
-            var log = new IINACTNetworkLog(json);
-
-            foreach (string val in log.data)
-            {
-                //PluginManager.Instance.PluginLog.Info(val);
-            }
+            Tests.parse(json);
 
         }
         catch (Exception ex)
@@ -120,11 +110,6 @@ public class DataManager
             PluginManager.Instance.PluginLog.Error(ex.ToString());
             return;
         }
-
-
         return;
     }
-
-
-
 }

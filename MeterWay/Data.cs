@@ -20,56 +20,29 @@ using MeterWay.managers;
 
 namespace MeterWay;
 
-public class IINACTNetworkLog
-{
-    //data
-    public List<string> data;
-
-    public IINACTNetworkLog(JObject json)
-    {
-        List<string>? dataline = json["line"]?.ToObject<List<string>>();
-
-        if (dataline == null)
-        {
-            this.data = new List<string>();
-            return;
-        }
-        this.data = dataline;
-    }
-
-
-}
-
 public class Encounter
 {
-
+    // data
     public string Name { get; set; }
 
-    public DateTime Start { get; set; }
-    public DateTime? End { get; set; }
-
     public bool active { get; set; }
-    public TimeSpan duration => (End != null) ? (TimeSpan)(End - Start) : DateTime.Now - Start;
+    public DateTime? Start { get; set; }
+    public DateTime? End { get; set; }
+    public TimeSpan duration => Duration();
 
-    //public string Data { get; set; }
+        // all other data here
 
     public List<Player> Players { get; set; }
 
-
+    // constructor
     public Encounter()
     {
         this.Name = GetEncounterName();
-
-        // curent timestamp
-        this.Start = DateTime.Now;
-        this.active = true;
-
-        // generate players
-
+        this.active = false;
         this.Players = GetPlayers();
-
     }
 
+    // metods
     private List<Player> GetPlayers()
     {
         var playerstemp = new List<Player>();
@@ -93,6 +66,7 @@ public class Encounter
         }
         return playerstemp;
     }
+
     private string GetEncounterName()
     {
         var locationRow = PluginManager.Instance.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(PluginManager.Instance.ClientState.TerritoryType);
@@ -102,35 +76,23 @@ public class Encounter
         return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
     }
 
-    public void Update(JObject json)
+    private TimeSpan Duration()
     {
-        List<KeyValuePair<string, System.Action>> handler = new List<KeyValuePair<string, System.Action>>();
-        handler.Add(new KeyValuePair<string, System.Action>(
-            "21", () =>
-            {
+        if (Start == null) return new TimeSpan(0);
+        if (End == null) return (TimeSpan)(DateTime.Now - Start);
+        return (TimeSpan)(End - Start);
+    }
 
-            }
-        ));
-        handler.Add(new KeyValuePair<string, System.Action>(
-            "22", () =>
-            {
-
-            }
-        ));
-
-        var a = json["list"]?.First?.Value<string>();
-
-        // for ()
-        // {
-        // }
+    public void StartEncounter()
+    {
+        this.Start = DateTime.Now;
+        this.active = true;
     }
 
     public void EndEncounter()
     {
-        // curent timestamp
         this.End = DateTime.Now;
         this.active = false;
-
     }
 }
 
@@ -138,25 +100,20 @@ public class Player
 {
     public string Name { get; set; }
     public uint Job { get; set; }
-    public string Data { get; set; }
 
     public float DPS { get; set; }
-
     public int TotalDamage { get; set; }
-
     public int DamagePercentage { get; set; }
 
     public Player(Dalamud.Game.ClientState.Objects.Types.Character character)
     {
         this.Name = character.Name.ToString();
         this.Job = character.ClassJob.Id;
-        this.Data = "";
         this.DPS = 1000;
         this.TotalDamage = 81299;
         this.DamagePercentage = 74;
     }
 }
-
 
 public class susdata
 {
@@ -198,3 +155,59 @@ public class damagesus
 
 
 
+
+public class IINACTNetworkLog
+{
+    //data
+    public List<string> data;
+
+    public IINACTNetworkLog(JObject json)
+    {
+        List<string>? dataline = json["line"]?.ToObject<List<string>>();
+
+        if (dataline == null)
+        {
+            this.data = new List<string>();
+            return;
+        }
+        this.data = dataline;
+    }
+}
+
+public class Tests
+{
+    public static void parse(JObject json)
+    {
+        List<KeyValuePair<string, System.Action>> handler = new List<KeyValuePair<string, System.Action>>();
+
+        handler.Add(new KeyValuePair<string, System.Action>(
+            "21", () =>
+            {
+                PluginManager.Instance.PluginLog.Info("recieved 21: \"" + "\"");
+            }
+        ));
+        handler.Add(new KeyValuePair<string, System.Action>(
+            "22", () =>
+            {
+                PluginManager.Instance.PluginLog.Info("recieved 22: \"" + "\"");
+            }
+        ));
+    
+        try
+        {
+            var a = json["list"]?.First?.Value<string>();
+            PluginManager.Instance.PluginLog.Info("parsed: \"" + a + "\"");
+        }
+        catch
+        {
+            PluginManager.Instance.PluginLog.Warning("fail");
+        }
+
+        // var log = new IINACTNetworkLog(json);
+
+        //     foreach (string val in log.data)
+        //     {
+        //         //PluginManager.Instance.PluginLog.Info(val);
+        //     }
+    }
+}
