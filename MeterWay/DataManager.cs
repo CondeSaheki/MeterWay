@@ -1,21 +1,12 @@
-
-using System.IO;
-using Dalamud.Game.Command;
-using Dalamud.IoC;
-using Dalamud.Plugin;
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Newtonsoft.Json.Linq;
 using Dalamud.Game.ClientState.Conditions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using MeterWay;
 using MeterWay.managers;
-
-using System.Linq;
+using MeterWay.IINACT;
 
 namespace MeterWay;
 
@@ -102,8 +93,7 @@ public class DataManager
         // parse data
         try
         {
-            Tests.parse(json);
-
+            IINACT.LoglineParser.Parse(json);
         }
         catch (Exception ex)
         {
