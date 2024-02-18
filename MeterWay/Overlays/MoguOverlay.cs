@@ -16,18 +16,26 @@ public class MoguOverlay : IMeterwayOverlay
 
     private Vector2 WindowMin { get; set; }
     private Vector2 WindowMax { get; set; }
-
+    private List<uint> sortcache;
     public MoguOverlay()
     {
         this.data = new Encounter();
         this.WindowMin = new Vector2();
         this.WindowMax = new Vector2();
+        this.sortcache = new List<uint>();
     }
 
     public void DataProcess(Encounter data)
     {
-        this.data = data;
+        if (data.id != this.data.id) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
+        
+        //remove this line when data.id is implemented
+        this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
 
+        sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
+
+
+        this.data = data;
     }
 
     public void Draw()
@@ -38,15 +46,18 @@ public class MoguOverlay : IMeterwayOverlay
         Vector2 cursor = WindowMin;
         var info = $"{data.Name} | {data.duration.ToString()}";
         ImGui.GetWindowDrawList().AddText(cursor, Helpers.Color(255, 255, 255, 255), info);
-        
+
         cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 
-        foreach (KeyValuePair<uint, Player> p in data.Players)
+        foreach (var id in sortcache)
         {
-            Widget.JobIcon(p.Value.Job, cursor, ImGui.GetFontSize());
-            var playerinfo = $"{p.Value.Name} | {p.Value.TotalDamage.ToString()}";
+            Player p = data.Players[id];
+
+            Widget.JobIcon(p.Job, cursor, ImGui.GetFontSize());
+            var playerinfo = $"{p.Name} | {p.TotalDamage.ToString()}";
             ImGui.GetWindowDrawList().AddText(cursor + new Vector2(ImGui.GetFontSize(), 0), Helpers.Color(255, 255, 255, 255), playerinfo);
             cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
+
         }
     }
 

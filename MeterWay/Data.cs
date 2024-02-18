@@ -10,6 +10,7 @@ namespace MeterWay;
 public class Encounter
 {
     // data
+    public uint id { get; set; }
     public string Name { get; set; }
 
     public bool active { get; set; }
@@ -24,6 +25,7 @@ public class Encounter
     // constructor
     public Encounter()
     {
+        this.id = 0;
         this.Name = GetEncounterName();
         this.active = false;
         this.Players = GetPlayers();

@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
+using System.Security.AccessControl;
 
 namespace MeterWay.Utils
 {
@@ -48,6 +50,21 @@ namespace MeterWay.Utils
         {
             return Color(Convert.ToByte(Math.Min(Math.Round(color.X * 255), 255)), Convert.ToByte(Math.Min(Math.Round(color.Y * 255), 255)),
                 Convert.ToByte(Math.Min(Math.Round(color.Z * 255), 255)), Convert.ToByte(Math.Round(color.W * 255)));
+        }
+
+
+        // /(type first, type second) => {return first > second;}
+        public static List<Id> CreateDictionarySortCache<Id, Type>(Dictionary<Id, Type> data)
+        {
+            List<Id> sorted = new List<Id>();
+
+            foreach (KeyValuePair<Id, Type> i in data)
+            {
+                sorted.Add(i.Key);
+            }
+
+            
+            return sorted;
         }
 
 
