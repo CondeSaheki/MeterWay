@@ -3,9 +3,6 @@ using Dalamud.Plugin;
 using System;
 using System.Numerics;
 
-using Lumina.Excel.GeneratedSheets;
-
-
 namespace MeterWay
 {
     [Serializable]

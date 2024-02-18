@@ -8,7 +8,7 @@ using Dalamud.Plugin.Ipc;
 namespace MeterWay.IINACT;
 using MeterWay.managers;
 
-public class IINACTIpcClient : IDisposable
+public class IpcClient : IDisposable
 {
 
     public List<Action<JObject>> receivers;
@@ -23,7 +23,7 @@ public class IINACTIpcClient : IDisposable
 
     private bool connectionStatus;
 
-    public IINACTIpcClient()
+    public IpcClient()
     {
         this.receivers = new List<Action<JObject>>();
         connectionStatus = false;

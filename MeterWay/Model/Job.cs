@@ -6,59 +6,54 @@ using MeterWay.managers;
 
 public static class Job
 {
-    public static Dictionary<uint, string> Ids = new Dictionary<uint, string>()
+    public enum JobId : uint
     {
-        { 0, "ADV" },
-        { 1, "GLA" },
-        { 2, "PGL" },
-        { 3, "MRD" },
-        { 4, "LNC" },
-        { 5, "ARC" },
-        { 6, "CNJ" },
-        { 7, "THM" },
-        { 8, "CRP" },
-        { 9, "BSM" },
-        { 10, "ARM" },
-        { 11, "GSM" },
-        { 12, "LTW" },
-        { 13, "WVR" },
-        { 14, "ALC" },
-        { 15, "CUL" },
-        { 16, "MIN" },
-        { 17, "BTN" },
-        { 18, "FSH" },
-        { 19, "PLD" },
-        { 20, "MNK" },
-        { 21, "WAR" },
-        { 22, "DRG" },
-        { 23, "BRD" },
-        { 24, "WHM" },
-        { 25, "BLM" },
-        { 26, "ACN" },
-        { 27, "SMN" },
-        { 28, "SCH" },
-        { 29, "ROG" },
-        { 30, "NIN" },
-        { 31, "MCH" },
-        { 32, "DRK" },
-        { 33, "AST" },
-        { 34, "SAM" },
-        { 35, "RDM" },
-        { 36, "BLU" },
-        { 37, "GNB" },
-        { 38, "DNC" },
-        { 39, "RPR" },
-        { 40, "SGE" }
-    };
+        ADV = 0,
+        GLA = 1,
+        PGL = 2,
+        MRD = 3,
+        LNC = 4,
+        ARC = 5,
+        CNJ = 6,
+        THM = 7,
+        CRP = 8,
+        BSM = 9,
+        ARM = 10,
+        GSM = 11,
+        LTW = 12,
+        WVR = 13,
+        ALC = 14,
+        CUL = 15,
+        MIN = 16,
+        BTN = 17,
+        FSH = 18,
+        PLD = 19,
+        MNK = 20,
+        WAR = 21,
+        DRG = 22,
+        BRD = 23,
+        WHM = 24,
+        BLM = 25,
+        ACN = 26,
+        SMN = 27,
+        SCH = 28,
+        ROG = 29,
+        NIN = 30,
+        MCH = 31,
+        DRK = 32,
+        AST = 33,
+        SAM = 34,
+        RDM = 35,
+        BLU = 36,
+        GNB = 37,
+        DNC = 38,
+        RPR = 39,
+        SGE = 40
+    }
 
     public static string GetName(uint id)
     {
-        if (Ids.ContainsKey(id))
-        {
-            return Ids[id];
-        }
-
-        return "UNK";
+        return ((JobId)id).ToString() ?? "UNK";
     }
 
     public static nint GetIcon(uint job)

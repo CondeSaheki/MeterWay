@@ -10,15 +10,6 @@ namespace MeterWay.Windows;
 
 public class MainWindow : Window, IDisposable
 {
-    // ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize
-    // ImGuiWindowFlags.NoTitleBar |
-    // ImGuiWindowFlags.NoScrollbar |
-    // ImGuiWindowFlags.AlwaysAutoResize |
-    // ImGuiWindowFlags.NoBackground |
-    // ImGuiWindowFlags.NoInputs |
-    // ImGuiWindowFlags.NoBringToFrontOnFocus |
-    // ImGuiWindowFlags.NoSavedSettings;
-
     public MainWindow() : base("MeterWay", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         this.SizeConstraints = new WindowSizeConstraints
@@ -33,19 +24,6 @@ public class MainWindow : Window, IDisposable
     public override void Draw()
     {
         ImGui.Text("wip");
-        // ImGui.Text("duration: " + plugin.dataManager.Combat.Last().encounter.Duration.ToString());
-
-        // foreach (Combatant combatant in plugin.dataManager.Combat.Last().combatants)
-        // {
-        //     ImGui.Text(combatant.Job + " ");
-        //     ImGui.SameLine();
-        //     ImGui.Text(combatant.Name + " ");
-        //     ImGui.SameLine();
-        //     ImGui.Text(combatant.EncDps + " ");
-        //     ImGui.SameLine();
-        //     ImGui.Text(combatant.DmgPct + "%");
-        //     //DrawProgressBarWithText(32, Color(255, 128, 128, 255), combatant.DmgPct / 100.0f, "");
-        // }
     }
 
     private void DrawProgressBarWithText(float size, uint color, float progress, string text)

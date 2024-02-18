@@ -13,7 +13,7 @@ public class LazerOverlay : IMeterwayOverlay
 
     private Encounter combat;
 
-    private List<uint> sortcache;
+    private List<uint> sortCache;
 
     private Vector2 WindowMin { get; set; }
     private Vector2 WindowMax { get; set; }
@@ -24,7 +24,7 @@ public class LazerOverlay : IMeterwayOverlay
         this.WindowMax = new Vector2();
 
         this.combat = new Encounter();
-        this.sortcache = new List<uint>();
+        this.sortCache = new List<uint>();
     }
 
     class LerpPlayerData
@@ -38,12 +38,12 @@ public class LazerOverlay : IMeterwayOverlay
 
     public void DataProcess(Encounter data)
     {
-        if (data.id != this.combat.id) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
+        if (data.id != this.combat.id) this.sortCache = Helpers.CreateDictionarySortCache(data.Players);
 
         //remove this line when data.id is implemented
-        this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
+        this.sortCache = Helpers.CreateDictionarySortCache(data.Players);
 
-        sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
+        sortCache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
 
         this.combat = data;
     }
@@ -69,8 +69,8 @@ public class LazerOverlay : IMeterwayOverlay
 
     private void GenerateCombatLerping(Player player)
     {
-        lerpedInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = sortcache.IndexOf(player.Id) + 1 };
-        targetInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = sortcache.IndexOf(player.Id) + 1 };
+        lerpedInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = sortCache.IndexOf(player.Id) + 1 };
+        targetInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = sortCache.IndexOf(player.Id) + 1 };
     }
 
     private void DoLerpPlayerData(Player player)
@@ -95,7 +95,7 @@ public class LazerOverlay : IMeterwayOverlay
             targetInfo[player.Name].DPS = player.DPS;
             targetInfo[player.Name].PctDMG = player.DamagePercentage;
             targetInfo[player.Name].TotalDMG = player.TotalDamage;
-            targetInfo[player.Name].Position = sortcache.IndexOf(player.Id) + 1;
+            targetInfo[player.Name].Position = sortCache.IndexOf(player.Id) + 1;
             transitionTimer = 0.0f;
         }
     }
@@ -116,8 +116,8 @@ public class LazerOverlay : IMeterwayOverlay
 
 
         Widget.Text($"{this.combat.Name} - ({(!this.combat.active ? "Completed in " : "")}{this.combat.duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
-        
-        foreach (var id in this.sortcache)
+
+        foreach (var id in this.sortCache)
         {
             Player player = combat.Players[id];
             DoLerpPlayerData(player);

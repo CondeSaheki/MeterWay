@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using MeterWay;
 using MeterWay.managers;
 using MeterWay.IINACT;
 
@@ -14,7 +13,7 @@ public class DataManager
 {
     // data
     public List<Encounter> encounters;
-    private bool lastcombatstate;
+    private bool lastCombatState;
     public Encounter current => encounters.Last();
 
     // constructor
@@ -22,7 +21,7 @@ public class DataManager
     {
         this.encounters = new List<Encounter>();
         encounters.Add(new Encounter());
-        this.lastcombatstate = false;
+        this.lastCombatState = false;
     }
 
     // metods
@@ -42,7 +41,7 @@ public class DataManager
     }
 
     public Encounter Current() { return current; }
-    
+
     private bool GetInCombat()
     {
         if (PluginManager.Instance.PartyList.Length == 0)
@@ -64,28 +63,28 @@ public class DataManager
 
     public void Receiver(JObject json)
     {
-        var combatstate = GetInCombat();
+        var combatState = GetInCombat();
 
         // start combat
-        if (combatstate == true && lastcombatstate == false)
+        if (combatState == true && lastCombatState == false)
         {
 
             PluginManager.Instance.PluginLog.Info("meterway detected start of combat");
             StartEncounter();
-            lastcombatstate = true;
+            lastCombatState = true;
         }
 
         // end combat
-        if (combatstate == false && lastcombatstate == true)
+        if (combatState == false && lastCombatState == true)
         {
 
             PluginManager.Instance.PluginLog.Info("meterway detected end of combat");
             EndEncounter();
-            lastcombatstate = false;
+            lastCombatState = false;
         }
 
         // ignore all data when not in combat 
-        if (combatstate == false)
+        if (combatState == false)
         {
             //return;
         }
@@ -93,7 +92,7 @@ public class DataManager
         // parse data
         try
         {
-            IINACT.LoglineParser.Parse(json, current);
+            LoglineParser.Parse(json, current);
         }
         catch (Exception ex)
         {

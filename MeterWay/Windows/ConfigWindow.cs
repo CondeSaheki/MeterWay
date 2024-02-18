@@ -12,17 +12,17 @@ namespace MeterWay.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
-    private IINACTIpcClient iinactclient;
+    private IpcClient iinactIpcClient;
     private OverlayWindow OverlayWindow;
 
-    public ConfigWindow(IINACTIpcClient iinactclient, OverlayWindow OverlayWindow) : base(
+    public ConfigWindow(IpcClient iinactIpcClient, OverlayWindow OverlayWindow) : base(
         "MeterWay Configurations",
         ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
         ImGuiWindowFlags.NoScrollWithMouse) // ImGuiWindowFlags.NoResize | 
     {
         this.Size = new Vector2(400, 400);
         this.SizeCondition = ImGuiCond.Always;
-        this.iinactclient = iinactclient;
+        this.iinactIpcClient = iinactIpcClient;
 
         this.OverlayWindow = OverlayWindow;
     }
@@ -138,7 +138,7 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("IINACT");
         if (!tab) return;
 
-        var status = iinactclient.Status();
+        var status = iinactIpcClient.Status();
 
         ImGui.Text("State: ");
         ImGui.SameLine();
@@ -149,11 +149,11 @@ public class ConfigWindow : Window, IDisposable
         {
             if (status)
             {
-                iinactclient.Reconnect();
+                iinactIpcClient.Reconnect();
             }
             else
             {
-                iinactclient.Connect();
+                iinactIpcClient.Connect();
             }
         }
 
@@ -162,7 +162,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.SameLine();
         if (ImGui.Button("Stop"))
         {
-            iinactclient.Disconnect();
+            iinactIpcClient.Disconnect();
         }
         ImGui.EndDisabled();
     }

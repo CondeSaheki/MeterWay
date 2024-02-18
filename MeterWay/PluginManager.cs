@@ -1,13 +1,6 @@
-using Dalamud.Game.Command;
-using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
-using System;
-using System.Numerics;
-
-using MeterWay;
 
 namespace MeterWay.managers;
 
@@ -36,7 +29,7 @@ public class PluginManager
         IPartyList partyList,
         IDataManager dataManager,
         ITextureProvider textureProvider
-        
+
     )
     {
         this.WindowSystem = windowsystem;
@@ -64,7 +57,7 @@ public class ConfigurationManager
     {
         this.Configuration = PluginManager.Instance.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         this.Configuration.Initialize(PluginManager.Instance.PluginInterface);
-        
+
         ConfigurationManager.Instance = this;
     }
 }

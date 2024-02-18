@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Globalization;
 using System.Numerics;
+using System.Reflection;
 using System.Security.AccessControl;
 
 namespace MeterWay.Utils
@@ -54,7 +56,7 @@ namespace MeterWay.Utils
 
 
         // /(type first, type second) => {return first > second;}
-        public static List<Id> CreateDictionarySortCache<Id, Type>(Dictionary<Id, Type> data)
+        public static List<Id> CreateDictionarySortCache<Id, Type>(Dictionary<Id, Type> data) where Id : notnull
         {
             List<Id> sorted = new List<Id>();
 
@@ -63,10 +65,7 @@ namespace MeterWay.Utils
                 sorted.Add(i.Key);
             }
 
-            
             return sorted;
         }
-
-
     }
 }

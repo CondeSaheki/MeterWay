@@ -1,9 +1,49 @@
 using System.Collections.Generic;
-using MeterWay.managers;
 
-public static class FlagParser
+namespace MeterWay.Utils;
+
+public enum MessageType : uint
 {
+    ChatLog = 0,
+    Territory = 1,
+    ChangePrimaryPlayer = 2,
+    AddCombatant = 3,
+    RemoveCombatant = 4,
+    PartyList = 11, // 0x0000000B
+    PlayerStats = 12, // 0x0000000C
+    StartsCasting = 20, // 0x00000014
+    ActionEffect = 21, // 0x00000015
+    AOEActionEffect = 22, // 0x00000016
+    CancelAction = 23, // 0x00000017
+    DoTHoT = 24, // 0x00000018
+    Death = 25, // 0x00000019
+    StatusAdd = 26, // 0x0000001A
+    TargetIcon = 27, // 0x0000001B
+    WaymarkMarker = 28, // 0x0000001C
+    SignMarker = 29, // 0x0000001D
+    StatusRemove = 30, // 0x0000001E
+    Gauge = 31, // 0x0000001F
+    World = 32, // 0x00000020
+    Director = 33, // 0x00000021
+    NameToggle = 34, // 0x00000022
+    Tether = 35, // 0x00000023
+    LimitBreak = 36, // 0x00000024
+    EffectResult = 37, // 0x00000025
+    StatusList = 38, // 0x00000026
+    UpdateHp = 39, // 0x00000027
+    ChangeMap = 40, // 0x00000028
+    SystemLogMessage = 41, // 0x00000029
+    StatusList3 = 42, // 0x0000002A
+    Settings = 249, // 0x000000F9
+    Process = 250, // 0x000000FA
+    Debug = 251, // 0x000000FB
+    PacketDump = 252, // 0x000000FC
+    Version = 253, // 0x000000FD
+    Error = 254, // 0x000000FE
+}
 
+public static class ParserAssistant
+{
     public enum DamageType
     {
         Magic = 0x50000,
@@ -56,7 +96,7 @@ public static class FlagParser
     public static bool IsLoseStatusEffectSource(int flag) => (flag & 0xF) == (int)EffectEntryType.LoseStatusEffectSource;
     public static bool IsFullResistStatus(int flag) => (flag & 0xF) == (int)EffectEntryType.FullResistStatus;
     public static bool IsInterrupt(int flag) => (flag & 0xF) == (int)EffectEntryType.Interrupt;
-    public static bool IsSpecial(int flag) 
+    public static bool IsSpecial(int flag)
     {
         if ((flag & 0xFFF) == (int)EffectEntryType.Unknown_3F)
         {
@@ -86,7 +126,7 @@ public static class FlagParser
         // HITS AND STUFF
         if (IsDamage(flag))
         {
-            if (IsCrit(flag)) 
+            if (IsCrit(flag))
             {
                 parsedflag.Add(EffectEntryType.CritHit);
             }
@@ -94,7 +134,7 @@ public static class FlagParser
             {
                 parsedflag.Add(EffectEntryType.DirectHit);
             }
-            else if(IsDirectCrit(flag))
+            else if (IsDirectCrit(flag))
             {
                 parsedflag.Add(EffectEntryType.DirectCritHit);
             }
@@ -106,7 +146,8 @@ public static class FlagParser
             if (IsCritHeal(flag))
             {
                 parsedflag.Add(EffectEntryType.CritHeal);
-            } else
+            }
+            else
             {
                 parsedflag.Add(EffectEntryType.Heal);
             }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Lumina.Excel.GeneratedSheets;
 
-using MeterWay;
 using MeterWay.managers;
 
 namespace MeterWay;
