@@ -69,8 +69,8 @@ public class LazerOverlay : IMeterwayOverlay
 
     private void GenerateCombatLerping(Player player)
     {
-        lerpedInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = this.combat.Players.IndexOf(player) + 1 };
-        targetInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = this.combat.Players.IndexOf(player) + 1 };
+        lerpedInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = sortcache.IndexOf(player.Id) + 1 };
+        targetInfo[player.Name] = new LerpPlayerData { DPS = player.DPS, PctDMG = player.DamagePercentage, TotalDMG = player.TotalDamage, Position = sortcache.IndexOf(player.Id) + 1 };
     }
 
     private void DoLerpPlayerData(Player player)
@@ -95,7 +95,7 @@ public class LazerOverlay : IMeterwayOverlay
             targetInfo[player.Name].DPS = player.DPS;
             targetInfo[player.Name].PctDMG = player.DamagePercentage;
             targetInfo[player.Name].TotalDMG = player.TotalDamage;
-            targetInfo[player.Name].Position = this.combat.Players.IndexOf(player) + 1;
+            targetInfo[player.Name].Position = sortcache.IndexOf(player.Id) + 1;
             transitionTimer = 0.0f;
         }
     }
