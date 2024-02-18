@@ -19,7 +19,7 @@ public class Encounter
 
     // all other data here
 
-    public List<Player> Players { get; set; }
+    public Dictionary<uint, Player> Players { get; set; }
 
     // constructor
     public Encounter()
@@ -30,9 +30,9 @@ public class Encounter
     }
 
     // metods
-    private List<Player> GetPlayers()
+    private Dictionary<uint, Player> GetPlayers()
     {
-        var playerstemp = new List<Player>();
+        var playerstemp = new Dictionary<uint, Player>();
         if (PluginManager.Instance.PartyList.Length != 0)
         {
             foreach (var player in PluginManager.Instance.PartyList)
@@ -40,7 +40,7 @@ public class Encounter
                 if (player.GameObject == null) continue;
 
                 var character = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
-                playerstemp.Add(new Player(character));
+                playerstemp.Add(character.ObjectId, new Player(character));
             }
         }
         else
@@ -48,7 +48,7 @@ public class Encounter
             if (PluginManager.Instance.ClientState.LocalPlayer != null)
             {
                 var character = (Dalamud.Game.ClientState.Objects.Types.Character)PluginManager.Instance.ClientState.LocalPlayer;
-                playerstemp.Add(new Player(character));
+                playerstemp.Add(character.ObjectId, new Player(character));
             }
         }
         return playerstemp;
@@ -85,19 +85,21 @@ public class Encounter
 
 public class Player
 {
+    public uint Id { get; set; }
     public string Name { get; set; }
     public uint Job { get; set; }
 
     public float DPS { get; set; }
-    public int TotalDamage { get; set; }
+    public uint TotalDamage { get; set; }
     public int DamagePercentage { get; set; }
 
     public Player(Dalamud.Game.ClientState.Objects.Types.Character character)
     {
+        this.Id = character.ObjectId;
         this.Name = character.Name.ToString();
         this.Job = character.ClassJob.Id;
         this.DPS = 1000;
-        this.TotalDamage = 81299;
+        this.TotalDamage = 0;
         this.DamagePercentage = 74;
     }
 }

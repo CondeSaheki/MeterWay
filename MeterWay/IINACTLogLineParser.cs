@@ -64,7 +64,7 @@ public static class LoglineParser
 
     public static void Parse(JObject json, Encounter recipient)
     {
-        var data = json["data"];
+        var data = json["line"];
         if (data == null) return;
         var msgidvalue = data[0];
         if (msgidvalue == null) return;
@@ -72,10 +72,10 @@ public static class LoglineParser
 
         List<string> linedata = data.Values<string>().ToList();
 
-        #if false //debug
+#if false //debug
             var message = json["rawLine"]?.ToString() ?? "";
             PluginManager.Instance.PluginLog.Info($"parsed a: \"{messagetype}\" | \"{message}\"");
-        #endif
+#endif
 
         try
         {
@@ -147,7 +147,7 @@ public static class LoglineParser
         string action = data[5].ToString();
         int actionid = Convert.ToInt32(data[4].ToString(), 16);
         string player = data[3].ToString();
-        int playerid = Convert.ToInt32(data[2].ToString(), 16);
+        uint playerid = Convert.ToUInt32(data[2].ToString(), 16);
 
         var datetime = data[1].ToString();
 
@@ -155,7 +155,15 @@ public static class LoglineParser
 
 
 
-        PluginManager.Instance.PluginLog.Info($"{player} | {action} | {(target == null ? "null" : target)} | {(value == null ? "null" : data[8].ToString())} ");
+        if (recipient.Players.ContainsKey(playerid))
+        {
+            if (EffectEntryType.IsDamage(type))
+            {
+                recipient.Players[playerid].TotalDamage += value ?? 0;
+            }
+        }
+
+        //PluginManager.Instance.PluginLog.Info($"{player} | {action} | {(target == null ? "null" : target)} | {(value == null ? "null" : data[8].ToString())} ");
     }
 
     private static void MsgAOEActionEffect(List<string> data, Encounter recipient)
