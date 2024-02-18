@@ -93,7 +93,7 @@ public class DataManager
         // parse data
         try
         {
-            IINACT.LoglineParser.Parse(json);
+            IINACT.LoglineParser.Parse(json, current);
         }
         catch (Exception ex)
         {

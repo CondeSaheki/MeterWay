@@ -54,7 +54,7 @@ Error = 254, // 0x000000FE
 public static class LoglineParser
 {
     // we are only getting the messages needed:
-    private static Dictionary<uint, Action<List<string>>> Handlers = new Dictionary<uint, Action<List<string>>>
+    private static Dictionary<uint, Action<List<string>, Encounter>> Handlers = new Dictionary<uint, Action<List<string>, Encounter>>
         {
             { 21, MsgActionEffect },
             { 22, MsgAOEActionEffect },
@@ -62,24 +62,24 @@ public static class LoglineParser
             { 24, MsgDoTHoT }
         };
 
-    public static void Parse(JObject json)
+    public static void Parse(JObject json, Encounter recipient)
     {
-        var line = json["line"];
-        if (line == null) return;
-        var msgidvalue = line[0];
+        var data = json["data"];
+        if (data == null) return;
+        var msgidvalue = data[0];
         if (msgidvalue == null) return;
         var msgid = msgidvalue.ToObject<uint>();
 
-        List<string> linedata = line.Values<string>().ToList();
+        List<string> linedata = data.Values<string>().ToList();
 
-#if false //debug
+        #if false //debug
             var message = json["rawLine"]?.ToString() ?? "";
             PluginManager.Instance.PluginLog.Info($"parsed a: \"{messagetype}\" | \"{message}\"");
-#endif
+        #endif
 
         try
         {
-            if (Handlers.ContainsKey(msgid)) Handlers[msgid].Invoke(linedata);
+            if (Handlers.ContainsKey(msgid)) Handlers[msgid].Invoke(linedata, recipient);
         }
         catch (Exception ex)
         {
@@ -87,83 +87,83 @@ public static class LoglineParser
         }
     }
 
-    private static void MsgActionEffect(List<string> line)
+    private static void MsgActionEffect(List<string> data, Encounter recipient)
     {
-        // int crypto = Convert.ToInt32(line[47].ToString(), 16);
-        // uint multimessagecount = Convert.ToUInt32(line[46].ToString());
-        // uint multimessageindex = Convert.ToUInt32(line[45].ToString());
-        // uint loglinescount = Convert.ToUInt32(line[44].ToString(), 16);
+        // int crypto = Convert.ToInt32(data[47].ToString(), 16);
+        // uint multimessagecount = Convert.ToUInt32(data[46].ToString());
+        // uint multimessageindex = Convert.ToUInt32(data[45].ToString());
+        // uint loglinescount = Convert.ToUInt32(data[44].ToString(), 16);
 
-        Vector4 pos = new Vector4((float)Convert.ToDouble(line[40].ToString()), (float)Convert.ToDouble(line[41].ToString()),
-            (float)Convert.ToDouble(line[42].ToString()), (float)Convert.ToDouble(line[43].ToString()));
+        Vector4 pos = new Vector4((float)Convert.ToDouble(data[40].ToString()), (float)Convert.ToDouble(data[41].ToString()),
+            (float)Convert.ToDouble(data[42].ToString()), (float)Convert.ToDouble(data[43].ToString()));
 
-        // var separator = line[39]; // null
-        // var separator = line[38]; // null
-        uint maxMp = Convert.ToUInt32(line[37].ToString());
-        uint mp = Convert.ToUInt32(line[36].ToString());
-        uint maxHp = Convert.ToUInt32(line[35].ToString());
-        uint Hp = Convert.ToUInt32(line[34].ToString());
+        // var separator = data[39]; // null
+        // var separator = data[38]; // null
+        uint maxMp = Convert.ToUInt32(data[37].ToString());
+        uint mp = Convert.ToUInt32(data[36].ToString());
+        uint maxHp = Convert.ToUInt32(data[35].ToString());
+        uint Hp = Convert.ToUInt32(data[34].ToString());
 
         Vector4 targetPos;
-        if (line[33].ToString() != "" || line[32].ToString() != "" || line[31].ToString() != "" || line[30].ToString() != "")
+        if (data[33].ToString() != "" || data[32].ToString() != "" || data[31].ToString() != "" || data[30].ToString() != "")
         {
-            targetPos = new Vector4((float)Convert.ToDouble(line[30].ToString()), (float)Convert.ToDouble(line[31].ToString()),
-                (float)Convert.ToDouble(line[32].ToString()), (float)Convert.ToDouble(line[33].ToString()));
+            targetPos = new Vector4((float)Convert.ToDouble(data[30].ToString()), (float)Convert.ToDouble(data[31].ToString()),
+                (float)Convert.ToDouble(data[32].ToString()), (float)Convert.ToDouble(data[33].ToString()));
         }
 
-        // var separator = line[29]; // null
-        // var separator = line[28]; // null
-        int? targetmaxMp = line[27].ToString() == "" ? null : Convert.ToInt32(line[27].ToString());
-        int? targetmp = line[26].ToString() == "" ? null : Convert.ToInt32(line[26].ToString());
-        int? targetmaxHp = line[25].ToString() == "" ? null : Convert.ToInt32(line[25].ToString());
-        int? targetHp = line[24].ToString() == "" ? null : Convert.ToInt32(line[24].ToString());
+        // var separator = data[29]; // null
+        // var separator = data[28]; // null
+        int? targetmaxMp = data[27].ToString() == "" ? null : Convert.ToInt32(data[27].ToString());
+        int? targetmp = data[26].ToString() == "" ? null : Convert.ToInt32(data[26].ToString());
+        int? targetmaxHp = data[25].ToString() == "" ? null : Convert.ToInt32(data[25].ToString());
+        int? targetHp = data[24].ToString() == "" ? null : Convert.ToInt32(data[24].ToString());
 
-        // var skillatributes = line[23];
-        // var skillatributes = line[22];
-        // var skillatributes = line[21];
-        // var skillatributes = line[20];
-        // var skillatributes = line[19];
-        // var skillatributes = line[18];
-        // var skillatributes = line[17];
-        // var skillatributes = line[16];
-        // var skillatributes = line[15];
-        // var skillatributes = line[14];
-        // var skillatributes = line[13];
-        // var skillatributes = line[12];
-        // var skillatributes = line[11];
-        // var skillatributes = line[10];
+        // var skillatributes = data[23];
+        // var skillatributes = data[22];
+        // var skillatributes = data[21];
+        // var skillatributes = data[20];
+        // var skillatributes = data[19];
+        // var skillatributes = data[18];
+        // var skillatributes = data[17];
+        // var skillatributes = data[16];
+        // var skillatributes = data[15];
+        // var skillatributes = data[14];
+        // var skillatributes = data[13];
+        // var skillatributes = data[12];
+        // var skillatributes = data[11];
+        // var skillatributes = data[10];
 
         UInt32? value = null;
-        if (line[9].ToString() != "")
+        if (data[9].ToString() != "")
         {
-            int tempvaluehex = Convert.ToInt32(line[9].ToString(), 16);
+            int tempvaluehex = Convert.ToInt32(data[9].ToString(), 16);
             value = (UInt32)((UInt32)(tempvaluehex >> 16) | (UInt32)((tempvaluehex << 16)) & 0x0FFFFFFF);
         }
 
-        int type = Convert.ToInt32(line[8].ToString(), 16);
+        int type = Convert.ToInt32(data[8].ToString(), 16);
 
-        string? target = line[7].ToString() == "" ? null : line[7].ToString();
-        int? targetid = line[6].ToString() == "" ? null : Convert.ToInt32(line[6].ToString(), 16);
-        string action = line[5].ToString();
-        int actionid = Convert.ToInt32(line[4].ToString(), 16);
-        string player = line[3].ToString();
-        int playerid = Convert.ToInt32(line[2].ToString(), 16);
+        string? target = data[7].ToString() == "" ? null : data[7].ToString();
+        int? targetid = data[6].ToString() == "" ? null : Convert.ToInt32(data[6].ToString(), 16);
+        string action = data[5].ToString();
+        int actionid = Convert.ToInt32(data[4].ToString(), 16);
+        string player = data[3].ToString();
+        int playerid = Convert.ToInt32(data[2].ToString(), 16);
 
-        var datetime = line[1].ToString();
+        var datetime = data[1].ToString();
 
-        // int messagetype = Convert.ToInt32(line[0].ToString())
+        // int messagetype = Convert.ToInt32(data[0].ToString())
 
 
 
-        PluginManager.Instance.PluginLog.Info($"{player} | {action} | {(target == null ? "null" : target)} | {(value == null ? "null" : line[8].ToString())} ");
+        PluginManager.Instance.PluginLog.Info($"{player} | {action} | {(target == null ? "null" : target)} | {(value == null ? "null" : data[8].ToString())} ");
     }
 
-    private static void MsgAOEActionEffect(List<string> line)
+    private static void MsgAOEActionEffect(List<string> data, Encounter recipient)
     {
-        MsgActionEffect(line);
+        MsgActionEffect(data, recipient);
     }
 
-    private static void MsgStartsCasting(List<string> line)
+    private static void MsgStartsCasting(List<string> data, Encounter recipient)
     {
         // uint sourceId;
         // string sourceName;
@@ -178,7 +178,7 @@ public static class LoglineParser
         // float? heading;
     }
 
-    private static void MsgDoTHoT(List<string> line)
+    private static void MsgDoTHoT(List<string> data, Encounter recipient)
     {
         // uint targetId;
         // string targetName;
