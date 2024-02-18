@@ -13,6 +13,8 @@ public class LazerOverlay : IMeterwayOverlay
 
     private Encounter combat;
 
+    private List<uint> sortcache;
+
     private Vector2 WindowMin { get; set; }
     private Vector2 WindowMax { get; set; }
 
@@ -35,7 +37,12 @@ public class LazerOverlay : IMeterwayOverlay
 
     public void DataProcess(Encounter data)
     {
-        data.Players.Sort((p1, p2) => p2.DPS.CompareTo(p1.DPS));
+        if (data.id != this.combat.id) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
+
+        //remove this line when data.id is implemented
+        this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
+
+        sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
 
         this.combat = data;
     }
@@ -100,15 +107,18 @@ public class LazerOverlay : IMeterwayOverlay
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * ConfigurationManager.Instance.Configuration.OverlayFontScale), Helpers.Color(26, 26, 39, 190));
 
 
-        if (!this.combat.active && this.combat.duration.Seconds == 0) {
-           Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center, dropShadow: true);
-           return;
+        if (!this.combat.active && this.combat.duration.Seconds == 0)
+        {
+            Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center, dropShadow: true);
+            return;
         }
 
 
         Widget.Text($"{this.combat.Name} - ({(!this.combat.active ? "Completed in " : "")}{this.combat.duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
-        foreach (Player player in this.combat.Players)
+        
+        foreach (var id in this.sortcache)
         {
+            Player player = combat.Players[id];
             DoLerpPlayerData(player);
             DrawPlayerLine(lerpedInfo[player.Name], player);
         }
