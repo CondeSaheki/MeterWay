@@ -102,38 +102,38 @@ public class Player
     }
 }
 
-public class susdata
-{
-    public uint damage { get; set; }
-    public uint hitcount { get; set; }
-    public uint crtcount { get; set; }
-    public uint dhcount { get; set; }
-    public uint crtdhcount { get; set; }
+// public class susdata
+// {
+//     public uint damage { get; set; }
+//     public uint hitcount { get; set; }
+//     public uint crtcount { get; set; }
+//     public uint dhcount { get; set; }
+//     public uint crtdhcount { get; set; }
 
-    public uint crtpct { get; set; }
-    public uint dhpct { get; set; }
-    public uint crtdhct { get; set; }
+//     public uint crtpct { get; set; }
+//     public uint dhpct { get; set; }
+//     public uint crtdhct { get; set; }
 
-    public string dps { get; set; }
+//     public string dps { get; set; }
 
 
-    public susdata()
-    {
+//     public susdata()
+//     {
 
-    }
-}
+//     }
+// }
 
-public class damagesus
-{
-    public string time;
-    public bool miss;
-    public bool crit;
-    public bool directhit;
+// public class damagesus
+// {
+//     public string time;
+//     public bool miss;
+//     public bool crit;
+//     public bool directhit;
 
-    public uint Value;
+//     public uint Value;
 
-    public damagesus()
-    {
+//     public damagesus()
+//     {
 
-    }
-}
+//     }
+// }
