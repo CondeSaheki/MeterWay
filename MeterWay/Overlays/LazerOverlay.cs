@@ -24,6 +24,7 @@ public class LazerOverlay : IMeterwayOverlay
         this.WindowMax = new Vector2();
 
         this.combat = new Encounter();
+        this.sortcache = new List<uint>();
     }
 
     class LerpPlayerData
