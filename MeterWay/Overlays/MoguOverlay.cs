@@ -28,9 +28,6 @@ public class MoguOverlay : IMeterwayOverlay
     public void DataProcess(Encounter data)
     {
         if (data.id != this.data.id) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
-        
-        //remove this line when data.id is implemented
-        this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
 
         sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
 

@@ -114,7 +114,15 @@ public static class LoglineParser
         {
             if (ParserAssistant.IsDamage(actionTraits))
             {
+                //Total Damage
                 recipient.Players[playerid].TotalDamage += actionValue ?? 0;
+                recipient.TotalDamage += actionValue ?? 0;
+
+                //DPST
+                recipient.Players[playerid].DPS = recipient.duration.TotalSeconds != 0 ? (float)(recipient.Players[playerid].TotalDamage / recipient.duration.TotalSeconds) : 0;
+
+                //DMG PCT
+                recipient.Players[playerid].DamagePercentage = recipient.TotalDamage != 0 ? (int)(recipient.Players[playerid].TotalDamage / recipient.TotalDamage) * 100 : 0;
             }
         }
 

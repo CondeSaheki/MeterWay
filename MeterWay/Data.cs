@@ -17,6 +17,8 @@ public class Encounter
     public DateTime? End { get; set; }
     public TimeSpan duration => Duration();
 
+    public Int64 TotalDamage { get; set; }
+
     // all other data here
 
     public Dictionary<uint, Player> Players { get; set; }
@@ -24,10 +26,16 @@ public class Encounter
     // constructor
     public Encounter()
     {
-        this.id = 0;
+        this.id = CreateId();
         this.Name = GetEncounterName();
         this.active = false;
         this.Players = GetPlayers();
+        this.TotalDamage = 0;
+    }
+
+    private uint CreateId()
+    {
+        return (uint)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
     }
 
     // metods
@@ -99,9 +107,9 @@ public class Player
         this.Id = character.ObjectId;
         this.Name = character.Name.ToString();
         this.Job = character.ClassJob.Id;
-        this.DPS = 1000;
+        this.DPS = 0;
         this.TotalDamage = 0;
-        this.DamagePercentage = 74;
+        this.DamagePercentage = 0;
     }
 }
 
