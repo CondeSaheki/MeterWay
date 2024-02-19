@@ -97,7 +97,6 @@ public class Encounter
             {
                 this.Players[player].InParty = true;
             }
-
             else if (this.active)
             {
                 this.Players[player].InParty = false;
@@ -105,7 +104,6 @@ public class Encounter
             else
             {
                 var playerToCheck = this.Players[player];
-
                 var existingNewPlayer = partyList.FirstOrDefault(p => p.GameObject != null && p.GameObject.Name.ToString() == playerToCheck.Name && (p.GameObject as PlayerCharacter)?.HomeWorld.Id == playerToCheck.World);
 
                 if (existingNewPlayer != null && existingNewPlayer.GameObject != null)
