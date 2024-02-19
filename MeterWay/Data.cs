@@ -49,7 +49,7 @@ public class Encounter
                 if (player.GameObject == null) continue;
 
                 var character = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
-                playerstemp.Add(character.ObjectId, new Player(character));
+                playerstemp.Add(character.ObjectId, new Player(character, this));
             }
         }
         else
@@ -57,7 +57,7 @@ public class Encounter
             if (PluginManager.Instance.ClientState.LocalPlayer != null)
             {
                 var character = (Dalamud.Game.ClientState.Objects.Types.Character)PluginManager.Instance.ClientState.LocalPlayer;
-                playerstemp.Add(character.ObjectId, new Player(character));
+                playerstemp.Add(character.ObjectId, new Player(character, this));
             }
         }
         return playerstemp;
@@ -90,11 +90,22 @@ public class Encounter
         this.End = DateTime.Now;
         this.active = false;
     }
+
+    public void Update()
+    {
+        foreach (var player in this.Players.Values)
+        {
+            player.Update();
+        }
+    }
 }
 
 public class Player
 {
     public uint Id { get; set; }
+
+    private Encounter Encounter { get; init; }
+
     public string Name { get; set; }
     public uint Job { get; set; }
 
@@ -102,8 +113,15 @@ public class Player
     public uint TotalDamage { get; set; }
     public int DamagePercentage { get; set; }
 
-    public Player(Dalamud.Game.ClientState.Objects.Types.Character character)
+    public void Update()
     {
+        this.DPS = this.Encounter.duration.TotalSeconds != 0 ? (float)(this.TotalDamage / this.Encounter.duration.TotalSeconds) : 0;
+        this.DamagePercentage = this.Encounter.TotalDamage != 0 ? (int)(this.TotalDamage / this.Encounter.TotalDamage) * 100 : 0;
+    }
+
+    public Player(Dalamud.Game.ClientState.Objects.Types.Character character, Encounter encounter)
+    {
+        this.Encounter = encounter;
         this.Id = character.ObjectId;
         this.Name = character.Name.ToString();
         this.Job = character.ClassJob.Id;
@@ -112,39 +130,3 @@ public class Player
         this.DamagePercentage = 0;
     }
 }
-
-// public class susdata
-// {
-//     public uint damage { get; set; }
-//     public uint hitcount { get; set; }
-//     public uint crtcount { get; set; }
-//     public uint dhcount { get; set; }
-//     public uint crtdhcount { get; set; }
-
-//     public uint crtpct { get; set; }
-//     public uint dhpct { get; set; }
-//     public uint crtdhct { get; set; }
-
-//     public string dps { get; set; }
-
-
-//     public susdata()
-//     {
-
-//     }
-// }
-
-// public class damagesus
-// {
-//     public string time;
-//     public bool miss;
-//     public bool crit;
-//     public bool directhit;
-
-//     public uint Value;
-
-//     public damagesus()
-//     {
-
-//     }
-// }

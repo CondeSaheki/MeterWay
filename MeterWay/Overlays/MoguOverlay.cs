@@ -31,7 +31,7 @@ public class MoguOverlay : IMeterwayOverlay
 
         sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
 
-
+        this.data.Update();
         this.data = data;
     }
 

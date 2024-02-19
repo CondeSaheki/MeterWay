@@ -43,10 +43,11 @@ public class LazerOverlay : IMeterwayOverlay
 
         sortCache.Sort((uint first, uint second) => { return data.Players[second].DPS.CompareTo(data.Players[first].DPS); });
 
+        this.combat.Update();
         this.combat = data;
     }
 
-    private float transitionDuration = 1f; // in seconds
+    private float transitionDuration = 0.3f; // in seconds
     private float transitionTimer = 0.0f;
     private Dictionary<string, LerpPlayerData> lerpedInfo = new Dictionary<string, LerpPlayerData>();
     private Dictionary<string, LerpPlayerData> targetInfo = new Dictionary<string, LerpPlayerData>();
@@ -100,14 +101,14 @@ public class LazerOverlay : IMeterwayOverlay
         if (transitionTimer < transitionDuration)
         {
             transitionTimer += ImGui.GetIO().DeltaTime;
-            float t = Math.Min(1.0f, transitionTimer / transitionDuration);
+            float t = transitionTimer / transitionDuration;
             lerpedInfo[player.Name].DPS = Helpers.Lerp(lerpedInfo[player.Name].DPS, targetInfo[player.Name].DPS, t);
             lerpedInfo[player.Name].PctBar = Helpers.Lerp(lerpedInfo[player.Name].PctBar, targetInfo[player.Name].PctBar, t);
             lerpedInfo[player.Name].TotalDMG = Helpers.Lerp(lerpedInfo[player.Name].TotalDMG, targetInfo[player.Name].TotalDMG, t);
             lerpedInfo[player.Name].Position = Helpers.Lerp(lerpedInfo[player.Name].Position, targetInfo[player.Name].Position, t);
         }
 
-        if (targetInfo[player.Name].DPS != player.DPS)
+        if (targetInfo[player.Name].TotalDamage < player.TotalDamage)
         {
             float topPlayerTotalDamage = this.combat.Players[sortCache.First()].TotalDamage;
 
