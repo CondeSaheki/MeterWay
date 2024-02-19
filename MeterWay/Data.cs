@@ -114,12 +114,12 @@ public class Player
 
     public float DPS { get; set; }
     public uint TotalDamage { get; set; }
-    public int DamagePercentage { get; set; }
+    public float DamagePercentage { get; set; }
 
     public void Update()
     {
         this.DPS = this.Encounter.duration.TotalSeconds != 0 ? (float)(this.TotalDamage / this.Encounter.duration.TotalSeconds) : 0;
-        this.DamagePercentage = this.Encounter.TotalDamage != 0 ? (int)(this.TotalDamage / this.Encounter.TotalDamage) * 100 : 0;
+        this.DamagePercentage = this.Encounter.TotalDamage != 0 ? (float)((this.TotalDamage * 100) / this.Encounter.TotalDamage) : 0;
     }
 
     public Player(Dalamud.Game.ClientState.Objects.Types.Character character, Encounter encounter)
