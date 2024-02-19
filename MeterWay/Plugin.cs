@@ -45,11 +45,12 @@ namespace MeterWay
             [RequiredVersion("1.0")] ICondition condition,
             [RequiredVersion("1.0")] IPartyList partyList,
             [RequiredVersion("1.0")] IDataManager datamanager,
+            [RequiredVersion("1.0")] IDutyState dutyState,
             [RequiredVersion("1.0")] ITextureProvider textureProvider
             )
         {
             // add all interfaces to the manager
-            this.pluginManager = new PluginManager(WindowSystem, pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, datamanager, textureProvider);
+            this.pluginManager = new PluginManager(WindowSystem, pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, datamanager, textureProvider, dutyState);
             this.configurationManager = new ConfigurationManager();
 
             this.MWDataManager = new DataManager();

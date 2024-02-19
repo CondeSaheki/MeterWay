@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Lumina.Excel.GeneratedSheets;
-
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Objects.Types;
 using MeterWay.managers;
 
 namespace MeterWay;
@@ -12,27 +14,32 @@ public class Encounter
     public uint id { get; set; }
     public string Name { get; set; }
 
-    public bool active { get; set; }
+    public bool active => Start != null && End == null;
+    public bool finished => Start != null && End != null;
+
     public DateTime? Start { get; set; }
     public DateTime? End { get; set; }
     public TimeSpan duration => Duration();
 
     public List<INetworkMessage> RawActions { get; set; }
+
+    public uint partyListId { get; set; }
+
     public Dictionary<uint, Player> Players { get; set; }
-    
-    
+
+
     public Int64 TotalDamage { get; set; }
-    public float Dps { get; set; }
-    
+    public float DPS { get; set; }
+
     // constructor
     public Encounter()
     {
         this.id = CreateId();
+        this.partyListId = CreateId();
         this.Name = GetEncounterName();
-        this.active = false;
         this.Players = GetPlayers();
         this.TotalDamage = 0;
-        this.Dps = 0;
+        this.DPS = 0;
         this.RawActions = new List<INetworkMessage>();
     }
 
@@ -51,7 +58,7 @@ public class Encounter
             {
                 if (player.GameObject == null) continue;
 
-                var character = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
+                var character = (Character)player.GameObject;
                 playerstemp.Add(character.ObjectId, new Player(character, this));
             }
         }
@@ -59,11 +66,88 @@ public class Encounter
         {
             if (PluginManager.Instance.ClientState.LocalPlayer != null)
             {
-                var character = (Dalamud.Game.ClientState.Objects.Types.Character)PluginManager.Instance.ClientState.LocalPlayer;
+                var character = (Character)PluginManager.Instance.ClientState.LocalPlayer;
                 playerstemp.Add(character.ObjectId, new Player(character, this));
             }
         }
         return playerstemp;
+    }
+
+    public void UpdateParty()
+    {
+        PluginManager.Instance.PluginLog.Info("Party has changed, triggering update.");
+
+        List<uint> newPlayerList = new List<uint>();
+        if (PluginManager.Instance.PartyList.Length != 0)
+        {
+            foreach (var player in PluginManager.Instance.PartyList)
+            {
+                if (player.GameObject == null) continue;
+                var character = (Character)player.GameObject;
+
+                if (!this.Players.ContainsKey(character.ObjectId))
+                {  
+                    var existingPlayer = this.Players.Values.First(p => p.Name == character.Name.ToString() && p.World == (character as PlayerCharacter)?.HomeWorld.Id);
+                    
+                    if (existingPlayer != null)
+                    {
+                        this.Players[existingPlayer.Id].Id = character.ObjectId;
+                        this.Players[player.ObjectId] = this.Players[existingPlayer.Id];
+                    } else {
+                        this.Players.Add(character.ObjectId, new Player(character, this));
+                    }
+                }
+
+                newPlayerList.Add(character.ObjectId);
+            }
+
+            PluginManager.Instance.PluginLog.Info("Party player count: " + PluginManager.Instance.PartyList.Length);
+        }
+        else if (PluginManager.Instance.ClientState.LocalPlayer != null)
+        {
+            var character = (Character)PluginManager.Instance.ClientState.LocalPlayer;
+
+            if (!this.Players.ContainsKey(character.ObjectId))
+            {  
+                var existingPlayer = this.Players.Values.First(p => p.Name == character.Name.ToString() && p.World == (character as PlayerCharacter)?.HomeWorld.Id);
+                
+                if (existingPlayer != null)
+                {
+                    this.Players[existingPlayer.Id].Id = character.ObjectId;
+                    this.Players[character.ObjectId] = this.Players[existingPlayer.Id];
+                } else {
+                    this.Players.Add(character.ObjectId, new Player(character, this));
+                }
+            }
+            newPlayerList.Add(character.ObjectId);
+        }
+
+        PluginManager.Instance.PluginLog.Info("PartyList: " + String.Join(", ", this.Players.Keys.ToArray()));
+
+        PluginManager.Instance.PluginLog.Info("newPartyList: " + String.Join(", ", newPlayerList.ToArray()));
+
+        foreach (var player in this.Players.Keys)
+        {
+            if (newPlayerList.Contains(player))
+            {
+                this.Players[player].InParty = true;
+                continue;
+            }
+
+            if (this.active)
+            {
+                this.Players[player].InParty = false;
+                continue;
+            }
+
+            PluginManager.Instance.PluginLog.Info("Tried to remove: " + player + " from encounter.");
+
+            this.Players.Remove(player);
+        }
+
+        PluginManager.Instance.PluginLog.Info("Party update complete: " + this.Players.Count + " players in encounter.");
+
+        this.partyListId = CreateId(); // update id
     }
 
     private string GetEncounterName()
@@ -84,25 +168,27 @@ public class Encounter
 
     public void StartEncounter()
     {
-        this.Start = DateTime.Now;
-        this.active = true;
+        PluginManager.Instance.PluginLog.Info("Encounter started.");
+        if (this.Start == null) this.Start = DateTime.Now;
     }
 
     public void EndEncounter()
     {
-        this.End = DateTime.Now;
-        this.active = false;
+        PluginManager.Instance.PluginLog.Info("Encounter ended.");
+        if (this.End == null) this.End = DateTime.Now;
     }
 
-    public void Update()
+    public void UpdateStats()
     {
-        this.Dps = this.duration.TotalSeconds != 0 ? (float)(this.TotalDamage / this.duration.TotalSeconds) : 0;
-        //this.Dps = TotalDamage / duration;
+        var currentSeconds = this.duration.TotalSeconds <= 1 ? 1 : this.duration.TotalSeconds;
+        this.DPS = (float)(this.TotalDamage / currentSeconds);
+        //this.DPS = TotalDamage / duration;
         foreach (var player in this.Players.Values)
         {
-            player.Update();
+            player.UpdateStats();
         }
     }
+
 }
 
 public class Player
@@ -114,20 +200,25 @@ public class Player
     public string Name { get; set; }
     public uint Job { get; set; }
 
+    public uint? World { get; set; }
+
     public float DPS { get; set; }
     public uint TotalDamage { get; set; }
-    
+
     public float DamagePercentage { get; set; }
+
+    public bool InParty { get; set; }
 
     public List<INetworkMessage> RawActions { get; set; }
 
-    public void Update()
+    public void UpdateStats()
     {
-        this.DPS = this.Encounter.duration.TotalSeconds != 0 ? (float)(this.TotalDamage / this.Encounter.duration.TotalSeconds) : 0;
+        var currentSeconds = this.Encounter.duration.TotalSeconds <= 1 ? 1 : this.Encounter.duration.TotalSeconds;
+        this.DPS = (float)(this.TotalDamage / currentSeconds);
         this.DamagePercentage = this.Encounter.TotalDamage != 0 ? (float)((this.TotalDamage * 100) / this.Encounter.TotalDamage) : 0;
     }
 
-    public Player(Dalamud.Game.ClientState.Objects.Types.Character character, Encounter encounter)
+    public Player(Character character, Encounter encounter)
     {
         this.Encounter = encounter;
         this.Id = character.ObjectId;
@@ -136,7 +227,9 @@ public class Player
         this.DPS = 0;
         this.TotalDamage = 0;
         this.DamagePercentage = 0;
-        
+        this.InParty = true;
         this.RawActions = new List<INetworkMessage>();
+
+        this.World = (character as PlayerCharacter)?.HomeWorld.Id;
     }
 }

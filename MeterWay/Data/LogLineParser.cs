@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using MeterWay;
+using MeterWay.managers;
 
 public interface INetworkMessage
 {
@@ -13,7 +15,6 @@ public class ActionEffect : INetworkMessage
 {
     public uint MsgType { get; }
     public DateTime DateTime { get; }
-    // skip player id and name
     public uint ObjectId { get; }
     public int Id { get; }
     public string Name { get; }
@@ -22,7 +23,7 @@ public class ActionEffect : INetworkMessage
     public int? TargetHp { get; }
     public uint? TargetMaxHp { get; }
     public List<KeyValuePair<uint, uint>> ActionAttributes { get; } // index 8 to 23
-    public Vector4 TargetPos { get; }
+    public Vector4? TargetPos { get; }
     public uint Mp { get; }
     public Vector4 Pos { get; }
     public uint MultiMessageIndex { get; }
@@ -48,12 +49,12 @@ public class ActionEffect : INetworkMessage
         // uint maxHp = Convert.ToUInt32(data[35].ToString());
         // uint hp = Convert.ToUInt32(data[34].ToString());
 
-        this.TargetPos = new Vector4();
         if (data[33].ToString() != "" || data[32].ToString() != "" || data[31].ToString() != "" || data[30].ToString() != "")
         {
             this.TargetPos = new Vector4((float)Convert.ToDouble(data[30].ToString()), (float)Convert.ToDouble(data[31].ToString()),
                 (float)Convert.ToDouble(data[32].ToString()), (float)Convert.ToDouble(data[33].ToString()));
         }
+        // else null
 
         // var separator = data[29]; // null
         // var separator = data[28]; // null
@@ -95,7 +96,7 @@ public class ActionEffect : INetworkMessage
             uint value = Convert.ToUInt32(data[9 + i].ToString(), 16);
             if (key == 0 && value == 0) break;
             this.ActionAttributes.Add(new KeyValuePair<uint, uint>(key, value));
-        }   
+        }
 
 
 
@@ -118,97 +119,105 @@ public class ActionEffect : INetworkMessage
         this.DateTime = DateTime.Parse(data[1].ToString());
 
         this.RawLine = raw;
-
-
     }
+}
 
-    public class StartsCasting : INetworkMessage
+public class StartsCasting : INetworkMessage
+{
+    public uint MsgType { get; }
+    public DateTime DateTime { get; }
+    public string RawLine { get; }
+
+    // uint sourceId;
+    // string sourceName;
+    // uint targetId;
+    // string targetName;
+    // uint skillId;
+    // string skillName;
+    // float Duration;
+    // float? posX;
+    // float? posY;
+    // float? posZ;
+    // float? heading;
+
+    public StartsCasting(List<string> data, string raw)
     {
-        public uint MsgType { get; }
-        public DateTime DateTime { get; }
-        public string RawLine { get; }
-
-        uint sourceId;
-        string sourceName;
-        uint targetId;
-        string targetName;
-        uint skillId;
-        string skillName;
-        float Duration;
-        float? posX;
-        float? posY;
-        float? posZ;
-        float? heading;
-
-        public StartsCasting(List<string> data, string raw)
-        {
-
-        }
+        this.MsgType = 999;
+        this.RawLine = raw;
+        this.DateTime = DateTime.Now;
     }
+}
 
-    public class MsgDoTHoT : INetworkMessage
+public class DoTHoT : INetworkMessage
+{
+    public uint MsgType { get; }
+    public DateTime DateTime { get; }
+    public string RawLine { get; }
+
+    public int TargetId { get; }
+    public string TargetName { get; }
+    public bool IsHeal { get; }
+    public int BuffId { get; }
+    public uint Value { get; }
+    public int? TargetHp { get; }
+    public int? TargetMaxHp { get; }
+    public int? TargetMp { get; }
+    public int? TargetMaxMp { get; }
+    public Vector4? TargetPos { get; }
+    public uint SourceId { get; }
+    public string SourceName { get; }
+    public int DamageType { get; }
+    public int? SourceHp { get; }
+    public int? SourceMaxHp { get; }
+    public int? SourceMp { get; }
+    public int? SourceMaxMp { get; }
+    public Vector4 SourcePos { get; }
+
+    public DoTHoT(List<string> data, string raw)
     {
-        public uint MsgType { get; }
-        public DateTime DateTime { get; }
-        public string RawLine { get; }
+        // 24|2024-02-19T05:36:56.1640000-03:00|40003EC7|Striking Dummy|DoT|0|466|44|44|0|10000|||-727.13|-810.75|10.02|-0.96|1089ED18|Aruna Rhen|FFFFFFFF|31362|31362|9478|10000|||-723.48|-821.16|10.00|-0.34|2df8dd482da88ed7
+        PluginManager.Instance.PluginLog.Info(raw);
+        this.MsgType = 24;
+        this.RawLine = raw;
+        this.DateTime = DateTime.Now;
 
-        uint targetId;
-        string targetName;
-        bool IsHeal;
-        uint buffId;
-        uint amount;
-        uint? targetCurrentHp;
-        uint? targetMaxHp;
-        uint? targetCurrentMp;
-        uint? targetMaxMp;
-        float? targetPosX;
-        float? targetPosY;
-        float? targetPosZ;
-        float? targetHeading;
-        uint? sourceId;
-        string sourceName;
-        uint damageType;
-        uint? sourceCurrentHp;
-        uint? sourceMaxHp;
-        uint? sourceCurrentMp;
-        uint? sourceMaxMp;
-        float? sourcePosX;
-        float? sourcePosY;
-        float? sourcePosZ;
-        float? sourceHeading;
+        this.TargetId = Convert.ToInt32(data[2].ToString(), 16);
+        this.TargetName = data[3];
+        this.IsHeal = data[4].ToString() == "HoT";
+        // data[5] == 0 if from source;
+        this.Value = Convert.ToUInt32(data[6].ToString(), 16);
+        this.SourceHp = Convert.ToInt32(data[7]);
+        this.SourceMaxHp = Convert.ToInt32(data[8]);
+        this.SourceMp = Convert.ToInt32(data[9]);
+        this.SourceMaxMp = Convert.ToInt32(data[10]);
+        // data[11] == null
+        // data[12] == null
+        this.SourcePos = new Vector4((float)Convert.ToDouble(data[13].ToString()), (float)Convert.ToDouble(data[14].ToString()),
+            (float)Convert.ToDouble(data[15].ToString()), (float)Convert.ToDouble(data[16].ToString()));
+        // else null
 
-        public MsgDoTHoT(List<string> data, string raw)
+
+        this.SourceId = Convert.ToUInt32(data[17].ToString(), 16);
+        this.SourceName = data[18].ToString();
+        
+        // this.DamageType = Convert.ToUInt32(data[19]); // seems to be meaningless
+        
+        this.TargetHp = data[20].ToString() == "" ? 0 : Convert.ToInt32(data[20].ToString()); 
+        this.TargetMaxHp = data[21].ToString() == "" ? 0 : Convert.ToInt32(data[21].ToString());
+        this.TargetMp = data[22].ToString() == "" ? 0 : Convert.ToInt32(data[22].ToString());
+        this.TargetMaxMp = data[23].ToString() == "" ? 0 : Convert.ToInt32(data[23].ToString());
+        // data[24] = null
+        // data[25] = null
+        if (data[26].ToString() != "" || data[27].ToString() != "" || data[28].ToString() != "" || data[29].ToString() != "")
         {
-            this.MsgType = 24;
-            this.RawLine = raw;
-            this.DateTime = DateTime.Now;
-
-            this.targetId = Convert.ToUInt32(data[0]);
-            this.targetName = data[0];
-            this.IsHeal = Convert.ToBoolean(data[0]);
-            this.buffId = Convert.ToUInt32(data[0]);
-            this.amount = Convert.ToUInt32(data[0]);
-            this.targetCurrentHp = Convert.ToUInt32(data[0]);
-            this.targetMaxHp = Convert.ToUInt32(data[0]);
-            this.targetCurrentMp = Convert.ToUInt32(data[0]);
-            this.targetMaxMp = Convert.ToUInt32(data[0]);
-            this.targetPosX = Convert.ToUInt32(data[0]);
-            this.targetPosY = Convert.ToUInt32(data[0]);
-            this.targetPosZ = Convert.ToUInt32(data[0]);
-            this.targetHeading = Convert.ToUInt32(data[0]);
-            this.sourceId = Convert.ToUInt32(data[0]);
-            this.sourceName = data[0];
-            this.damageType = Convert.ToUInt32(data[0]);
-            this.sourceCurrentHp = Convert.ToUInt32(data[0]);
-            this.sourceMaxHp = Convert.ToUInt32(data[0]);
-            this.sourceCurrentMp = Convert.ToUInt32(data[0]);
-            this.sourceMaxMp = Convert.ToUInt32(data[0]);
-            this.sourcePosX = Convert.ToUInt32(data[0]);
-            this.sourcePosY = Convert.ToUInt32(data[0]);
-            this.sourcePosZ = Convert.ToUInt32(data[0]);
-            this.sourceHeading = Convert.ToUInt32(data[0]);
+            this.TargetPos = new Vector4((float)Convert.ToDouble(data[26].ToString()), (float)Convert.ToDouble(data[27].ToString()),
+                (float)Convert.ToDouble(data[28].ToString()), (float)Convert.ToDouble(data[29].ToString()));
         }
+        // data[30] = criptoid
+
     }
 
+
+    
 
 }

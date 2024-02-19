@@ -16,6 +16,8 @@ public class PluginManager
     public readonly IPartyList PartyList;
     public readonly IDataManager DataManager;
     public readonly ITextureProvider TextureProvider;
+    public readonly IDutyState DutyState;
+    
 
     public static PluginManager Instance { get; private set; } = null!;
 
@@ -28,8 +30,8 @@ public class PluginManager
         ICondition condition,
         IPartyList partyList,
         IDataManager dataManager,
-        ITextureProvider textureProvider
-
+        ITextureProvider textureProvider,
+        IDutyState dutyState
     )
     {
         this.WindowSystem = windowsystem;
@@ -42,6 +44,7 @@ public class PluginManager
         this.PartyList = partyList;
         this.DataManager = dataManager;
         this.TextureProvider = textureProvider;
+        this.DutyState = dutyState;
 
         PluginManager.Instance = this;
     }

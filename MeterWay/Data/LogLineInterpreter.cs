@@ -18,8 +18,9 @@ public static class LoglineParser
             { MessageType.ActionEffect, MsgActionEffect },
             { MessageType.AOEActionEffect, MsgAOEActionEffect },
             { MessageType.StartsCasting, MsgStartsCasting },
-            { MessageType.DoTHoT, MsgDoTHoT }
-        };
+            { MessageType.DoTHoT, MsgDoTHoT },
+            { MessageType.PartyList, MsgPartyList }
+                };
 
     public static void Parse(JObject json, DataManager recipient)
     {
@@ -54,19 +55,22 @@ public static class LoglineParser
         var parsed = new ActionEffect(data, raw);
 
         bool found = false;
-        if (recipient.current.Players.ContainsKey(parsed.ObjectId))
+        if (recipient.encounters.Last().Players.ContainsKey(parsed.ObjectId))
         {
-            recipient.current.Players[parsed.ObjectId].RawActions.Add(parsed);
+            recipient.encounters.Last().Players[parsed.ObjectId].RawActions.Add(parsed);
             found = true;
-        }
-        else if (parsed.TargetId != null && recipient.current.Players.ContainsKey((uint)parsed.TargetId))
-        {
-            recipient.current.RawActions.Add(parsed);
-            found = true;
-        }
-        if(!found) return;
 
-        if (!recipient.current.active) recipient.StartEncounter();
+            if (!recipient.encounters.Last().Players[parsed.ObjectId].InParty && !(PluginManager.Instance.DutyState.IsDutyStarted))
+            {
+              return;
+            }
+        }
+        else if (parsed.TargetId != null && recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
+        {
+            recipient.encounters.Last().RawActions.Add(parsed);
+            found = true;
+        }
+        if (!found) return;
 
         uint actionValue = 0;
         uint rawattribute = 0;
@@ -77,15 +81,17 @@ public static class LoglineParser
             if (ParserAssistant.IsSpecial((int)attribute.Key)) { }; // TODO
             if (ParserAssistant.IsDamage((int)attribute.Key))
             {
+                if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
+
                 rawattribute = attribute.Value;
                 actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
 
-                recipient.current.Players[parsed.ObjectId].TotalDamage += actionValue;
-                recipient.current.TotalDamage += actionValue;
+                recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += actionValue;
+                recipient.encounters.Last().TotalDamage += actionValue;
             }
         }
 
-        PluginManager.Instance.PluginLog.Info($"{parsed.ObjectId} | {parsed.Name} | {(parsed.TargetId == null ? "null" : parsed.TargetId)} | {actionValue} |  {actionValue} ");
+        //PluginManager.Instance.PluginLog.Info($"{parsed.ObjectId} | {parsed.Name} | {(parsed.TargetId == null ? "null" : parsed.TargetId)} | {actionValue} |  {actionValue} ");
     }
 
     private static void MsgAOEActionEffect(List<string> data, string raw, DataManager recipient)
@@ -100,27 +106,41 @@ public static class LoglineParser
 
     private static void MsgDoTHoT(List<string> data, string raw, DataManager recipient)
     {
+        var parsed = new DoTHoT(data, raw);
 
-    }
-
-    public interface INetworkMessage
-    {
-        public string Id { get; }
-        public DateTime DateTime { get; }
-    }
-
-    public class action21 : INetworkMessage
-    {
-
-        public string Id { get; }
-        public DateTime DateTime { get; }
-
-        public action21()
+        bool found = false;
+        if (recipient.encounters.Last().Players.ContainsKey(parsed.SourceId))
         {
+            recipient.encounters.Last().Players[parsed.SourceId].RawActions.Add(parsed);
+            found = true;
 
+            if (!recipient.encounters.Last().Players[parsed.SourceId].InParty && !(PluginManager.Instance.DutyState.IsDutyStarted))
+            {
+              return;
+            }
         }
+        else if (recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
+        {
+            recipient.encounters.Last().RawActions.Add(parsed);
+            found = true;
+        }
+        if (!found) return;
+
+        if (!parsed.IsHeal)
+        {
+            if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
+
+            recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
+            recipient.encounters.Last().TotalDamage += parsed.Value;
+
+            PluginManager.Instance.PluginLog.Info($"DOT: {parsed.RawLine}");
+        }
+
     }
 
-
+    private static void MsgPartyList(List<string> data, string raw, DataManager recipient)
+    {
+        recipient.encounters.Last().UpdateParty();
+    }
 
 }

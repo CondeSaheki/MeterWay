@@ -14,7 +14,7 @@ public class DataManager
     // data
     public List<Encounter> encounters;
     private bool lastCombatState;
-    public Encounter current => encounters.Last();
+    public Encounter current => Current();
 
     // constructor
     public DataManager()
@@ -23,26 +23,40 @@ public class DataManager
         encounters.Add(new Encounter());
         this.lastCombatState = false;
     }
-    
+
     // metods
     public void StartEncounter()
     {
-        if (current.active)
+        if (encounters.Last().active) return;
+
+        if (encounters.Last().finished)
         {
-            EndEncounter();
+            encounters.Add(new Encounter());
+            encounters.Last().StartEncounter();
         }
-        encounters.Add(new Encounter());
-        current.StartEncounter();
-        PluginManager.Instance.PluginLog.Info("meterway detected start of combat");
+
+        encounters.Last().RawActions.RemoveAll(r => r.DateTime < encounters.Last().Start - TimeSpan.FromSeconds(30));
     }
 
     public void EndEncounter()
     {
-        current.EndEncounter();
-        PluginManager.Instance.PluginLog.Info("meterway detected end of combat");
+        encounters.Last().EndEncounter();
+        encounters.Add(new Encounter());
     }
 
-    public Encounter Current() { return current; }
+    public Encounter Current()
+    {
+        if (encounters.Last().active || encounters.Last().finished)
+        {
+            return encounters.Last();
+        }
+        else if (encounters.Count > 1)
+        {
+            return encounters[encounters.Count - 2];
+        }
+        return encounters.Last();
+    }
+
 
     private bool GetInCombat()
     {
@@ -70,7 +84,7 @@ public class DataManager
         // start combat
         if ((combatState == true) && lastCombatState == false)
         {
-            if (!current.active) StartEncounter();
+            if (!encounters.Last().active) StartEncounter();
             lastCombatState = true;
         }
 

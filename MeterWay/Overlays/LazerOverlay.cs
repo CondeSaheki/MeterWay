@@ -52,14 +52,20 @@ public class LazerOverlay : IMeterwayOverlay
             targetInfo = new Dictionary<uint, LerpPlayerData>();
             this.sortCache = Helpers.CreateDictionarySortCache(data.Players);
         }
-        this.combat.Update();
 
-        sortCache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
+        if (data.partyListId != this.combat.partyListId)
+        {
+            this.sortCache = Helpers.CreateDictionarySortCache(data.Players);
+        }
         this.combat = data;
+        this.combat.UpdateStats();
+    
+        sortCache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
     }
 
     public void Draw()
-    {
+    {        
+        
         UpdateWindowSize();
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Instance.Configuration.OverlayBackgroundColor));
 
@@ -150,8 +156,6 @@ public class LazerOverlay : IMeterwayOverlay
             targetInfo[player.Id].TotalDMG = player.TotalDamage;
             targetInfo[player.Id].Position = sortCache.IndexOf(player.Id) + 1;
             transitionTimer = 0.0f;
-
-            //PluginManager.Instance.PluginLog.Info($"Lerping {player.Name} to {targetInfo[player.Name].PctBar}");
         }
     }
 
