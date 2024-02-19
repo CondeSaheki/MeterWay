@@ -43,7 +43,7 @@ public class LazerOverlay : IMeterwayOverlay
         this.combat = new Encounter();
         this.sortCache = new List<uint>();
     }
-    
+
     public void DataProcess(Encounter data)
     {
         if (data.id != this.combat.id)
@@ -59,20 +59,20 @@ public class LazerOverlay : IMeterwayOverlay
         }
         this.combat = data;
         this.combat.UpdateStats();
-    
+
         sortCache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
     }
 
     public void Draw()
-    {        
-        
+    {
+
         UpdateWindowSize();
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Instance.Configuration.OverlayBackgroundColor));
 
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * ConfigurationManager.Instance.Configuration.OverlayFontScale), Helpers.Color(26, 26, 39, 190));
 
 
-        if (!this.combat.active && this.combat.duration.Seconds == 0)
+        if (this.combat.Start == null)
         {
             Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center, dropShadow: true);
             return;
