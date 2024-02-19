@@ -13,7 +13,7 @@ namespace MeterWay.IINACT;
 public static class LoglineParser
 {
     // we are only getting the messages needed:
-    private static Dictionary<MessageType, Action<List<string>, Encounter>> Handlers = new Dictionary<MessageType, Action<List<string>, Encounter>>
+    private static Dictionary<MessageType, Action<List<string>, DataManager>> Handlers = new Dictionary<MessageType, Action<List<string>, DataManager>>
         {
             { MessageType.ActionEffect, MsgActionEffect },
             { MessageType.AOEActionEffect, MsgAOEActionEffect },
@@ -21,7 +21,7 @@ public static class LoglineParser
             { MessageType.DoTHoT, MsgDoTHoT }
         };
 
-    public static void Parse(JObject json, Encounter recipient)
+    public static void Parse(JObject json, DataManager recipient)
     {
         var data = json["line"];
         if (data == null) return;
@@ -46,7 +46,7 @@ public static class LoglineParser
         }
     }
 
-    private static void MsgActionEffect(List<string> data, Encounter recipient)
+    private static void MsgActionEffect(List<string> data, DataManager recipient)
     {
         // int crypto = Convert.ToInt32(data[47].ToString(), 16);
         // uint multimessagecount = Convert.ToUInt32(data[46].ToString());
@@ -110,25 +110,30 @@ public static class LoglineParser
 
         var datetime = data[1].ToString();
 
-        if (recipient.Players.ContainsKey(playerid))
+        
+        if (recipient.current.Players.ContainsKey(playerid))
         {
+            if(!recipient.current.active) recipient.StartEncounter();
+
             if (ParserAssistant.IsDamage(actionTraits))
             {
                 //Total Damage
-                recipient.Players[playerid].TotalDamage += actionValue ?? 0;
-                recipient.TotalDamage += actionValue ?? 0;
+                recipient.current.Players[playerid].TotalDamage += actionValue ?? 0;
+                recipient.current.TotalDamage += actionValue ?? 0;
             }
         }
+
+
 
         //PluginManager.Instance.PluginLog.Info($"{player} | {action} | {(target == null ? "null" : target)} | {(value == null ? "null" : data[8].ToString())} ");
     }
 
-    private static void MsgAOEActionEffect(List<string> data, Encounter recipient)
+    private static void MsgAOEActionEffect(List<string> data, DataManager recipient)
     {
         MsgActionEffect(data, recipient);
     }
 
-    private static void MsgStartsCasting(List<string> data, Encounter recipient)
+    private static void MsgStartsCasting(List<string> data, DataManager recipient)
     {
         // uint sourceId;
         // string sourceName;
@@ -143,7 +148,7 @@ public static class LoglineParser
         // float? heading;
     }
 
-    private static void MsgDoTHoT(List<string> data, Encounter recipient)
+    private static void MsgDoTHoT(List<string> data, DataManager recipient)
     {
         // uint targetId;
         // string targetName;

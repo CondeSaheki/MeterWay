@@ -22,7 +22,6 @@ public class Encounter
     // all other data here
 
     public Dictionary<uint, Player> Players { get; set; }
-
     // constructor
     public Encounter()
     {
@@ -114,6 +113,7 @@ public class Player
 
     public float DPS { get; set; }
     public uint TotalDamage { get; set; }
+    
     public float DamagePercentage { get; set; }
 
     public void Update()

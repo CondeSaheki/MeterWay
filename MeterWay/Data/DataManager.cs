@@ -25,7 +25,7 @@ public class DataManager
     }
 
     // metods
-    void StartEncounter()
+    public void StartEncounter()
     {
         if (current.active)
         {
@@ -33,11 +33,13 @@ public class DataManager
         }
         encounters.Add(new Encounter());
         current.StartEncounter();
+        PluginManager.Instance.PluginLog.Info("meterway detected start of combat");
     }
 
-    void EndEncounter()
+    public void EndEncounter()
     {
         current.EndEncounter();
+        PluginManager.Instance.PluginLog.Info("meterway detected end of combat");
     }
 
     public Encounter Current() { return current; }
@@ -63,22 +65,18 @@ public class DataManager
 
     public void Receiver(JObject json)
     {
-        var combatState = GetInCombat();
+        var combatState = GetInCombat(); //  || 
 
         // start combat
-        if (combatState == true && lastCombatState == false)
+        if ((combatState == true) && lastCombatState == false)
         {
-
-            PluginManager.Instance.PluginLog.Info("meterway detected start of combat");
-            StartEncounter();
+            if (!current.active) StartEncounter();
             lastCombatState = true;
         }
 
         // end combat
         if (combatState == false && lastCombatState == true)
         {
-
-            PluginManager.Instance.PluginLog.Info("meterway detected end of combat");
             EndEncounter();
             lastCombatState = false;
         }
@@ -92,7 +90,7 @@ public class DataManager
         // parse data
         try
         {
-            LoglineParser.Parse(json, current);
+            LoglineParser.Parse(json, this);
         }
         catch (Exception ex)
         {
