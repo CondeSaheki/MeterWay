@@ -23,7 +23,7 @@ public class DataManager
         encounters.Add(new Encounter());
         this.lastCombatState = false;
     }
-
+    
     // metods
     public void StartEncounter()
     {

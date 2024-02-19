@@ -17,11 +17,13 @@ public class Encounter
     public DateTime? End { get; set; }
     public TimeSpan duration => Duration();
 
+    public List<INetworkMessage> RawActions { get; set; }
+    public Dictionary<uint, Player> Players { get; set; }
+    
+    
     public Int64 TotalDamage { get; set; }
     public float Dps { get; set; }
-    // all other data here
-
-    public Dictionary<uint, Player> Players { get; set; }
+    
     // constructor
     public Encounter()
     {
@@ -31,6 +33,7 @@ public class Encounter
         this.Players = GetPlayers();
         this.TotalDamage = 0;
         this.Dps = 0;
+        this.RawActions = new List<INetworkMessage>();
     }
 
     private uint CreateId()
@@ -116,6 +119,8 @@ public class Player
     
     public float DamagePercentage { get; set; }
 
+    public List<INetworkMessage> RawActions { get; set; }
+
     public void Update()
     {
         this.DPS = this.Encounter.duration.TotalSeconds != 0 ? (float)(this.TotalDamage / this.Encounter.duration.TotalSeconds) : 0;
@@ -131,5 +136,7 @@ public class Player
         this.DPS = 0;
         this.TotalDamage = 0;
         this.DamagePercentage = 0;
+        
+        this.RawActions = new List<INetworkMessage>();
     }
 }
