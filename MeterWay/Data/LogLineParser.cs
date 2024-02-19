@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using MeterWay;
-using MeterWay.managers;
 
+using Meterway.Managers;
+
+namespace MeterWay.Data;
 public interface INetworkMessage
 {
     public uint MsgType { get; }
@@ -199,10 +200,10 @@ public class DoTHoT : INetworkMessage
 
         this.SourceId = Convert.ToUInt32(data[17].ToString(), 16);
         this.SourceName = data[18].ToString();
-        
+
         // this.DamageType = Convert.ToUInt32(data[19]); // seems to be meaningless
-        
-        this.TargetHp = data[20].ToString() == "" ? 0 : Convert.ToInt32(data[20].ToString()); 
+
+        this.TargetHp = data[20].ToString() == "" ? 0 : Convert.ToInt32(data[20].ToString());
         this.TargetMaxHp = data[21].ToString() == "" ? 0 : Convert.ToInt32(data[21].ToString());
         this.TargetMp = data[22].ToString() == "" ? 0 : Convert.ToInt32(data[22].ToString());
         this.TargetMaxMp = data[23].ToString() == "" ? 0 : Convert.ToInt32(data[23].ToString());
@@ -218,6 +219,6 @@ public class DoTHoT : INetworkMessage
     }
 
 
-    
+
 
 }

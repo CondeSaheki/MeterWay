@@ -2,9 +2,10 @@
 using System.Numerics;
 using ImGuiNET;
 using MeterWay;
-using MeterWay.managers;
+using Meterway.Managers;
 using MeterWay.Utils;
 
+namespace MeterWay.Utils.Draw;
 public static class Widget
 {
     public enum TextAnchor

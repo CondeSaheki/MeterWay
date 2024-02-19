@@ -5,7 +5,8 @@ using ImGuiNET;
 using System.Collections.Generic;
 
 using MeterWay.Overlays;
-using MeterWay.managers;
+using Meterway.Managers;
+using MeterWay.Data;
 
 namespace MeterWay.Windows;
 

@@ -4,10 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using MeterWay.managers;
-using MeterWay.IINACT;
+using Meterway.Managers;
 
-namespace MeterWay;
+namespace MeterWay.Data;
 
 public class DataManager
 {

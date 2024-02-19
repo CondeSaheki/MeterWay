@@ -3,12 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-using FFXIVClientStructs.FFXIV.Common.Math;
-
-using MeterWay.managers;
+using Meterway.Managers;
 using MeterWay.Utils;
 
-namespace MeterWay.IINACT;
+namespace MeterWay.Data;
 
 public static class LoglineParser
 {
@@ -62,7 +60,7 @@ public static class LoglineParser
 
             if (!recipient.encounters.Last().Players[parsed.ObjectId].InParty && !(PluginManager.Instance.DutyState.IsDutyStarted))
             {
-              return;
+                return;
             }
         }
         else if (parsed.TargetId != null && recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
@@ -116,7 +114,7 @@ public static class LoglineParser
 
             if (!recipient.encounters.Last().Players[parsed.SourceId].InParty && !(PluginManager.Instance.DutyState.IsDutyStarted))
             {
-              return;
+                return;
             }
         }
         else if (recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))

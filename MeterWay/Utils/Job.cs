@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using ImGuiNET;
-using MeterWay.managers;
+using Meterway.Managers;
 
 public static class Job
 {

@@ -1,11 +1,11 @@
 using System;
-using System.Linq;
+
 using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using MeterWay.Utils;
-using MeterWay.managers;
-using Lumina.Excel.GeneratedSheets;
+using MeterWay.Data;
+using MeterWay.Utils.Draw;
 
 namespace MeterWay.Overlays;
 
@@ -27,7 +27,7 @@ public class MoguOverlay : IMeterwayOverlay
 
     public void DataProcess(Encounter data)
     {
-        if (data.partyListId != this.data.partyListId ) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
+        if (data.partyListId != this.data.partyListId) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
 
         sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
 
@@ -42,7 +42,7 @@ public class MoguOverlay : IMeterwayOverlay
 
         Vector2 cursor = WindowMin;
         var header = $"{data.duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(data.DPS, 2).ToString()}";
-        ImGui.GetWindowDrawList().AddText(cursor +  new Vector2((WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(header).X / 2, 0), Helpers.Color(255, 255, 255, 255), header);
+        ImGui.GetWindowDrawList().AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(header).X / 2, 0), Helpers.Color(255, 255, 255, 255), header);
 
         cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 
@@ -53,9 +53,9 @@ public class MoguOverlay : IMeterwayOverlay
 
             Widget.JobIcon(p.Job, cursor, ImGui.GetFontSize());
             var damageinfo = $"{Helpers.HumanizeNumber(p.DPS, 2).ToString()} {p.DamagePercentage.ToString()}%"; //{p.TotalDamage.ToString()}
-            
+
             ImGui.GetWindowDrawList().AddText(cursor + new Vector2(ImGui.GetFontSize(), 0), Helpers.Color(255, 255, 255, 255), $"{p.Name}");
-            
+
             ImGui.GetWindowDrawList().AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) - Widget.CalcTextSize(damageinfo).X, 0), Helpers.Color(255, 255, 255, 255), damageinfo);
             cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 

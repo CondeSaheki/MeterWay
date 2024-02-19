@@ -5,7 +5,7 @@ using ImGuiNET;
 using Dalamud.Interface.Utility.Raii;
 using System.Collections.Generic;
 
-using MeterWay.managers;
+using Meterway.Managers;
 using MeterWay.IINACT;
 
 namespace MeterWay.Windows;

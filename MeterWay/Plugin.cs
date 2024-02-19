@@ -7,7 +7,7 @@ using Dalamud.Plugin.Services;
 using MeterWay.Windows;
 using MeterWay.IINACT;
 using MeterWay.commands;
-using MeterWay.managers;
+using Meterway.Managers;
 
 using System.Collections.Generic;
 using MeterWay.Overlays;

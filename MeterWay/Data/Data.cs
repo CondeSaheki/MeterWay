@@ -4,9 +4,9 @@ using System.Linq;
 using Lumina.Excel.GeneratedSheets;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
-using MeterWay.managers;
+using Meterway.Managers;
 
-namespace MeterWay;
+namespace MeterWay.Data;
 
 public class Encounter
 {

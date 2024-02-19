@@ -2,7 +2,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
-namespace MeterWay.managers;
+namespace Meterway.Managers;
 
 public class PluginManager
 {
@@ -17,7 +17,7 @@ public class PluginManager
     public readonly IDataManager DataManager;
     public readonly ITextureProvider TextureProvider;
     public readonly IDutyState DutyState;
-    
+
 
     public static PluginManager Instance { get; private set; } = null!;
 

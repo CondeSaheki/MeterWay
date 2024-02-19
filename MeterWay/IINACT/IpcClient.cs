@@ -6,7 +6,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Ipc;
 
 namespace MeterWay.IINACT;
-using MeterWay.managers;
+using Meterway.Managers;
 
 public class IpcClient : IDisposable
 {
