@@ -18,7 +18,7 @@ public class Encounter
     public TimeSpan duration => Duration();
 
     public Int64 TotalDamage { get; set; }
-
+    public float Dps { get; set; }
     // all other data here
 
     public Dictionary<uint, Player> Players { get; set; }
@@ -31,6 +31,7 @@ public class Encounter
         this.active = false;
         this.Players = GetPlayers();
         this.TotalDamage = 0;
+        this.Dps = 0;
     }
 
     private uint CreateId()
@@ -93,6 +94,8 @@ public class Encounter
 
     public void Update()
     {
+        this.Dps = this.duration.TotalSeconds != 0 ? (float)(this.TotalDamage / this.duration.TotalSeconds) : 0;
+        //this.Dps = TotalDamage / duration;
         foreach (var player in this.Players.Values)
         {
             player.Update();
