@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 using MeterWay.Windows;
 using MeterWay.IINACT;
-using MeterWay.commands;
+using MeterWay.Commands;
 using Meterway.Managers;
 using MeterWay.Overlays;
 using MeterWay.Data;

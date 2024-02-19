@@ -1,9 +1,7 @@
 
 using System.Numerics;
 using ImGuiNET;
-using MeterWay;
 using Meterway.Managers;
-using MeterWay.Utils;
 
 namespace MeterWay.Utils.Draw;
 public static class Widget

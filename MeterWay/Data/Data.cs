@@ -4,6 +4,7 @@ using System.Linq;
 using Lumina.Excel.GeneratedSheets;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
+
 using Meterway.Managers;
 
 namespace MeterWay.Data;
