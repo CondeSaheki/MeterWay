@@ -27,6 +27,7 @@ public class Encounter
 
     public Dictionary<uint, Player> Players { get; set; }
 
+    public Dictionary<uint, uint> Pets { get; set; }
 
     public Int64 TotalDamage { get; set; }
     public float DPS { get; set; }
@@ -38,6 +39,7 @@ public class Encounter
         this.partyListId = CreateId();
         this.Name = GetEncounterName();
         this.Players = GetPlayers();
+        this.Pets = new Dictionary<uint, uint>();
         this.TotalDamage = 0;
         this.DPS = 0;
         this.RawActions = new List<INetworkMessage>();

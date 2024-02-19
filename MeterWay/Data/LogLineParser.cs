@@ -35,6 +35,8 @@ public class ActionEffect : INetworkMessage
     public ActionEffect(List<string> data, string raw)
     {
         this.RawLine = raw;
+        PluginManager.Instance.PluginLog.Info(raw);
+
         // int crypto = Convert.ToInt32(data[47].ToString(), 16);
         this.MultiMessageCount = Convert.ToUInt32(data[46].ToString());
         this.MultiMessageIndex = Convert.ToUInt32(data[45].ToString());
@@ -217,7 +219,62 @@ public class DoTHoT : INetworkMessage
         // data[30] = criptoid
 
     }
+}
+public class AddCombatant : INetworkMessage
+{
+    public uint MsgType { get; }
+    public DateTime DateTime { get; set; }
+    public string RawLine { get; }
+    public uint Id { get; set; }
+    public string Name { get; set; }
+    public string Job { get; set; }
+    public int Level { get; set; }
+    public uint OwnerId { get; set; }
+    public uint WorldId { get; set; }
+    public string World { get; set; }
+    public uint NpcNameId { get; set; }
+    public uint NpcBaseId { get; set; }
+    public int CurrentHp { get; set; }
+    public int Hp { get; set; }
+    public int CurrentMp { get; set; }
+    public int Mp { get; set; }
+    public string Unknown1 { get; set; }
+    public string Unknown2 { get; set; }
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double Z { get; set; }
+    public double Heading { get; set; }
 
+    public bool IsPet { get; }
+
+    public AddCombatant(List<string> data, string raw)
+    {
+        this.RawLine = raw;
+
+        this.MsgType = Convert.ToUInt32(data[0], 16);
+        this.DateTime = DateTime.Parse(data[1]);
+        this.Id = Convert.ToUInt32(data[2], 16);
+        this.Name = data[3];
+        this.Job = data[4];
+        this.Level = Convert.ToInt32(data[5], 16);
+        this.OwnerId = Convert.ToUInt32(data[6], 16);
+        this.WorldId = Convert.ToUInt32(data[7], 16);
+        this.World = data[8];
+        this.NpcNameId = Convert.ToUInt32(data[9], 16);
+        this.NpcBaseId = Convert.ToUInt32(data[10], 16);
+        this.CurrentHp = Convert.ToInt32(data[11], 16);
+        this.Hp = Convert.ToInt32(data[12], 16);
+        this.CurrentMp = Convert.ToInt32(data[13], 16);
+        this.Mp = Convert.ToInt32(data[14], 16);
+        this.Unknown1 = data[15];
+        this.Unknown2 = data[16];
+        this.X = Convert.ToDouble(data[17]);
+        this.Y = Convert.ToDouble(data[18]);
+        this.Z = Convert.ToDouble(data[19]);
+        this.Heading = Convert.ToDouble(data[20]);
+
+        this.IsPet = this.OwnerId != 0 && ((this.Id >> 24) & 0xFF) == 64;
+    }
 
 
 

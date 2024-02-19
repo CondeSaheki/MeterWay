@@ -17,7 +17,8 @@ public static class LoglineParser
             { MessageType.AOEActionEffect, MsgAOEActionEffect },
             { MessageType.StartsCasting, MsgStartsCasting },
             { MessageType.DoTHoT, MsgDoTHoT },
-            { MessageType.PartyList, MsgPartyList }
+            { MessageType.PartyList, MsgPartyList },
+            {MessageType.AddCombatant, MsgAddCombatant}
                 };
 
     public static void Parse(JObject json, DataManager recipient)
@@ -53,15 +54,19 @@ public static class LoglineParser
         var parsed = new ActionEffect(data, raw);
 
         bool found = false;
+
+        bool actionFromPet = false;
         if (recipient.encounters.Last().Players.ContainsKey(parsed.ObjectId))
         {
             recipient.encounters.Last().Players[parsed.ObjectId].RawActions.Add(parsed);
             found = true;
 
-            if (!recipient.encounters.Last().Players[parsed.ObjectId].InParty && !(PluginManager.Instance.DutyState.IsDutyStarted))
+            if (!recipient.encounters.Last().Players[parsed.ObjectId].InParty && !PluginManager.Instance.DutyState.IsDutyStarted)
             {
                 return;
             }
+
+            actionFromPet = ((parsed.ObjectId >> 24) & 0xFF) == 64 && recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId);
         }
         else if (parsed.TargetId != null && recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
         {
@@ -81,11 +86,25 @@ public static class LoglineParser
             {
                 if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
 
-                rawattribute = attribute.Value;
-                actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
+                if (actionFromPet)
+                {
+                    if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
+                    {
+                        if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]] != null)
+                        {
+                            recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]].TotalDamage += attribute.Value;
+                            recipient.encounters.Last().TotalDamage += attribute.Value;
+                        }
+                    }
+                }
+                else
+                {
 
-                recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += actionValue;
-                recipient.encounters.Last().TotalDamage += actionValue;
+                    rawattribute = attribute.Value;
+                    actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
+                    recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += attribute.Value;
+                    recipient.encounters.Last().TotalDamage += attribute.Value;
+                }
             }
         }
 
@@ -141,4 +160,15 @@ public static class LoglineParser
         recipient.encounters.Last().UpdateParty();
     }
 
+    private static void MsgAddCombatant(List<string> data, string raw, DataManager recipient)
+    {
+        var parsed = new AddCombatant(data, raw);
+        // this will be used to make sure summoners have their pet, so we gotta check if it is a pet and if the owner is in the party, then add the pet to the recipient list
+
+        if (parsed.IsPet)
+        {
+            if (recipient.encounters.Last().Players.ContainsKey(parsed.OwnerId) && recipient.encounters.Last().Players[parsed.OwnerId] != null)
+                recipient.encounters.Last().Pets.Add(parsed.Id, parsed.OwnerId);
+        }
+    }
 }
