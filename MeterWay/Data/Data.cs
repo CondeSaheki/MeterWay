@@ -78,6 +78,7 @@ public class Encounter
         PluginManager.Instance.PluginLog.Info("Party has changed, triggering update.");
 
         List<uint> newPlayerList = new List<uint>();
+
         if (PluginManager.Instance.PartyList.Length != 0)
         {
             foreach (var player in PluginManager.Instance.PartyList)
@@ -86,14 +87,16 @@ public class Encounter
                 var character = (Character)player.GameObject;
 
                 if (!this.Players.ContainsKey(character.ObjectId))
-                {  
-                    var existingPlayer = this.Players.Values.First(p => p.Name == character.Name.ToString() && p.World == (character as PlayerCharacter)?.HomeWorld.Id);
-                    
+                {
+                    var existingPlayer = GetExistingPlayer(character.Name.ToString(), (character as PlayerCharacter)?.HomeWorld.Id);
+
                     if (existingPlayer != null)
                     {
                         this.Players[existingPlayer.Id].Id = character.ObjectId;
                         this.Players[player.ObjectId] = this.Players[existingPlayer.Id];
-                    } else {
+                    }
+                    else
+                    {
                         this.Players.Add(character.ObjectId, new Player(character, this));
                     }
                 }
@@ -108,14 +111,16 @@ public class Encounter
             var character = (Character)PluginManager.Instance.ClientState.LocalPlayer;
 
             if (!this.Players.ContainsKey(character.ObjectId))
-            {  
-                var existingPlayer = this.Players.Values.First(p => p.Name == character.Name.ToString() && p.World == (character as PlayerCharacter)?.HomeWorld.Id);
-                
+            {
+                var existingPlayer = GetExistingPlayer(character.Name.ToString(), (character as PlayerCharacter)?.HomeWorld.Id);
+
                 if (existingPlayer != null)
                 {
                     this.Players[existingPlayer.Id].Id = character.ObjectId;
                     this.Players[character.ObjectId] = this.Players[existingPlayer.Id];
-                } else {
+                }
+                else
+                {
                     this.Players.Add(character.ObjectId, new Player(character, this));
                 }
             }
@@ -123,31 +128,40 @@ public class Encounter
         }
 
         PluginManager.Instance.PluginLog.Info("PartyList: " + String.Join(", ", this.Players.Keys.ToArray()));
-
         PluginManager.Instance.PluginLog.Info("newPartyList: " + String.Join(", ", newPlayerList.ToArray()));
 
-        foreach (var player in this.Players.Keys)
+        foreach (var player in this.Players.Keys.ToList())
         {
             if (newPlayerList.Contains(player))
             {
                 this.Players[player].InParty = true;
-                continue;
             }
-
-            if (this.active)
+            else if (this.active)
             {
                 this.Players[player].InParty = false;
-                continue;
             }
-
-            PluginManager.Instance.PluginLog.Info("Tried to remove: " + player + " from encounter.");
-
-            this.Players.Remove(player);
+            else
+            {
+                PluginManager.Instance.PluginLog.Info("Tried to remove: " + player + " from encounter.");
+                this.Players.Remove(player);
+            }
         }
 
         PluginManager.Instance.PluginLog.Info("Party update complete: " + this.Players.Count + " players in encounter.");
 
         this.partyListId = CreateId(); // update id
+    }
+
+    private Player? GetExistingPlayer(string playerName, uint? homeWorldId)
+    {
+        if (homeWorldId == null)
+        {
+            return this.Players.Values.FirstOrDefault(p => p.Name == playerName);
+        }
+        else
+        {
+            return this.Players.Values.FirstOrDefault(p => p.Name == playerName && p.World == homeWorldId);
+        }
     }
 
     private string GetEncounterName()
