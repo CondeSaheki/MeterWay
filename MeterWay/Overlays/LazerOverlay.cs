@@ -30,25 +30,24 @@ public class LazerOverlay : IMeterwayOverlay
 
     class LerpPlayerData
     {
-        public float DPS { get; set; }
-        public float PctBar { get; set; }
-        public float TotalDMG { get; set; }
-        public float Position { get; set; }
+        public double DPS { get; set; }
+        public double PctBar { get; set; }
+        public double TotalDMG { get; set; }
+        public double Position { get; set; }
     }
 
 
     public void DataProcess(Encounter data)
     {
         if (data.id != this.combat.id) this.sortCache = Helpers.CreateDictionarySortCache(data.Players);
-
-        sortCache.Sort((uint first, uint second) => { return data.Players[second].DPS.CompareTo(data.Players[first].DPS); });
-
         this.combat.Update();
+
+        sortCache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
         this.combat = data;
     }
 
-    private float transitionDuration = 0.3f; // in seconds
-    private float transitionTimer = 0.0f;
+    private double transitionDuration = 0.3f; // in seconds
+    private double transitionTimer = 0.0f;
     private Dictionary<string, LerpPlayerData> lerpedInfo = new Dictionary<string, LerpPlayerData>();
     private Dictionary<string, LerpPlayerData> targetInfo = new Dictionary<string, LerpPlayerData>();
 
@@ -68,7 +67,7 @@ public class LazerOverlay : IMeterwayOverlay
 
     private void GenerateCombatLerping(Player player)
     {
-        float topPlayerDamagePercentage = this.combat.Players[sortCache.First()].DamagePercentage;
+        double topPlayerDamagePercentage = this.combat.Players[sortCache.First()].DamagePercentage;
         if (topPlayerDamagePercentage == 0)
         {
             topPlayerDamagePercentage = 1; // Failsafe to avoid division by zero
@@ -101,22 +100,23 @@ public class LazerOverlay : IMeterwayOverlay
         if (transitionTimer < transitionDuration)
         {
             transitionTimer += ImGui.GetIO().DeltaTime;
-            float t = transitionTimer / transitionDuration;
+            double t = transitionTimer / transitionDuration;
             lerpedInfo[player.Name].DPS = Helpers.Lerp(lerpedInfo[player.Name].DPS, targetInfo[player.Name].DPS, t);
             lerpedInfo[player.Name].PctBar = Helpers.Lerp(lerpedInfo[player.Name].PctBar, targetInfo[player.Name].PctBar, t);
             lerpedInfo[player.Name].TotalDMG = Helpers.Lerp(lerpedInfo[player.Name].TotalDMG, targetInfo[player.Name].TotalDMG, t);
             lerpedInfo[player.Name].Position = Helpers.Lerp(lerpedInfo[player.Name].Position, targetInfo[player.Name].Position, t);
         }
 
-        if (targetInfo[player.Name].TotalDamage < player.TotalDamage)
+        if (targetInfo[player.Name].TotalDMG <= player.TotalDamage)
         {
-            float topPlayerTotalDamage = this.combat.Players[sortCache.First()].TotalDamage;
-
+            double topPlayerTotalDamage = this.combat.Players[sortCache.First()].TotalDamage == 0 ? 1 : this.combat.Players[sortCache.First()].TotalDamage;
             targetInfo[player.Name].DPS = player.DPS;
             targetInfo[player.Name].PctBar = (player.TotalDamage / topPlayerTotalDamage) * 100;
             targetInfo[player.Name].TotalDMG = player.TotalDamage;
             targetInfo[player.Name].Position = sortCache.IndexOf(player.Id) + 1;
             transitionTimer = 0.0f;
+
+            PluginManager.Instance.PluginLog.Info($"Lerping {player.Name} to {targetInfo[player.Name].PctBar}");
         }
     }
 
@@ -152,7 +152,7 @@ public class LazerOverlay : IMeterwayOverlay
     {
         float lineHeight = ImGui.GetFontSize() + 5;
         var windowMin = new Vector2(WindowMin.X, WindowMin.Y + lineHeight);
-        var rowPosition = windowMin.Y + (lineHeight * (data.Position - 1));
+        float rowPosition = windowMin.Y + (lineHeight * (float)(data.Position - 1));
 
         var textRowPosition = rowPosition + lineHeight / 2 - ImGui.GetFontSize() / 2;
         var dps = $"{Helpers.HumanizeNumber(data.DPS, 1)}/s";
@@ -160,7 +160,7 @@ public class LazerOverlay : IMeterwayOverlay
         Widget.JobIcon(player.Job, new Vector2(windowMin.X, rowPosition), lineHeight, true);
         windowMin.X += lineHeight;
         ImGui.GetWindowDrawList().AddRectFilled(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 190));
-        Widget.DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), player.Name == "YOU" ? Helpers.Color(128, 170, 128, 255) : Helpers.Color(128, 128, 170, 255), data.PctBar / 100.0f);
+        Widget.DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), player.Name == "YOU" ? Helpers.Color(128, 170, 128, 255) : Helpers.Color(128, 128, 170, 255), (float)data.PctBar / 100.0f);
         Widget.DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 222));
 
         Widget.Text(Job.GetName(player.Job), new Vector2(windowMin.X + 8f, textRowPosition), Helpers.Color(144, 144, 144, 190), WindowMin, WindowMax, false, Widget.TextAnchor.Left, false, scale: 0.8f);

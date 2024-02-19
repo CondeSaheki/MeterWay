@@ -11,12 +11,12 @@ namespace MeterWay.Utils
     public static class Helpers
     {
 
-        public static float Lerp(float firstFloat, float secondFloat, float by)
+        public static double Lerp(double firstFloat, double secondFloat, double by)
         {
             return firstFloat + (secondFloat - firstFloat) * by;
         }
 
-        public static string HumanizeNumber(float number, int decimals = 1)
+        public static string HumanizeNumber(double number, int decimals = 1)
         {
             string[] suffixes = { "", "k", "M", "B", "T" };
             int suffixIndex = 0;
