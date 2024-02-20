@@ -57,21 +57,21 @@ namespace MeterWay.Utils
 
 
         // /(type first, type second) => {return first > second;}
-        public static List<Id> CreateDictionarySortCache<Id, Type>(Dictionary<Id, Type> data) where Id : notnull
+        public static List<Id> CreateDictionarySortCache<Id, Type>(Dictionary<Id, Type> data, Func<KeyValuePair<Id, Type>, bool> ignore) where Id : notnull
         {
             List<Id> sorted = new List<Id>();
 
             foreach (KeyValuePair<Id, Type> i in data)
             {
-                sorted.Add(i.Key);
+                if(ignore(i)) sorted.Add(i.Key);
             }
 
             return sorted;
         }
 
-        public static void Log(string message)
-        {
-            PluginManager.Instance.PluginLog.Info(message);
-        }
+public static void Log(string message)
+{
+    PluginManager.Instance.PluginLog.Info(message);
+}
     }
 }

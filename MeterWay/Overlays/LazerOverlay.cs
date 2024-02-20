@@ -55,12 +55,12 @@ public class LazerOverlay : IMeterwayOverlay
             this.targetInfo = new Dictionary<uint, LerpPlayerData>();
             this.lerpedInfo = new Dictionary<uint, LerpPlayerData>();
 
-            this.sortCache = Helpers.CreateDictionarySortCache(currentEncounter.Players);
+            this.sortCache = Helpers.CreateDictionarySortCache(currentEncounter.Players, (x) => { return true; });
         }
 
         if (true) //this.combat.partyListId != currentEncounter.partyListId
         {
-            this.sortCache = Helpers.CreateDictionarySortCache(currentEncounter.Players);
+            this.sortCache = Helpers.CreateDictionarySortCache(currentEncounter.Players, (x) => { return true; });
         }
 
         this.combat = currentEncounter;

@@ -85,6 +85,8 @@ public static class LoglineParser
 
                 if (recipient.encounters.Last().Players[parsed.ObjectId].IsActive)
                 {
+                    // pet actions should probably be calculated even if the owner is deactivated #for analyzing the data later
+                                            // or add a flag to the damaged saying it was ignored idk
                     if (actionFromPet)
                     {
                         if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
@@ -151,8 +153,10 @@ public static class LoglineParser
         if (!parsed.IsHeal)
         {
             if (!recipient.encounters.Last().Active) recipient.encounters.Last().StartEncounter();
-            if (recipient.encounters.Last().Players[parsed.SourceId].IsActive)
-            {
+            // dots are calculated even if the player is deactivated, pet actions should probably do the same #for analyzing the data later
+                                                                            // or add a flag to the damaged saying it was ignored idk
+            // if (recipient.encounters.Last().Players[parsed.SourceId].IsActive)
+            // {
                 if (actionFromPet)
                 {
                     if (recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId))
@@ -169,7 +173,7 @@ public static class LoglineParser
                     recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
                     recipient.encounters.Last().TotalDamage += parsed.Value;
                 }
-            }
+            // }
 
         }
 

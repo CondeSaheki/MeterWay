@@ -30,9 +30,9 @@ public class MoguOverlay : IMeterwayOverlay
     {
         var currentEncounter = (data.Last().Active || data.Last().Finished) ? data.Last() : (data.Count() > 1 ? data[data.Count() - 2] : data.Last());
 
-        // if (data.partyListId != this.data.partyListId) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
+        if (currentEncounter.PartyListId != this.data.PartyListId) this.sortcache = Helpers.CreateDictionarySortCache(currentEncounter.Players, (x) => { return true; });
 
-        // sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
+        sortcache.Sort((uint first, uint second) => { return currentEncounter.Players[second].TotalDamage.CompareTo(currentEncounter.Players[first].TotalDamage); });
 
         this.data = currentEncounter;
     }
@@ -52,7 +52,7 @@ public class MoguOverlay : IMeterwayOverlay
         foreach (var id in sortcache)
         {
             Player p = data.Players[id];
-            //if(p.TotalDamage == 0) continue;
+            if(p.TotalDamage == 0) continue;
 
             Widget.JobIcon(p.Job, cursor, ImGui.GetFontSize());
             var damageinfo = $"{Helpers.HumanizeNumber(p.Dps, 2).ToString()} {p.DamagePercentage.ToString()}%"; //{p.TotalDamage.ToString()}
