@@ -85,25 +85,24 @@ public static class LoglineParser
             if (ParserAssistant.IsDamage((int)attribute.Key))
             {
                 if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
-
+                    rawattribute = attribute.Value;
+                    actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
+                   
                 if (actionFromPet)
                 {
                     if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
                     {
                         if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]] != null)
                         {
-                            recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]].TotalDamage += attribute.Value;
-                            recipient.encounters.Last().TotalDamage += attribute.Value;
+                            recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]].TotalDamage += actionValue;
+                            recipient.encounters.Last().TotalDamage += actionValue;
                         }
                     }
                 }
                 else
                 {
-
-                    rawattribute = attribute.Value;
-                    actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
-                    recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += attribute.Value;
-                    recipient.encounters.Last().TotalDamage += attribute.Value;
+                    recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += actionValue;
+                    recipient.encounters.Last().TotalDamage += actionValue;
                 }
             }
         }
@@ -126,6 +125,8 @@ public static class LoglineParser
         var parsed = new DoTHoT(data, raw);
 
         bool found = false;
+
+        bool actionFromPet = false;
         if (recipient.encounters.Last().Players.ContainsKey(parsed.SourceId))
         {
             recipient.encounters.Last().Players[parsed.SourceId].RawActions.Add(parsed);
@@ -135,6 +136,8 @@ public static class LoglineParser
             {
                 return;
             }
+
+            
         }
         else if (recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
         {
@@ -146,6 +149,7 @@ public static class LoglineParser
         if (!parsed.IsHeal)
         {
             if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
+            
 
             recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
             recipient.encounters.Last().TotalDamage += parsed.Value;
