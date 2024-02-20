@@ -163,23 +163,22 @@ public class StartsCasting : INetworkMessage
     public DateTime DateTime { get; }
     public string RawLine { get; }
 
-    uint sourceId { get; }
-    string sourceName { get; }
-    uint skillId { get; }
-    string skillName { get; }
-    uint? targetId { get; }
-    string? targetName { get; }
-    float Duration { get; }
-    float? posX { get; }
-    float? posY { get; }
-    float? posZ { get; }
-    float? heading { get; }
+    public uint SourceId { get; }
+    public string SourceName { get; }
+    public uint SkillId { get; }
+    public string SkillName { get; }
+    public uint? TargetId { get; }
+    public string? TargetName { get; }
+    public float CastTime { get; }
+    public Vector4 TargetPos { get; }
 
     public StartsCasting(List<string> data, string raw)
     {
         this.MsgType = 20;
         this.RawLine = raw;
         this.DateTime = DateTime.Parse(data[1].ToString());
+        this.SkillName = "";
+        this.SourceName = "";
 
         // TODO
     }
