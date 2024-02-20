@@ -31,7 +31,6 @@ public class MoguOverlay : IMeterwayOverlay
     {
         var currentEncounter = EncounterManager.Inst.CurrentEncounter();
 
-        if(currentEncounter.Finished || !currentEncounter.Active) return; // no need to update data
 
         if (currentEncounter.PartyListId != this.data.PartyListId) this.sortcache = Helpers.CreateDictionarySortCache(currentEncounter.Players, (x) => { return true; });
         sortcache.Sort((uint first, uint second) => { return currentEncounter.Players[second].TotalDamage.CompareTo(currentEncounter.Players[first].TotalDamage); });

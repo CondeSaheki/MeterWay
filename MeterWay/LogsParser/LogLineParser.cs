@@ -1,281 +1,202 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
-using System.Numerics;
+using Newtonsoft.Json.Linq;
+
+using MeterWay.Managers;
+using MeterWay.Utils;
+using MeterWay.Data;
 
 namespace MeterWay.LogParser;
 
-public interface INetworkMessage
+public static class LoglineParser
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-}
-
-public class ActionEffect : INetworkMessage
-{
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public uint ObjectId { get; }
-    public int Id { get; }
-    public string Name { get; }
-    public uint? TargetId { get; }
-    public string? TargetName { get; }
-    public int? TargetHp { get; }
-    public uint? TargetMaxHp { get; }
-    public List<KeyValuePair<uint, uint>> ActionAttributes { get; } // index 8 to 23
-    public Vector4? TargetPos { get; }
-    public uint Mp { get; }
-    public Vector4 Pos { get; }
-    public uint MultiMessageIndex { get; }
-    public uint MultiMessageCount { get; }
-    public string RawLine { get; }
-
-
-    public ActionEffect(List<string> data, string raw)
-    {
-        this.RawLine = raw;
-
-        // int crypto = Convert.ToInt32(data[47].ToString(), 16);
-        this.MultiMessageCount = Convert.ToUInt32(data[46].ToString());
-        this.MultiMessageIndex = Convert.ToUInt32(data[45].ToString());
-        // uint loglinescount = Convert.ToUInt32(data[44].ToString(), 16);
-
-        this.Pos = new Vector4((float)Convert.ToDouble(data[40].ToString()), (float)Convert.ToDouble(data[41].ToString()),
-            (float)Convert.ToDouble(data[42].ToString()), (float)Convert.ToDouble(data[43].ToString()));
-
-        // var separator = data[39]; // null
-        // var separator = data[38]; // null
-        // uint maxMp = Convert.ToUInt32(data[37].ToString());
-        this.Mp = Convert.ToUInt32(data[36].ToString());
-        // uint maxHp = Convert.ToUInt32(data[35].ToString());
-        // uint hp = Convert.ToUInt32(data[34].ToString());
-
-        if (data[33].ToString() != "" || data[32].ToString() != "" || data[31].ToString() != "" || data[30].ToString() != "")
+    // we are only getting the messages needed
+    private static Dictionary<MessageType, Action<List<string>, string, EncounterManager>> Handlers = new Dictionary<MessageType, Action<List<string>, string, EncounterManager>>
         {
-            this.TargetPos = new Vector4((float)Convert.ToDouble(data[30].ToString()), (float)Convert.ToDouble(data[31].ToString()),
-                (float)Convert.ToDouble(data[32].ToString()), (float)Convert.ToDouble(data[33].ToString()));
-        }
-        // else null
+            { MessageType.ActionEffect, MsgActionEffect },
+            { MessageType.AOEActionEffect, MsgAOEActionEffect },
+            { MessageType.StartsCasting, MsgStartsCasting },
+            { MessageType.DoTHoT, MsgDoTHoT },
+            { MessageType.PartyList, MsgPartyList },
+            { MessageType.AddCombatant, MsgAddCombatant }
+        };
 
-        // var separator = data[29]; // null
-        // var separator = data[28]; // null
-        // int? targetMaxMp = data[27].ToString() == "" ? null : Convert.ToInt32(data[27].ToString());
-        // int? targetMp = data[26].ToString() == "" ? null : Convert.ToInt32(data[26].ToString());
-        this.TargetMaxHp = data[25].ToString() == "" ? null : Convert.ToUInt32(data[25].ToString());
-        this.TargetHp = data[24].ToString() == "" ? null : Convert.ToInt32(data[24].ToString());
+    public static void Parse(JObject json, EncounterManager recipient)
+    {
+        var data = json["line"];
+        if (data == null) return;
+        var messageTypeValue = data[0];
+        if (messageTypeValue == null) return;
+        var messageType = messageTypeValue.ToObject<MessageType>();
+        var rawValue = json["rawLine"];
+        if (rawValue == null) return;
+        string raw = rawValue.ToObject<string>() ?? string.Empty;
 
+        List<string> linedata = data.Values<string>().ToList().ConvertAll(x => x ?? string.Empty);
 
-        // var skillatributes = data[23];
-        // var skillatributes = data[22];
-
-        // var skillatributes = data[21];
-        // var skillatributes = data[20];
-
-        // var skillatributes = data[19];
-        // var skillatributes = data[18];
-
-        // var skillatributes = data[17];
-        // var skillatributes = data[16];
-
-        // var skillatributes = data[15];
-        // var skillatributes = data[14];
-
-        // var skillatributes = data[13];
-        // var skillatributes = data[12];
-
-        // var skillatributes = data[11];
-        // var skillatributes = data[10];
-
-        // var skillatributes = data[9];
-        // var skillatributes = data[8];
-
-
-        this.ActionAttributes = new List<KeyValuePair<uint, uint>>();
-        for (var i = 0; i != 8; ++i)
+        try
         {
-            uint key = Convert.ToUInt32(data[8 + i].ToString(), 16);
-            uint value = Convert.ToUInt32(data[9 + i].ToString(), 16);
-            if (key == 0 && value == 0) break;
-            this.ActionAttributes.Add(new KeyValuePair<uint, uint>(key, value));
+            if (Handlers.ContainsKey(messageType)) Handlers[messageType].Invoke(linedata, raw, recipient);
         }
-
-
-
-        // UInt32? actionValue = null;
-        // if (data[9].ToString() != "")
-        // {
-        //     int _tempValueHex = Convert.ToInt32(data[9].ToString(), 16);
-        //     actionValue = (UInt32)((UInt32)(_tempValueHex >> 16) | (UInt32)((_tempValueHex << 16)) & 0x0FFFFFFF);
-        // }
-
-        // int actionTraits = Convert.ToInt32(data[8].ToString(), 16);
-
-        this.TargetName = data[7].ToString() == "" ? null : data[7].ToString();
-        this.TargetId = data[6].ToString() == "" ? null : Convert.ToUInt32(data[6].ToString(), 16);
-        this.Name = data[5].ToString();
-        this.Id = Convert.ToInt32(data[4].ToString(), 16);
-        // this.PlayerName = data[3].ToString();
-        this.ObjectId = Convert.ToUInt32(data[2].ToString(), 16);
-
-        this.DateTime = DateTime.Parse(data[1].ToString());
-
-        this.RawLine = raw;
-    }
-}
-
-public class StartsCasting : INetworkMessage
-{
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-
-    // uint sourceId;
-    // string sourceName;
-    // uint targetId;
-    // string targetName;
-    // uint skillId;
-    // string skillName;
-    // float Duration;
-    // float? posX;
-    // float? posY;
-    // float? posZ;
-    // float? heading;
-
-    public StartsCasting(List<string> data, string raw)
-    {
-        this.MsgType = 999;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Now;
-    }
-}
-
-public class DoTHoT : INetworkMessage
-{
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-
-    public int TargetId { get; }
-    public string TargetName { get; }
-    public bool IsHeal { get; }
-    public int BuffId { get; }
-    public uint Value { get; }
-    public int? TargetHp { get; }
-    public int? TargetMaxHp { get; }
-    public int? TargetMp { get; }
-    public int? TargetMaxMp { get; }
-    public Vector4? TargetPos { get; }
-    public uint SourceId { get; }
-    public string SourceName { get; }
-    public int DamageType { get; }
-    public int? SourceHp { get; }
-    public int? SourceMaxHp { get; }
-    public int? SourceMp { get; }
-    public int? SourceMaxMp { get; }
-    public Vector4 SourcePos { get; }
-
-    public DoTHoT(List<string> data, string raw)
-    {
-        // 24|2024-02-19T05:36:56.1640000-03:00|40003EC7|Striking Dummy|DoT|0|466|44|44|0|10000|||-727.13|-810.75|10.02|-0.96|1089ED18|Aruna Rhen|FFFFFFFF|31362|31362|9478|10000|||-723.48|-821.16|10.00|-0.34|2df8dd482da88ed7
-        // PluginManager.Instance.PluginLog.Info(raw);
-        this.MsgType = 24;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Now;
-
-        this.TargetId = Convert.ToInt32(data[2].ToString(), 16);
-        this.TargetName = data[3];
-        this.IsHeal = data[4].ToString() == "HoT";
-        // data[5] == 0 if from source;
-        this.Value = Convert.ToUInt32(data[6].ToString(), 16);
-        this.SourceHp = Convert.ToInt32(data[7]);
-        this.SourceMaxHp = Convert.ToInt32(data[8]);
-        this.SourceMp = Convert.ToInt32(data[9]);
-        this.SourceMaxMp = Convert.ToInt32(data[10]);
-        // data[11] == null
-        // data[12] == null
-        this.SourcePos = new Vector4((float)Convert.ToDouble(data[13].ToString()), (float)Convert.ToDouble(data[14].ToString()),
-            (float)Convert.ToDouble(data[15].ToString()), (float)Convert.ToDouble(data[16].ToString()));
-        // else null
-
-
-        this.SourceId = Convert.ToUInt32(data[17].ToString(), 16);
-        this.SourceName = data[18].ToString();
-
-        // this.DamageType = Convert.ToUInt32(data[19]); // seems to be meaningless
-
-        this.TargetHp = data[20].ToString() == "" ? 0 : Convert.ToInt32(data[20].ToString());
-        this.TargetMaxHp = data[21].ToString() == "" ? 0 : Convert.ToInt32(data[21].ToString());
-        this.TargetMp = data[22].ToString() == "" ? 0 : Convert.ToInt32(data[22].ToString());
-        this.TargetMaxMp = data[23].ToString() == "" ? 0 : Convert.ToInt32(data[23].ToString());
-        // data[24] = null
-        // data[25] = null
-        if (data[26].ToString() != "" || data[27].ToString() != "" || data[28].ToString() != "" || data[29].ToString() != "")
+        catch (Exception ex)
         {
-            this.TargetPos = new Vector4((float)Convert.ToDouble(data[26].ToString()), (float)Convert.ToDouble(data[27].ToString()),
-                (float)Convert.ToDouble(data[28].ToString()), (float)Convert.ToDouble(data[29].ToString()));
+            InterfaceManager.Inst.PluginLog.Warning("fail -> " + ex.ToString());
         }
-        // data[30] = criptoid
-
     }
-}
-public class AddCombatant : INetworkMessage
-{
-    public uint MsgType { get; }
-    public DateTime DateTime { get; set; }
-    public string RawLine { get; }
-    public uint Id { get; set; }
-    public string Name { get; set; }
-    public string Job { get; set; }
-    public int Level { get; set; }
-    public uint OwnerId { get; set; }
-    public uint WorldId { get; set; }
-    public string World { get; set; }
-    public uint NpcNameId { get; set; }
-    public uint NpcBaseId { get; set; }
-    public int CurrentHp { get; set; }
-    public int Hp { get; set; }
-    public int CurrentMp { get; set; }
-    public int Mp { get; set; }
-    public string Unknown1 { get; set; }
-    public string Unknown2 { get; set; }
-    public double X { get; set; }
-    public double Y { get; set; }
-    public double Z { get; set; }
-    public double Heading { get; set; }
 
-    public bool IsPet { get; }
-
-    public AddCombatant(List<string> data, string raw)
+    private static void MsgActionEffect(List<string> data, string raw, EncounterManager recipient)
     {
-        this.RawLine = raw;
+        var parsed = new ActionEffect(data, raw);
 
-        this.MsgType = Convert.ToUInt32(data[0], 16);
-        this.DateTime = DateTime.Parse(data[1]);
-        this.Id = Convert.ToUInt32(data[2], 16);
-        this.Name = data[3];
-        this.Job = data[4];
-        this.Level = Convert.ToInt32(data[5], 16);
-        this.OwnerId = Convert.ToUInt32(data[6], 16);
-        this.WorldId = Convert.ToUInt32(data[7], 16);
-        this.World = data[8];
-        this.NpcNameId = Convert.ToUInt32(data[9], 16);
-        this.NpcBaseId = Convert.ToUInt32(data[10], 16);
-        this.CurrentHp = Convert.ToInt32(data[11], 16);
-        this.Hp = Convert.ToInt32(data[12], 16);
-        this.CurrentMp = Convert.ToInt32(data[13], 16);
-        this.Mp = Convert.ToInt32(data[14], 16);
-        this.Unknown1 = data[15];
-        this.Unknown2 = data[16];
-        this.X = Convert.ToDouble(data[17]);
-        this.Y = Convert.ToDouble(data[18]);
-        this.Z = Convert.ToDouble(data[19]);
-        this.Heading = Convert.ToDouble(data[20]);
+        bool found = false;
 
-        this.IsPet = this.OwnerId != 0 && ((this.Id >> 24) & 0xFF) == 64;
+        bool actionFromPet = false;
+        if (recipient.encounters.Last().Players.ContainsKey(parsed.ObjectId))
+        {
+            recipient.encounters.Last().Players[parsed.ObjectId].RawActions.Add(parsed);
+            found = true;
+
+            if (!recipient.encounters.Last().Players[parsed.ObjectId].IsActive && !InterfaceManager.Inst.DutyState.IsDutyStarted)
+            {
+                return;
+            }
+
+            actionFromPet = ((parsed.ObjectId >> 24) & 0xFF) == 64 && recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId);
+        }
+        else if (parsed.TargetId != null && recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
+        {
+            recipient.encounters.Last().RawActions.Add(parsed);
+            found = true;
+        }
+        if (!found) return;
+
+        uint actionValue = 0;
+        uint rawattribute = 0;
+        foreach (KeyValuePair<uint, uint> attribute in parsed.ActionAttributes)
+        {
+
+            if (ParserAssistant.IsNothing((int)attribute.Key)) break;
+            if (ParserAssistant.IsSpecial((int)attribute.Key)) { }; // TODO
+            if (ParserAssistant.IsDamage((int)attribute.Key))
+            {
+                if (!recipient.encounters.Last().Active) recipient.encounters.Last().StartEncounter();
+                rawattribute = attribute.Value;
+                actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
+
+                if (recipient.encounters.Last().Players[parsed.ObjectId].IsActive)
+                {
+                    // pet actions should probably be calculated even if the owner is deactivated #for analyzing the data later
+                                            // or add a flag to the damaged saying it was ignored idk
+                    if (actionFromPet)
+                    {
+                        if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
+                        {
+                            if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]] != null)
+                            {
+                                recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]].TotalDamage += actionValue;
+                                recipient.encounters.Last().TotalDamage += actionValue;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += actionValue;
+                        recipient.encounters.Last().TotalDamage += actionValue;
+                    }
+                }
+                else
+                {
+                    Helpers.Log($"{recipient.encounters.Last().Players[parsed.ObjectId].Name} is deactivated, ignoring damage.");
+                }
+                    
+            }
+        }
+        
+        EncounterManager.UpdateClients();
     }
 
+    private static void MsgAOEActionEffect(List<string> data, string raw, EncounterManager recipient)
+    {
+        MsgActionEffect(data, raw, recipient); // have same format
+    }
 
+    private static void MsgStartsCasting(List<string> data, string raw, EncounterManager recipient)
+    {
+        // todo
+    }
 
+    private static void MsgDoTHoT(List<string> data, string raw, EncounterManager recipient)
+    {
+        var parsed = new DoTHoT(data, raw);
+
+        bool found = false;
+
+        bool actionFromPet = false;
+        if (recipient.encounters.Last().Players.ContainsKey(parsed.SourceId))
+        {
+            recipient.encounters.Last().Players[parsed.SourceId].RawActions.Add(parsed);
+            found = true;
+
+            if (!recipient.encounters.Last().Players[parsed.SourceId].IsActive && !(InterfaceManager.Inst.DutyState.IsDutyStarted))
+            {
+                return;
+            }
+
+            actionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId);
+        }
+        else if (recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
+        {
+            recipient.encounters.Last().RawActions.Add(parsed);
+            found = true;
+        }
+        if (!found) return;
+
+        if (!parsed.IsHeal)
+        {
+            if (!recipient.encounters.Last().Active) recipient.encounters.Last().StartEncounter();
+            // dots are calculated even if the player is deactivated, pet actions should probably do the same #for analyzing the data later
+                                                                            // or add a flag to the damaged saying it was ignored idk
+            // if (recipient.encounters.Last().Players[parsed.SourceId].IsActive)
+            // {
+                if (actionFromPet)
+                {
+                    if (recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId))
+                    {
+                        if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]] != null)
+                        {
+                            recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]].TotalDamage += parsed.Value;
+                            recipient.encounters.Last().TotalDamage += parsed.Value;
+                        }
+                    }
+                }
+                else
+                {
+                    recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
+                    recipient.encounters.Last().TotalDamage += parsed.Value;
+                }
+            // }
+
+        }
+        EncounterManager.UpdateClients();
+    }
+
+    private static void MsgPartyList(List<string> data, string raw, EncounterManager recipient)
+    {
+        recipient.encounters.Last().UpdateParty();
+        EncounterManager.UpdateClients();
+    }
+
+    private static void MsgAddCombatant(List<string> data, string raw, EncounterManager recipient)
+    {
+        var parsed = new AddCombatant(data, raw);
+        // this will be used to make sure summoners have their pet
+
+        if (parsed.IsPet)
+        {
+            if (recipient.encounters.Last().Players.ContainsKey(parsed.OwnerId) && recipient.encounters.Last().Players[parsed.OwnerId] != null)
+                recipient.encounters.Last().Pets.Add(parsed.Id, parsed.OwnerId);
+        }
+        EncounterManager.UpdateClients();
+    }
 }
-
-

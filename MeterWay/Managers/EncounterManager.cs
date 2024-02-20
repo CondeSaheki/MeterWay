@@ -107,6 +107,7 @@ public class EncounterManager
  
     public static void UpdateClients()
     {
+        if(Inst.CurrentEncounter().Finished) return;
         foreach (var client in Inst.Clients) client.Invoke();
     }
 }

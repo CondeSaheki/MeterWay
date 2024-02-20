@@ -50,8 +50,6 @@ public class LazerOverlay : IMeterwayOverlay
     {
         var currentEncounter = EncounterManager.Inst.CurrentEncounter();
 
-        if(currentEncounter.Finished || !currentEncounter.Active) return; // no need to update data
-        
         if (currentEncounter.Id != this.combat.Id)
         {
             this.targetInfo = new Dictionary<uint, LerpPlayerData>();

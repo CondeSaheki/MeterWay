@@ -1,231 +1,317 @@
+using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace MeterWay.LogParser;
 
-public enum MessageType : uint
+public interface INetworkMessage
 {
-    ChatLog = 0,
-    Territory = 1,
-    ChangePrimaryPlayer = 2,
-    AddCombatant = 3,
-    RemoveCombatant = 4,
-    PartyList = 11, // 0x0000000B
-    PlayerStats = 12, // 0x0000000C
-    StartsCasting = 20, // 0x00000014
-    ActionEffect = 21, // 0x00000015
-    AOEActionEffect = 22, // 0x00000016
-    CancelAction = 23, // 0x00000017
-    DoTHoT = 24, // 0x00000018
-    Death = 25, // 0x00000019
-    StatusAdd = 26, // 0x0000001A
-    TargetIcon = 27, // 0x0000001B
-    WaymarkMarker = 28, // 0x0000001C
-    SignMarker = 29, // 0x0000001D
-    StatusRemove = 30, // 0x0000001E
-    Gauge = 31, // 0x0000001F
-    World = 32, // 0x00000020
-    Director = 33, // 0x00000021
-    NameToggle = 34, // 0x00000022
-    Tether = 35, // 0x00000023
-    LimitBreak = 36, // 0x00000024
-    EffectResult = 37, // 0x00000025
-    StatusList = 38, // 0x00000026
-    UpdateHp = 39, // 0x00000027
-    ChangeMap = 40, // 0x00000028
-    SystemLogMessage = 41, // 0x00000029
-    StatusList3 = 42, // 0x0000002A
-    Settings = 249, // 0x000000F9
-    Process = 250, // 0x000000FA
-    Debug = 251, // 0x000000FB
-    PacketDump = 252, // 0x000000FC
-    Version = 253, // 0x000000FD
-    Error = 254, // 0x000000FE
+    public uint MsgType { get; }
+    public DateTime DateTime { get; }
+    public string RawLine { get; }
 }
 
-public static class ParserAssistant
+public class ActionEffect : INetworkMessage
 {
-    public enum DamageType
+    public uint MsgType { get; }
+    public DateTime DateTime { get; }
+    public uint ObjectId { get; }
+    public int Id { get; }
+    public string Name { get; }
+    public uint? TargetId { get; }
+    public string? TargetName { get; }
+    public int? TargetHp { get; }
+    public uint? TargetMaxHp { get; }
+    public List<KeyValuePair<uint, uint>> ActionAttributes { get; } // index 8 to 23
+    public Vector4? TargetPos { get; }
+    public uint Mp { get; }
+    public Vector4 Pos { get; }
+    public uint MultiMessageIndex { get; }
+    public uint MultiMessageCount { get; }
+    public string RawLine { get; }
+
+
+    public ActionEffect(List<string> data, string raw)
     {
-        Magic = 0x50000,
-        Physical = 0x10000,
-        MagicMelee = 0x30000,
-        Ranged = 0x20000,
-    }
-    public enum EffectEntryType
-    {
-        Nothing = 0,
-        Miss = 1,
-        FullResist = 2,
-        Damage = 3,
-        CritHit = 0x2000,
-        DirectHit = 0x4000,
-        DirectCritHit = 0x6000,
-        Heal = 4,
-        CritHeal = 0x200004,
-        BlockedDamage = 5,
-        ParriedDamage = 6,
-        Invulnerable = 7,
-        ApplyStatusEffectTarget = 0x0E,
-        ApplyStatusEffectSource = 0x0F,
-        RecoveredFromStatusEffect = 0x10,
-        LoseStatusEffectTarget = 0x11,
-        LoseStatusEffectSource = 0x12,
-        FullResistStatus = 0x37,
-        Interrupt = 0x4B,
-        Unknown_3F = 0x3F,
+        this.RawLine = raw;
 
-    }
+        // int crypto = Convert.ToInt32(data[47].ToString(), 16);
+        this.MultiMessageCount = Convert.ToUInt32(data[46].ToString());
+        this.MultiMessageIndex = Convert.ToUInt32(data[45].ToString());
+        // uint loglinescount = Convert.ToUInt32(data[44].ToString(), 16);
 
-    public static bool IsNothing(int flag) => (flag & 0xF) == (int)EffectEntryType.Nothing;
-    public static bool IsMiss(int flag) => (flag & 0xF) == (int)EffectEntryType.Miss;
-    public static bool IsFullResist(int flag) => (flag & 0xF) == (int)EffectEntryType.FullResist;
-    public static bool IsDamage(int flag) => (flag & 0xF) == (int)EffectEntryType.Damage;
-    public static bool IsCrit(int flag) => (flag & 0xF000) == (int)EffectEntryType.CritHit;
-    public static bool IsDirect(int flag) => (flag & 0xF000) == (int)EffectEntryType.DirectHit;
-    public static bool IsDirectCrit(int flag) => (flag & 0xF000) == (int)EffectEntryType.DirectCritHit;
+        this.Pos = new Vector4((float)Convert.ToDouble(data[40].ToString()), (float)Convert.ToDouble(data[41].ToString()),
+            (float)Convert.ToDouble(data[42].ToString()), (float)Convert.ToDouble(data[43].ToString()));
 
-    public static bool IsHeal(int flag) => (flag & 0xF) == (int)EffectEntryType.Heal;
-    public static bool IsCritHeal(int flag) => (flag & 0xF0000F) == (int)EffectEntryType.CritHeal;
-    public static bool IsBlockedDamage(int flag) => (flag & 0xF) == (int)EffectEntryType.BlockedDamage;
-    public static bool IsParriedDamage(int flag) => (flag & 0xF) == (int)EffectEntryType.ParriedDamage;
-    public static bool IsInvulnerable(int flag) => (flag & 0xF) == (int)EffectEntryType.Invulnerable;
-    public static bool IsApplyStatusEffectTarget(int flag) => (flag & 0xF) == (int)EffectEntryType.ApplyStatusEffectTarget;
-    public static bool IsApplyStatusEffectSource(int flag) => (flag & 0xF) == (int)EffectEntryType.ApplyStatusEffectSource;
-    public static bool IsRecoveredFromStatusEffect(int flag) => (flag & 0xF) == (int)EffectEntryType.RecoveredFromStatusEffect;
-    public static bool IsLoseStatusEffectTarget(int flag) => (flag & 0xF) == (int)EffectEntryType.LoseStatusEffectTarget;
-    public static bool IsLoseStatusEffectSource(int flag) => (flag & 0xF) == (int)EffectEntryType.LoseStatusEffectSource;
-    public static bool IsFullResistStatus(int flag) => (flag & 0xF) == (int)EffectEntryType.FullResistStatus;
-    public static bool IsInterrupt(int flag) => (flag & 0xF) == (int)EffectEntryType.Interrupt;
-    public static bool IsSpecial(int flag)
-    {
-        if ((flag & 0xFFF) == (int)EffectEntryType.Unknown_3F)
+        // var separator = data[39]; // null
+        // var separator = data[38]; // null
+        // uint maxMp = Convert.ToUInt32(data[37].ToString());
+        this.Mp = Convert.ToUInt32(data[36].ToString());
+        // uint maxHp = Convert.ToUInt32(data[35].ToString());
+        // uint hp = Convert.ToUInt32(data[34].ToString());
+
+        if (data[33].ToString() != "" || data[32].ToString() != "" || data[31].ToString() != "" || data[30].ToString() != "")
         {
-            return true;
+            this.TargetPos = new Vector4((float)Convert.ToDouble(data[30].ToString()), (float)Convert.ToDouble(data[31].ToString()),
+                (float)Convert.ToDouble(data[32].ToString()), (float)Convert.ToDouble(data[33].ToString()));
         }
-        return false;
-    }
+        // else null
+
+        // var separator = data[29]; // null
+        // var separator = data[28]; // null
+        // int? targetMaxMp = data[27].ToString() == "" ? null : Convert.ToInt32(data[27].ToString());
+        // int? targetMp = data[26].ToString() == "" ? null : Convert.ToInt32(data[26].ToString());
+        this.TargetMaxHp = data[25].ToString() == "" ? null : Convert.ToUInt32(data[25].ToString());
+        this.TargetHp = data[24].ToString() == "" ? null : Convert.ToInt32(data[24].ToString());
 
 
-    public static List<EffectEntryType> ParseFlag(int flag)
-    {
-        List<EffectEntryType> parsedflag = new List<EffectEntryType>();
+        // var skillatributes = data[23];
+        // var skillatributes = data[22];
 
-        if (IsNothing(flag))
+        // var skillatributes = data[21];
+        // var skillatributes = data[20];
+
+        // var skillatributes = data[19];
+        // var skillatributes = data[18];
+
+        // var skillatributes = data[17];
+        // var skillatributes = data[16];
+
+        // var skillatributes = data[15];
+        // var skillatributes = data[14];
+
+        // var skillatributes = data[13];
+        // var skillatributes = data[12];
+
+        // var skillatributes = data[11];
+        // var skillatributes = data[10];
+
+        // var skillatributes = data[9];
+        // var skillatributes = data[8];
+
+
+        this.ActionAttributes = new List<KeyValuePair<uint, uint>>();
+        for (var i = 0; i != 8; ++i)
         {
-            parsedflag.Add(EffectEntryType.Nothing);
-            return parsedflag;
-        };
-        if (IsMiss(flag))
-        {
-            parsedflag.Add(EffectEntryType.Miss);
-        };
-        if (IsFullResist(flag))
-        {
-            parsedflag.Add(EffectEntryType.FullResist);
-        };
-        // HITS AND STUFF
-        if (IsDamage(flag))
-        {
-            if (IsCrit(flag))
-            {
-                parsedflag.Add(EffectEntryType.CritHit);
-            }
-            else if (IsDirect(flag))
-            {
-                parsedflag.Add(EffectEntryType.DirectHit);
-            }
-            else if (IsDirectCrit(flag))
-            {
-                parsedflag.Add(EffectEntryType.DirectCritHit);
-            }
-            parsedflag.Add(EffectEntryType.Damage);
-        };
-        // HEALS AND STUFF
-        if (IsHeal(flag) && !IsCritHeal(flag))
-        {
-            if (IsCritHeal(flag))
-            {
-                parsedflag.Add(EffectEntryType.CritHeal);
-            }
-            else
-            {
-                parsedflag.Add(EffectEntryType.Heal);
-            }
-        };
-        if (IsBlockedDamage(flag))
-        {
-            parsedflag.Add(EffectEntryType.BlockedDamage);
-        };
-        if (IsParriedDamage(flag))
-        {
-            parsedflag.Add(EffectEntryType.ParriedDamage);
+            uint key = Convert.ToUInt32(data[8 + i].ToString(), 16);
+            uint value = Convert.ToUInt32(data[9 + i].ToString(), 16);
+            if (key == 0 && value == 0) break;
+            this.ActionAttributes.Add(new KeyValuePair<uint, uint>(key, value));
         }
-        if (IsInvulnerable(flag))
-        {
-            parsedflag.Add(EffectEntryType.Invulnerable);
-        };
-        // APLLY EFFECTS FROM TARGET
-        if (IsApplyStatusEffectTarget(flag))
-        {
-            parsedflag.Add(EffectEntryType.ApplyStatusEffectTarget);
-        };
-        // APPLY EFFECTS FROM SOURCE
-        if (IsApplyStatusEffectSource(flag))
-        {
-            parsedflag.Add(EffectEntryType.ApplyStatusEffectSource);
-        };
-        if (IsRecoveredFromStatusEffect(flag))
-        {
-            parsedflag.Add(EffectEntryType.RecoveredFromStatusEffect);
-        };
-        // CLEAR AFFLICTED STATUS FROM TARGET
-        if (IsLoseStatusEffectTarget(flag))
-        {
-            parsedflag.Add(EffectEntryType.LoseStatusEffectTarget);
-        };
-        // CLEAR AFFLICTED STATUS FROM SOURCE
-        if (IsLoseStatusEffectSource(flag))
-        {
-            parsedflag.Add(EffectEntryType.LoseStatusEffectSource);
-        };
-        // RESIST STATUS
-        if (IsFullResistStatus(flag))
-        {
-            parsedflag.Add(EffectEntryType.FullResistStatus);
-        };
-        if (IsFullResistStatus(flag))
-        {
-            parsedflag.Add(EffectEntryType.Interrupt);
-        };
-
-        return parsedflag;
-    }
 
 
-    public static bool IsMagic(int flag) => (flag & 0xF0000) == (int)DamageType.Magic;
-    public static bool IsPhysical(int flag) => (flag & 0xF0000) == (int)DamageType.Physical;
-    public static bool IsRanged(int flag) => (flag & 0xF0000) == (int)DamageType.Ranged;
-    public static bool IsMagicMelee(int flag) => (flag & 0xF0000) == (int)DamageType.MagicMelee;
 
-    public static List<DamageType> ParseTypes(int flag)
-    {
-        List<DamageType> parsedTypes = new List<DamageType>();
-        if (IsMagic(flag))
-        {
-            parsedTypes.Add(DamageType.Magic);
-        }
-        else if (IsPhysical(flag))
-        {
-            parsedTypes.Add(DamageType.Physical);
-        }
-        else if (IsRanged(flag))
-        {
-            parsedTypes.Add(DamageType.Ranged);
-        }
-        else if (IsMagicMelee(flag))
-        {
-            parsedTypes.Add(DamageType.MagicMelee);
-        }
-        return parsedTypes;
+        // UInt32? actionValue = null;
+        // if (data[9].ToString() != "")
+        // {
+        //     int _tempValueHex = Convert.ToInt32(data[9].ToString(), 16);
+        //     actionValue = (UInt32)((UInt32)(_tempValueHex >> 16) | (UInt32)((_tempValueHex << 16)) & 0x0FFFFFFF);
+        // }
+
+        // int actionTraits = Convert.ToInt32(data[8].ToString(), 16);
+
+        this.TargetName = data[7].ToString() == "" ? null : data[7].ToString();
+        this.TargetId = data[6].ToString() == "" ? null : Convert.ToUInt32(data[6].ToString(), 16);
+        this.Name = data[5].ToString();
+        this.Id = Convert.ToInt32(data[4].ToString(), 16);
+        // this.PlayerName = data[3].ToString();
+        this.ObjectId = Convert.ToUInt32(data[2].ToString(), 16);
+
+        this.DateTime = DateTime.Parse(data[1].ToString());
+
+        this.RawLine = raw;
     }
 }
+
+public class PlayerStatsUpdate : INetworkMessage
+{
+    public uint MsgType { get; }
+    public DateTime DateTime { get; }
+    public string RawLine { get; }
+
+    public uint JobID { get; }
+    public uint Str { get ; }
+    public uint Dex { get ; }
+    public uint Vit { get ; }
+    public uint Intel { get ; }
+    public uint Mind { get ; }
+    public uint Piety { get ; }
+    public uint Attack { get ; }
+    public uint DirectHit { get ; }
+    public uint Crit { get ; }
+    public uint AttackMagicPotency { get ; }
+    public uint HealMagicPotency { get ; }
+    public uint Det { get ; }
+    public uint SkillSpeed { get ; }
+    public uint SpellSpeed { get ; }
+    public uint Tenacity { get ; }
+    public ulong LocalContentId { get ; }
+
+    public PlayerStatsUpdate(List<string> data, string raw)
+    {
+        this.MsgType = 12;
+        this.RawLine = raw;
+        this.DateTime = DateTime.Parse(data[1].ToString());
+
+        // TODO        
+    }
+}
+
+public class StartsCasting : INetworkMessage
+{
+    public uint MsgType { get; }
+    public DateTime DateTime { get; }
+    public string RawLine { get; }
+
+    uint sourceId { get; }
+    string sourceName { get; }
+    uint skillId { get; }
+    string skillName { get; }
+    uint? targetId { get; }
+    string? targetName { get; }
+    float Duration { get; }
+    float? posX { get; }
+    float? posY { get; }
+    float? posZ { get; }
+    float? heading { get; }
+
+    public StartsCasting(List<string> data, string raw)
+    {
+        this.MsgType = 20;
+        this.RawLine = raw;
+        this.DateTime = DateTime.Parse(data[1].ToString());
+
+        // TODO
+    }
+}
+
+public class DoTHoT : INetworkMessage
+{
+    public uint MsgType { get; }
+    public DateTime DateTime { get; }
+    public string RawLine { get; }
+
+    public int TargetId { get; }
+    public string TargetName { get; }
+    public bool IsHeal { get; }
+    public int BuffId { get; }
+    public uint Value { get; }
+    public int? TargetHp { get; }
+    public int? TargetMaxHp { get; }
+    public int? TargetMp { get; }
+    public int? TargetMaxMp { get; }
+    public Vector4? TargetPos { get; }
+    public uint SourceId { get; }
+    public string SourceName { get; }
+    public int DamageType { get; }
+    public int? SourceHp { get; }
+    public int? SourceMaxHp { get; }
+    public int? SourceMp { get; }
+    public int? SourceMaxMp { get; }
+    public Vector4 SourcePos { get; }
+
+    public DoTHoT(List<string> data, string raw)
+    {
+        // 24|2024-02-19T05:36:56.1640000-03:00|40003EC7|Striking Dummy|DoT|0|466|44|44|0|10000|||-727.13|-810.75|10.02|-0.96|1089ED18|Aruna Rhen|FFFFFFFF|31362|31362|9478|10000|||-723.48|-821.16|10.00|-0.34|2df8dd482da88ed7
+        // PluginManager.Instance.PluginLog.Info(raw);
+        this.MsgType = 24;
+        this.RawLine = raw;
+        this.DateTime = DateTime.Parse(data[1].ToString());
+
+        this.TargetId = Convert.ToInt32(data[2].ToString(), 16);
+        this.TargetName = data[3];
+        this.IsHeal = data[4].ToString() == "HoT";
+        // data[5] == 0 if from source;
+        this.Value = Convert.ToUInt32(data[6].ToString(), 16);
+        this.SourceHp = Convert.ToInt32(data[7]);
+        this.SourceMaxHp = Convert.ToInt32(data[8]);
+        this.SourceMp = Convert.ToInt32(data[9]);
+        this.SourceMaxMp = Convert.ToInt32(data[10]);
+        // data[11] == null
+        // data[12] == null
+        this.SourcePos = new Vector4((float)Convert.ToDouble(data[13].ToString()), (float)Convert.ToDouble(data[14].ToString()),
+            (float)Convert.ToDouble(data[15].ToString()), (float)Convert.ToDouble(data[16].ToString()));
+        // else null
+
+
+        this.SourceId = Convert.ToUInt32(data[17].ToString(), 16);
+        this.SourceName = data[18].ToString();
+
+        // this.DamageType = Convert.ToUInt32(data[19]); // seems to be meaningless
+
+        this.TargetHp = data[20].ToString() == "" ? 0 : Convert.ToInt32(data[20].ToString());
+        this.TargetMaxHp = data[21].ToString() == "" ? 0 : Convert.ToInt32(data[21].ToString());
+        this.TargetMp = data[22].ToString() == "" ? 0 : Convert.ToInt32(data[22].ToString());
+        this.TargetMaxMp = data[23].ToString() == "" ? 0 : Convert.ToInt32(data[23].ToString());
+        // data[24] = null
+        // data[25] = null
+        if (data[26].ToString() != "" || data[27].ToString() != "" || data[28].ToString() != "" || data[29].ToString() != "")
+        {
+            this.TargetPos = new Vector4((float)Convert.ToDouble(data[26].ToString()), (float)Convert.ToDouble(data[27].ToString()),
+                (float)Convert.ToDouble(data[28].ToString()), (float)Convert.ToDouble(data[29].ToString()));
+        }
+        // data[30] = criptoid
+
+    }
+}
+public class AddCombatant : INetworkMessage
+{
+    public uint MsgType { get; }
+    public DateTime DateTime { get; set; }
+    public string RawLine { get; }
+    public uint Id { get; set; }
+    public string Name { get; set; }
+    public string Job { get; set; }
+    public int Level { get; set; }
+    public uint OwnerId { get; set; }
+    public uint WorldId { get; set; }
+    public string World { get; set; }
+    public uint NpcNameId { get; set; }
+    public uint NpcBaseId { get; set; }
+    public int CurrentHp { get; set; }
+    public int Hp { get; set; }
+    public int CurrentMp { get; set; }
+    public int Mp { get; set; }
+    public string Unknown1 { get; set; }
+    public string Unknown2 { get; set; }
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double Z { get; set; }
+    public double Heading { get; set; }
+
+    public bool IsPet { get; }
+
+    public AddCombatant(List<string> data, string raw)
+    {
+        this.RawLine = raw;
+
+        this.MsgType = Convert.ToUInt32(data[0], 16);
+        this.DateTime = DateTime.Parse(data[1]);
+        this.Id = Convert.ToUInt32(data[2], 16);
+        this.Name = data[3];
+        this.Job = data[4];
+        this.Level = Convert.ToInt32(data[5], 16);
+        this.OwnerId = Convert.ToUInt32(data[6], 16);
+        this.WorldId = Convert.ToUInt32(data[7], 16);
+        this.World = data[8];
+        this.NpcNameId = Convert.ToUInt32(data[9], 16);
+        this.NpcBaseId = Convert.ToUInt32(data[10], 16);
+        this.CurrentHp = Convert.ToInt32(data[11], 16);
+        this.Hp = Convert.ToInt32(data[12], 16);
+        this.CurrentMp = Convert.ToInt32(data[13], 16);
+        this.Mp = Convert.ToInt32(data[14], 16);
+        this.Unknown1 = data[15];
+        this.Unknown2 = data[16];
+        this.X = Convert.ToDouble(data[17]);
+        this.Y = Convert.ToDouble(data[18]);
+        this.Z = Convert.ToDouble(data[19]);
+        this.Heading = Convert.ToDouble(data[20]);
+
+        this.IsPet = this.OwnerId != 0 && ((this.Id >> 24) & 0xFF) == 64;
+    }
+
+
+
+}
+
+
