@@ -2,15 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lumina.Excel.GeneratedSheets;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
-
-using Meterway.Managers;
 using Dalamud.Game.ClientState.Party;
-using MeterWay.Utils;
 using Dalamud.Plugin.Services;
 
+using MeterWay.Managers;
+using MeterWay.Utils;
+using MeterWay.LogParser;
+
 namespace MeterWay.Data;
+
 
 public class Encounter
 {
@@ -54,7 +55,7 @@ public class Encounter
     private Dictionary<uint, Player> GetPlayers()
     {
         var tmpPlayers = new Dictionary<uint, Player>();
-        var partyList = PluginManager.Instance.PartyList;
+        var partyList = InterfaceManager.Inst.PartyList;
         if (partyList.Count() != 0)
         {
             foreach (var player in partyList)
@@ -67,7 +68,7 @@ public class Encounter
         }
         else
         {
-            var localPlayer = PluginManager.Instance.ClientState.LocalPlayer;
+            var localPlayer = InterfaceManager.Inst.ClientState.LocalPlayer;
             if (localPlayer != null)
             {
                 var character = (Character)localPlayer;
@@ -80,7 +81,7 @@ public class Encounter
     public void UpdateParty() // vREALVERDADEIROULTIMATE
     {
         Helpers.Log("Party update got triggred");
-        var partyList = PluginManager.Instance.PartyList;
+        var partyList = InterfaceManager.Inst.PartyList;
 
         if (!PartyMembersChanged(partyList))
         {
@@ -92,7 +93,7 @@ public class Encounter
         // keep only you
         if (partyList.Count() == 0)
         {    
-            var you = PluginManager.Instance.ClientState.LocalPlayer;
+            var you = InterfaceManager.Inst.ClientState.LocalPlayer;
             if (you == null) return; // you are null
 
             foreach (var player in Players)
@@ -198,7 +199,7 @@ public class Encounter
 
     private string GetEncounterName()
     {
-        var locationRow = PluginManager.Instance.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(PluginManager.Instance.ClientState.TerritoryType);
+        var locationRow = InterfaceManager.Inst.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(InterfaceManager.Inst.ClientState.TerritoryType);
         var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();
         var placeName = locationRow?.PlaceName.Value?.Name?.ToString();
 
@@ -214,13 +215,13 @@ public class Encounter
 
     public void StartEncounter()
     {
-        PluginManager.Instance.PluginLog.Info("Encounter started.");
+        InterfaceManager.Inst.PluginLog.Info("Encounter started.");
         if (this.Start == null) this.Start = DateTime.Now;
     }
 
     public void EndEncounter()
     {
-        PluginManager.Instance.PluginLog.Info("Encounter ended.");
+        InterfaceManager.Inst.PluginLog.Info("Encounter ended.");
         if (this.End == null) this.End = DateTime.Now;
     }
 
@@ -234,43 +235,4 @@ public class Encounter
         }
     }
 
-}
-
-public class Player
-{
-    private Encounter Encounter { get; init; }
-
-    public uint Id { get; set; }
-    public bool IsActive { get; set; }    
-
-    public string Name { get; set; }
-    public uint? World { get; set; }
-    public uint Job { get; set; }
-
-    public uint TotalDamage { get; set; }
-    public float Dps { get; set; }
-    public float DamagePercentage { get; set; }
-
-    public List<INetworkMessage> RawActions { get; set; }
-
-    public void UpdateStats()
-    {
-        var currentSeconds = this.Encounter.Duration.TotalSeconds <= 1 ? 1 : this.Encounter.Duration.TotalSeconds;
-        this.Dps = (float)(this.TotalDamage / currentSeconds);
-        this.DamagePercentage = this.Encounter.TotalDamage != 0 ? (float)((this.TotalDamage * 100) / this.Encounter.TotalDamage) : 0;
-    }
-
-    public Player(Character character, Encounter encounter)
-    {
-        this.Encounter = encounter;
-        this.Id = character.ObjectId;
-        this.Name = character.Name.ToString();
-        this.Job = character.ClassJob.Id;
-        this.Dps = 0;
-        this.TotalDamage = 0;
-        this.DamagePercentage = 0;
-        this.IsActive = true;
-        this.RawActions = new List<INetworkMessage>();
-        this.World = (character as PlayerCharacter)?.HomeWorld.Id;
-    }
 }

@@ -6,7 +6,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Ipc;
 
 namespace MeterWay.IINACT;
-using Meterway.Managers;
+using MeterWay.Managers;
 
 public class IpcClient : IDisposable
 {
@@ -28,10 +28,10 @@ public class IpcClient : IDisposable
         this.receivers = new List<Action<JObject>>();
         connectionStatus = false;
 
-        subscriptionReceiver = PluginManager.Instance.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);
+        subscriptionReceiver = InterfaceManager.Inst.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);
         subscriptionReceiver.RegisterFunc(Receiver);
 
-        if (PluginManager.Instance.ClientState.IsLoggedIn == true)
+        if (InterfaceManager.Inst.ClientState.IsLoggedIn == true)
         {
             Connect();
         }
@@ -50,24 +50,24 @@ public class IpcClient : IDisposable
     {
         if (connectionStatus)
         {
-            PluginManager.Instance.ChatGui.Print("Meterway is already connected to IINACT.");
+            InterfaceManager.Inst.ChatGui.Print("Meterway is already connected to IINACT.");
             return;
         }
 
         try
         {
-            PluginManager.Instance.PluginInterface.GetIpcSubscriber<string, bool>(IINACTCreateSubscriber).InvokeFunc(MeterwaySubscriptionReceiver);
-            PluginManager.Instance.PluginInterface.GetIpcSubscriber<JObject, bool>(IINACTSubscribe).InvokeAction(IINACTSubscribeMessage);
+            InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<string, bool>(IINACTCreateSubscriber).InvokeFunc(MeterwaySubscriptionReceiver);
+            InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<JObject, bool>(IINACTSubscribe).InvokeAction(IINACTSubscribeMessage);
             connectionStatus = true;
 
-            PluginManager.Instance.PluginLog.Info("Meterway is connected to IINACT.");
-            PluginManager.Instance.ChatGui.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is connected to IINACT."), new UIForegroundPayload(0)));
+            InterfaceManager.Inst.PluginLog.Info("Meterway is connected to IINACT.");
+            InterfaceManager.Inst.ChatGui.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is connected to IINACT."), new UIForegroundPayload(0)));
         }
         catch (Exception ex)
         {
-            PluginManager.Instance.PluginLog.Info("Meterway was unable to connected to IINACT.");
-            PluginManager.Instance.ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload("Meterway was unable to connected to IINACT."), new UIForegroundPayload(0)));
-            PluginManager.Instance.PluginLog.Error(ex.ToString());
+            InterfaceManager.Inst.PluginLog.Info("Meterway was unable to connected to IINACT.");
+            InterfaceManager.Inst.ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload("Meterway was unable to connected to IINACT."), new UIForegroundPayload(0)));
+            InterfaceManager.Inst.PluginLog.Error(ex.ToString());
         }
     }
 
@@ -80,14 +80,14 @@ public class IpcClient : IDisposable
 
         try
         {
-            connectionStatus = !PluginManager.Instance.PluginInterface.GetIpcSubscriber<string, bool>(IINACTUnubscribe).InvokeFunc(MeterwaySubscriptionReceiver);
+            connectionStatus = !InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<string, bool>(IINACTUnubscribe).InvokeFunc(MeterwaySubscriptionReceiver);
             connectionStatus = false;
-            PluginManager.Instance.PluginLog.Info("Meterway disconnected.");
-            PluginManager.Instance.ChatGui.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway disconnected."), new UIForegroundPayload(0)));
+            InterfaceManager.Inst.PluginLog.Info("Meterway disconnected.");
+            InterfaceManager.Inst.ChatGui.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway disconnected."), new UIForegroundPayload(0)));
         }
         catch (Exception ex)
         {
-            PluginManager.Instance.PluginLog.Warning("Meterway error while disconnecting: " + ex.ToString());
+            InterfaceManager.Inst.PluginLog.Warning("Meterway error while disconnecting: " + ex.ToString());
             connectionStatus = false;
         }
     }

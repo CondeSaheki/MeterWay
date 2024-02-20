@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using MeterWay.Windows;
 using MeterWay.IINACT;
 using MeterWay.Commands;
-using Meterway.Managers;
+using MeterWay.Managers;
 using MeterWay.Overlays;
-using MeterWay.Data;
+
 using System.Linq;
 using MeterWay.Utils;
 
@@ -30,12 +30,12 @@ namespace MeterWay
 
         // meterway stuff
         public IpcClient IpcClient { get; init; }
-        public DataManager MWDataManager { get; init; }
+        public EncounterManager EncounterManager { get; init; }
 
         private const string CommandName = "/meterway";
         private List<MeterWayCommand> commands { get; init; }
 
-        private readonly PluginManager pluginManager;
+        private readonly InterfaceManager pluginManager;
         private readonly ConfigurationManager configurationManager;
 
         public Plugin(
@@ -52,15 +52,15 @@ namespace MeterWay
             )
         {
             // add all interfaces to the manager
-            this.pluginManager = new PluginManager(WindowSystem, pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, datamanager, textureProvider, dutyState);
+            this.pluginManager = new InterfaceManager(WindowSystem, pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, partyList, datamanager, textureProvider, dutyState);
             this.configurationManager = new ConfigurationManager();
 
-            this.MWDataManager = new DataManager();
+            this.EncounterManager = new EncounterManager();
             this.IpcClient = new IpcClient();
-            IpcClient.receivers.Add(MWDataManager.Receiver);
+            IpcClient.receivers.Add(EncounterManager.Receiver);
 
             MainWindow = new MainWindow();
-            OverlayWindow = new OverlayWindow(this.MWDataManager.AllEncounters);
+            OverlayWindow = new OverlayWindow();
             ConfigWindow = new ConfigWindow(this.IpcClient, OverlayWindow);
 
             WindowSystem.AddWindow(ConfigWindow);
@@ -69,12 +69,18 @@ namespace MeterWay
             // register any overlay here
             OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay()];
 
+            // TODO make only Active Overlay subscribed
+            foreach(var overlay in OverlayWindow.Overlays)
+            {
+                EncounterManager.Inst.Clients.Add(overlay.DataProcess);
+            }
+            
             if (ConfigurationManager.Instance.Configuration.Overlay)
             {
                 WindowSystem.AddWindow(OverlayWindow);
             }
 
-            PluginManager.Instance.CommandManager.AddHandler(CommandName,
+            InterfaceManager.Inst.CommandManager.AddHandler(CommandName,
                 new CommandInfo(OnCommand)
                 {
                     HelpMessage = "Display MeterWay main window.\nAditional help with the command \'" + CommandName + " help\'."
@@ -82,8 +88,8 @@ namespace MeterWay
             );
             this.commands = RegisterCommands();
 
-            PluginManager.Instance.PluginInterface.UiBuilder.Draw += DrawUI;
-            PluginManager.Instance.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            InterfaceManager.Inst.PluginInterface.UiBuilder.Draw += DrawUI;
+            InterfaceManager.Inst.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
         }
 
         public void Dispose()
@@ -92,7 +98,7 @@ namespace MeterWay
             IpcClient.Dispose();
             ConfigWindow.Dispose();
             MainWindow.Dispose();
-            PluginManager.Instance.CommandManager.RemoveHandler(CommandName);
+            InterfaceManager.Inst.CommandManager.RemoveHandler(CommandName);
         }
 
         private List<MeterWayCommand> RegisterCommands()
@@ -112,7 +118,7 @@ namespace MeterWay
                 {
                     var msg = "MeterWay is " + (IpcClient.Status() ? "connected" : "disconnected") + " to IINACT.";
                     //ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload(msg), new UIForegroundPayload(0)));
-                    PluginManager.Instance.ChatGui.Print(msg);
+                    InterfaceManager.Inst.ChatGui.Print(msg);
                 }
             ));
             commandlist.Add(new MeterWayCommand("start", "Try to connect to IINACT.", () =>
@@ -133,7 +139,7 @@ namespace MeterWay
             string HelpMessage = "";
             commandlist.Add(new MeterWayCommand("help", "Display this help message", () =>
                 {
-                    PluginManager.Instance.ChatGui.Print(HelpMessage);
+                    InterfaceManager.Inst.ChatGui.Print(HelpMessage);
                 }
             ));
 

@@ -8,5 +8,5 @@ public interface IMeterwayOverlay
     public string Name { get; }
     public void Draw();
     public void Dispose();
-    public void DataProcess(List<Encounter> encounters);
+    public void DataProcess();
 }

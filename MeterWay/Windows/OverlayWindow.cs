@@ -5,7 +5,7 @@ using ImGuiNET;
 using System.Collections.Generic;
 
 using MeterWay.Overlays;
-using Meterway.Managers;
+using MeterWay.Managers;
 using MeterWay.Data;
 
 namespace MeterWay.Windows;
@@ -18,9 +18,7 @@ public class OverlayWindow : Window, IDisposable
     public List<IMeterwayOverlay> Overlays;
     public ImFontPtr font;
 
-    private readonly Func<List<Encounter>> GetEncounters;
-
-    public OverlayWindow(Func<List<Encounter>> GetEncounters) : base("OverlayWindow")
+    public OverlayWindow() : base("OverlayWindow")
     {
 
         // window configs
@@ -32,7 +30,6 @@ public class OverlayWindow : Window, IDisposable
         this.IsOpen = true;
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
-        this.GetEncounters = GetEncounters;
 
         this.Overlays = new List<IMeterwayOverlay>();
     }
@@ -43,9 +40,6 @@ public class OverlayWindow : Window, IDisposable
     {
         // font
         ImGui.SetWindowFontScale(ConfigurationManager.Instance.Configuration.OverlayFontScale);
-
-        // adicionar isso aqui ou no handler ?? 
-        Overlays[ConfigurationManager.Instance.Configuration.OverlayType].DataProcess(GetEncounters());
 
         // Custom Overlay
         Overlays[ConfigurationManager.Instance.Configuration.OverlayType].Draw();

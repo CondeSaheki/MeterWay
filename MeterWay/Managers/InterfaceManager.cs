@@ -1,11 +1,10 @@
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using MeterWay;
 
-namespace Meterway.Managers;
+namespace MeterWay.Managers;
 
-public class PluginManager
+public class InterfaceManager
 {
     public readonly WindowSystem WindowSystem;
     public readonly DalamudPluginInterface PluginInterface;
@@ -20,9 +19,9 @@ public class PluginManager
     public readonly IDutyState DutyState;
 
 
-    public static PluginManager Instance { get; private set; } = null!;
+    public static InterfaceManager Inst { get; private set; } = null!;
 
-    public PluginManager(WindowSystem windowsystem,
+    public InterfaceManager(WindowSystem windowsystem,
         DalamudPluginInterface pluginInterface,
         ICommandManager commandManager,
         IPluginLog pluginLog,
@@ -47,21 +46,6 @@ public class PluginManager
         this.TextureProvider = textureProvider;
         this.DutyState = dutyState;
 
-        PluginManager.Instance = this;
-    }
-}
-
-public class ConfigurationManager
-{
-    public readonly Configuration Configuration;
-
-    public static ConfigurationManager Instance { get; private set; } = null!;
-
-    public ConfigurationManager()
-    {
-        this.Configuration = PluginManager.Instance.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        this.Configuration.Initialize(PluginManager.Instance.PluginInterface);
-
-        ConfigurationManager.Instance = this;
+        Inst = this;
     }
 }

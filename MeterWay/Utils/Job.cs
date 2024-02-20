@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using ImGuiNET;
-using Meterway.Managers;
+using MeterWay.Managers;
 
 public static class Job
 {
@@ -58,7 +58,7 @@ public static class Job
 
     public static nint GetIcon(uint job)
     {
-        var icon = PluginManager.Instance.TextureProvider.GetIcon(job + 62000u, Dalamud.Plugin.Services.ITextureProvider.IconFlags.None);
+        var icon = InterfaceManager.Inst.TextureProvider.GetIcon(job + 62000u, Dalamud.Plugin.Services.ITextureProvider.IconFlags.None);
         if (icon == null) return 0;
 
         return icon.ImGuiHandle;

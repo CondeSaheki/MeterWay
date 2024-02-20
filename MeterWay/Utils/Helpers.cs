@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Reflection;
 using System.Security.AccessControl;
-using Meterway.Managers;
+using MeterWay.Managers;
 
 namespace MeterWay.Utils
 {
@@ -71,7 +71,7 @@ namespace MeterWay.Utils
 
 public static void Log(string message)
 {
-    PluginManager.Instance.PluginLog.Info(message);
+    InterfaceManager.Inst.PluginLog.Info(message);
 }
     }
 }

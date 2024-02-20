@@ -5,7 +5,7 @@ using ImGuiNET;
 using Dalamud.Interface.Utility.Raii;
 using System.Collections.Generic;
 
-using Meterway.Managers;
+using MeterWay.Managers;
 using MeterWay.IINACT;
 
 namespace MeterWay.Windows;
@@ -62,11 +62,11 @@ public class ConfigWindow : Window, IDisposable
             ConfigurationManager.Instance.Configuration.Save();
             if (OverlayValue)
             {
-                PluginManager.Instance.WindowSystem.AddWindow(OverlayWindow);
+                InterfaceManager.Inst.WindowSystem.AddWindow(OverlayWindow);
             }
             else
             {
-                PluginManager.Instance.WindowSystem.RemoveWindow(OverlayWindow);
+                InterfaceManager.Inst.WindowSystem.RemoveWindow(OverlayWindow);
             }
         }
 

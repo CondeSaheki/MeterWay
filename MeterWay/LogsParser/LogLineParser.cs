@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-using Meterway.Managers;
+namespace MeterWay.LogParser;
 
-namespace MeterWay.Data;
 public interface INetworkMessage
 {
     public uint MsgType { get; }
@@ -278,3 +277,5 @@ public class AddCombatant : INetworkMessage
 
 
 }
+
+

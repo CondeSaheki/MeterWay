@@ -2,7 +2,7 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using MeterWay.Utils;
-using Meterway.Managers;
+using MeterWay.Managers;
 using MeterWay.Data;
 using System.Linq;
 using MeterWay.Utils.Draw;
@@ -46,10 +46,12 @@ public class LazerOverlay : IMeterwayOverlay
         this.sortCache = new List<uint>();
     }
 
-    public void DataProcess(List<Encounter> encountersData)
+    public void DataProcess()
     {
-        var currentEncounter = (encountersData.Last().Active || encountersData.Last().Finished) ? encountersData.Last() : (encountersData.Count() > 1 ? encountersData[encountersData.Count() - 2] : encountersData.Last());
+        var currentEncounter = EncounterManager.Inst.CurrentEncounter();
 
+        if(currentEncounter.Finished || !currentEncounter.Active) return; // no need to update data
+        
         if (currentEncounter.Id != this.combat.Id)
         {
             this.targetInfo = new Dictionary<uint, LerpPlayerData>();

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MeterWay.Utils;
+namespace MeterWay.LogParser;
 
 public enum MessageType : uint
 {

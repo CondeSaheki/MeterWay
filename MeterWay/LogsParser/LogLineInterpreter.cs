@@ -3,15 +3,16 @@ using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-using Meterway.Managers;
+using MeterWay.Managers;
 using MeterWay.Utils;
+using MeterWay.Data;
 
-namespace MeterWay.Data;
+namespace MeterWay.LogParser;
 
 public static class LoglineParser
 {
     // we are only getting the messages needed
-    private static Dictionary<MessageType, Action<List<string>, string, DataManager>> Handlers = new Dictionary<MessageType, Action<List<string>, string, DataManager>>
+    private static Dictionary<MessageType, Action<List<string>, string, EncounterManager>> Handlers = new Dictionary<MessageType, Action<List<string>, string, EncounterManager>>
         {
             { MessageType.ActionEffect, MsgActionEffect },
             { MessageType.AOEActionEffect, MsgAOEActionEffect },
@@ -21,7 +22,7 @@ public static class LoglineParser
             { MessageType.AddCombatant, MsgAddCombatant }
         };
 
-    public static void Parse(JObject json, DataManager recipient)
+    public static void Parse(JObject json, EncounterManager recipient)
     {
         var data = json["line"];
         if (data == null) return;
@@ -40,11 +41,11 @@ public static class LoglineParser
         }
         catch (Exception ex)
         {
-            PluginManager.Instance.PluginLog.Warning("fail -> " + ex.ToString());
+            InterfaceManager.Inst.PluginLog.Warning("fail -> " + ex.ToString());
         }
     }
 
-    private static void MsgActionEffect(List<string> data, string raw, DataManager recipient)
+    private static void MsgActionEffect(List<string> data, string raw, EncounterManager recipient)
     {
         var parsed = new ActionEffect(data, raw);
 
@@ -56,7 +57,7 @@ public static class LoglineParser
             recipient.encounters.Last().Players[parsed.ObjectId].RawActions.Add(parsed);
             found = true;
 
-            if (!recipient.encounters.Last().Players[parsed.ObjectId].IsActive && !PluginManager.Instance.DutyState.IsDutyStarted)
+            if (!recipient.encounters.Last().Players[parsed.ObjectId].IsActive && !InterfaceManager.Inst.DutyState.IsDutyStarted)
             {
                 return;
             }
@@ -111,20 +112,21 @@ public static class LoglineParser
                     
             }
         }
-
+        
+        EncounterManager.UpdateClients();
     }
 
-    private static void MsgAOEActionEffect(List<string> data, string raw, DataManager recipient)
+    private static void MsgAOEActionEffect(List<string> data, string raw, EncounterManager recipient)
     {
         MsgActionEffect(data, raw, recipient); // have same format
     }
 
-    private static void MsgStartsCasting(List<string> data, string raw, DataManager recipient)
+    private static void MsgStartsCasting(List<string> data, string raw, EncounterManager recipient)
     {
         // todo
     }
 
-    private static void MsgDoTHoT(List<string> data, string raw, DataManager recipient)
+    private static void MsgDoTHoT(List<string> data, string raw, EncounterManager recipient)
     {
         var parsed = new DoTHoT(data, raw);
 
@@ -136,7 +138,7 @@ public static class LoglineParser
             recipient.encounters.Last().Players[parsed.SourceId].RawActions.Add(parsed);
             found = true;
 
-            if (!recipient.encounters.Last().Players[parsed.SourceId].IsActive && !(PluginManager.Instance.DutyState.IsDutyStarted))
+            if (!recipient.encounters.Last().Players[parsed.SourceId].IsActive && !(InterfaceManager.Inst.DutyState.IsDutyStarted))
             {
                 return;
             }
@@ -176,15 +178,16 @@ public static class LoglineParser
             // }
 
         }
-
+        EncounterManager.UpdateClients();
     }
 
-    private static void MsgPartyList(List<string> data, string raw, DataManager recipient)
+    private static void MsgPartyList(List<string> data, string raw, EncounterManager recipient)
     {
         recipient.encounters.Last().UpdateParty();
+        EncounterManager.UpdateClients();
     }
 
-    private static void MsgAddCombatant(List<string> data, string raw, DataManager recipient)
+    private static void MsgAddCombatant(List<string> data, string raw, EncounterManager recipient)
     {
         var parsed = new AddCombatant(data, raw);
         // this will be used to make sure summoners have their pet
@@ -194,5 +197,6 @@ public static class LoglineParser
             if (recipient.encounters.Last().Players.ContainsKey(parsed.OwnerId) && recipient.encounters.Last().Players[parsed.OwnerId] != null)
                 recipient.encounters.Last().Pets.Add(parsed.Id, parsed.OwnerId);
         }
+        EncounterManager.UpdateClients();
     }
 }
