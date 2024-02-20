@@ -6,7 +6,6 @@ using MeterWay.Managers;
 using MeterWay.Data;
 using System.Linq;
 using MeterWay.Utils.Draw;
-using System;
 
 namespace MeterWay.Overlays;
 
@@ -49,8 +48,14 @@ public class LazerOverlay : IMeterwayOverlay
     public void DataProcess()
     {
         var currentEncounter = EncounterManager.Inst.CurrentEncounter();
+        var oldListId = this.combat.PartyListId;
+        var oldCombatId = this.combat.Id;
 
-        if (currentEncounter.Id != this.combat.Id)
+        this.combat = currentEncounter;
+        this.combat.UpdateStats();
+
+
+        if (currentEncounter.Id != oldCombatId)
         {
             this.targetInfo = new Dictionary<uint, LerpPlayerData>();
             this.lerpedInfo = new Dictionary<uint, LerpPlayerData>();
@@ -58,13 +63,11 @@ public class LazerOverlay : IMeterwayOverlay
             this.sortCache = Helpers.CreateDictionarySortCache(currentEncounter.Players, (x) => { return true; });
         }
 
-        if (true) //this.combat.partyListId != currentEncounter.partyListId
+
+        if (oldListId != currentEncounter.PartyListId)
         {
             this.sortCache = Helpers.CreateDictionarySortCache(currentEncounter.Players, (x) => { return true; });
         }
-
-        this.combat = currentEncounter;
-        this.combat.UpdateStats();
 
         sortCache.Sort((uint first, uint second) => { return this.combat.Players[second].TotalDamage.CompareTo(this.combat.Players[first].TotalDamage); });
     }

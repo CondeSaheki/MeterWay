@@ -85,14 +85,14 @@ public class Encounter
 
         if (!PartyMembersChanged(partyList))
         {
-            Helpers.Log("party did not change, player got a DC or changed area");
+            Helpers.Log("Party did not change, player got a DC or changed area");
             return;
         }
         Helpers.Log("Party has changed");
 
         // keep only you
         if (partyList.Count() == 0)
-        {    
+        {
             var you = InterfaceManager.Inst.ClientState.LocalPlayer;
             if (you == null) return; // you are null
 

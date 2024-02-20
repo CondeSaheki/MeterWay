@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Numerics;
-using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 

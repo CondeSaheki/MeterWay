@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using MeterWay.Data;
-
 namespace MeterWay.Overlays;
 
 public interface IMeterwayOverlay

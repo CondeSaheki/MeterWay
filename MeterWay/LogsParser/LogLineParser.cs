@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 using MeterWay.Managers;
 using MeterWay.Utils;
-using MeterWay.Data;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 
 namespace MeterWay.LogParser;
 
@@ -33,7 +33,7 @@ public static class LoglineParser
         if (rawValue == null) return;
         string raw = rawValue.ToObject<string>() ?? string.Empty;
         if (raw == "") return;
-        
+
         List<string> linedata = data.Values<string>().ToList().ConvertAll(x => x ?? string.Empty);
 
         try
@@ -85,10 +85,14 @@ public static class LoglineParser
                 rawattribute = attribute.Value;
                 actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
 
-                if (recipient.encounters.Last().Players[parsed.ObjectId].IsActive)
+                if (!recipient.encounters.Last().Players.ContainsKey(parsed.ObjectId))
+                {
+                    Helpers.Log($"Damage from {parsed.Name} not accounted because they are not in the Party.");
+                }
+                else if (recipient.encounters.Last().Players[parsed.ObjectId].IsActive)
                 {
                     // pet actions should probably be calculated even if the owner is deactivated #for analyzing the data later
-                                            // or add a flag to the damaged saying it was ignored idk
+                    // or add a flag to the damaged saying it was ignored idk
                     if (actionFromPet)
                     {
                         if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
@@ -110,10 +114,9 @@ public static class LoglineParser
                 {
                     Helpers.Log($"{recipient.encounters.Last().Players[parsed.ObjectId].Name} is deactivated, ignoring damage.");
                 }
-                    
             }
         }
-        
+
         EncounterManager.UpdateClients();
     }
 
@@ -157,25 +160,32 @@ public static class LoglineParser
         {
             if (!recipient.encounters.Last().Active) recipient.encounters.Last().StartEncounter();
             // dots are calculated even if the player is deactivated, pet actions should probably do the same #for analyzing the data later
-                                                                            // or add a flag to the damaged saying it was ignored idk
+            // or add a flag to the damaged saying it was ignored idk
             // if (recipient.encounters.Last().Players[parsed.SourceId].IsActive)
             // {
-                if (actionFromPet)
+            if (actionFromPet)
+            {
+                if (recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId))
                 {
-                    if (recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId))
+                    if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]] != null)
                     {
-                        if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]] != null)
-                        {
-                            recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]].TotalDamage += parsed.Value;
-                            recipient.encounters.Last().TotalDamage += parsed.Value;
-                        }
+                        recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]].TotalDamage += parsed.Value;
+                        recipient.encounters.Last().TotalDamage += parsed.Value;
                     }
+                }
+            }
+            else
+            {
+                if (!recipient.encounters.Last().Players.ContainsKey(parsed.SourceId))
+                {
+                    Helpers.Log($"Damage from {parsed.SourceName} not accounted because they are not in the Party.");
                 }
                 else
                 {
                     recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
                     recipient.encounters.Last().TotalDamage += parsed.Value;
                 }
+            }
             // }
 
         }
@@ -194,10 +204,10 @@ public static class LoglineParser
         // this will be used to make sure summoners have their pet
 
         if (parsed.IsPet)
-        {
             if (recipient.encounters.Last().Players.ContainsKey(parsed.OwnerId) && recipient.encounters.Last().Players[parsed.OwnerId] != null)
-                recipient.encounters.Last().Pets.Add(parsed.Id, parsed.OwnerId);
-        }
+                if (!recipient.encounters.Last().Pets.ContainsKey(parsed.Id))
+                    recipient.encounters.Last().Pets.Add(parsed.Id, parsed.OwnerId);
+
         EncounterManager.UpdateClients();
     }
 }

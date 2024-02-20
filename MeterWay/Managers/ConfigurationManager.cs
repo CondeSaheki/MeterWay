@@ -1,8 +1,3 @@
-using Dalamud.Interface.Windowing;
-using Dalamud.Plugin;
-using Dalamud.Plugin.Services;
-using MeterWay;
-
 namespace MeterWay.Managers;
 
 public class ConfigurationManager
