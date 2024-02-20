@@ -248,7 +248,7 @@ public class Encounter
             // keep only you
             if (PluginManager.Instance.ClientState.LocalPlayer == null) return; // error you are null
 
-            var you = (PluginManager.Instance.ClientState.LocalPlayer as Character).ObjectId;
+            var you = (PluginManager.Instance.ClientState.LocalPlayer).ObjectId;
             foreach (var player in Players)
             {
                 if (player.Key != you)
