@@ -85,9 +85,9 @@ public static class LoglineParser
             if (ParserAssistant.IsDamage((int)attribute.Key))
             {
                 if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
-                    rawattribute = attribute.Value;
-                    actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
-                   
+                rawattribute = attribute.Value;
+                actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
+
                 if (actionFromPet)
                 {
                     if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
@@ -137,7 +137,7 @@ public static class LoglineParser
                 return;
             }
 
-            
+            actionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId);
         }
         else if (recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
         {
@@ -149,10 +149,23 @@ public static class LoglineParser
         if (!parsed.IsHeal)
         {
             if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
-            
 
-            recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
-            recipient.encounters.Last().TotalDamage += parsed.Value;
+            if (actionFromPet)
+            {
+                if (recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId))
+                {
+                    if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]] != null)
+                    {
+                        recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]].TotalDamage += parsed.Value;
+                        recipient.encounters.Last().TotalDamage += parsed.Value;
+                    }
+                }
+            }
+            else
+            {
+                recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
+                recipient.encounters.Last().TotalDamage += parsed.Value;
+            }
 
             PluginManager.Instance.PluginLog.Info($"DOT: {parsed.RawLine}");
         }
