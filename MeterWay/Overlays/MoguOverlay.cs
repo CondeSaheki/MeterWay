@@ -7,6 +7,7 @@ using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Utils.Draw;
+using System.Linq;
 
 
 namespace MeterWay.Overlays;
@@ -32,16 +33,23 @@ public class MoguOverlay : IMeterwayOverlay
         var currentEncounter = EncounterManager.Inst.CurrentEncounter();
         var oldListId = this.data.PartyListId;
         this.data = currentEncounter;
+        this.data.UpdateStats();
 
         if (currentEncounter.PartyListId != oldListId) this.sortcache = Helpers.CreateDictionarySortCache(currentEncounter.Players, (x) => { return true; });
 
         sortcache.Sort((uint first, uint second) => { return currentEncounter.Players[second].TotalDamage.CompareTo(currentEncounter.Players[first].TotalDamage); });
     }
 
+    private List<uint> getSortCache()
+    {
+        return this.sortcache.ToList();
+    }
+
     public void Draw()
     {
         UpdateWindowSize();
-        this.data.UpdateStats();
+
+        var sortCache = getSortCache();
         //ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(0, 0, 0, 64));
 
         Vector2 cursor = WindowMin;
@@ -50,7 +58,7 @@ public class MoguOverlay : IMeterwayOverlay
 
         cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 
-        foreach (var id in sortcache)
+        foreach (var id in sortCache)
         {
             Player p = data.Players[id];
             if (p.TotalDamage == 0) continue;

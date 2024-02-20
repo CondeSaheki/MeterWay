@@ -72,8 +72,14 @@ public class LazerOverlay : IMeterwayOverlay
         sortCache.Sort((uint first, uint second) => { return this.combat.Players[second].TotalDamage.CompareTo(this.combat.Players[first].TotalDamage); });
     }
 
+    private List<uint> localSortCache()
+    {
+        return this.sortCache.ToList();
+    }
+
     public void Draw()
     {
+        var sortCache = localSortCache();
         UpdateWindowSize();
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Instance.Configuration.OverlayBackgroundColor));
 
@@ -88,7 +94,7 @@ public class LazerOverlay : IMeterwayOverlay
 
         Widget.Text($"{this.combat.Name} - ({(!this.combat.Active ? "Completed in " : "")}{this.combat.Duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
 
-        foreach (var id in this.sortCache)
+        foreach (var id in sortCache)
         {
             Player player = combat.Players[id];
             DoLerpPlayerData(player);
