@@ -178,7 +178,7 @@ public class DoTHoT : INetworkMessage
     public DoTHoT(List<string> data, string raw)
     {
         // 24|2024-02-19T05:36:56.1640000-03:00|40003EC7|Striking Dummy|DoT|0|466|44|44|0|10000|||-727.13|-810.75|10.02|-0.96|1089ED18|Aruna Rhen|FFFFFFFF|31362|31362|9478|10000|||-723.48|-821.16|10.00|-0.34|2df8dd482da88ed7
-        PluginManager.Instance.PluginLog.Info(raw);
+        // PluginManager.Instance.PluginLog.Info(raw);
         this.MsgType = 24;
         this.RawLine = raw;
         this.DateTime = DateTime.Now;

@@ -13,7 +13,7 @@ public class DataManager
     // data
     public List<Encounter> encounters;
     private bool lastCombatState;
-    public Encounter current => Current();
+    public Encounter Current => CurrentEncounter();
 
     // constructor
     public DataManager()
@@ -26,9 +26,9 @@ public class DataManager
     // metods
     public void StartEncounter()
     {
-        if (encounters.Last().active) return;
+        if (encounters.Last().Active) return;
 
-        if (encounters.Last().finished)
+        if (encounters.Last().Finished)
         {
             encounters.Add(new Encounter());
             encounters.Last().StartEncounter();
@@ -43,9 +43,11 @@ public class DataManager
         encounters.Add(new Encounter());
     }
 
-    public Encounter Current()
+    public List<Encounter> AllEncounters() { return this.encounters; }
+
+    public Encounter CurrentEncounter()
     {
-        if (encounters.Last().active || encounters.Last().finished)
+        if (encounters.Last().Active || encounters.Last().Finished)
         {
             return encounters.Last();
         }
@@ -55,8 +57,6 @@ public class DataManager
         }
         return encounters.Last();
     }
-
-    public List<Encounter> AllEncounters() { return this.encounters; }
 
     private bool GetInCombat()
     {
@@ -79,38 +79,20 @@ public class DataManager
 
     public void Receiver(JObject json)
     {
-        var combatState = GetInCombat(); //  || 
+        var combatState = GetInCombat();
 
-        // start combat
+        // Start/End Combat
         if ((combatState == true) && lastCombatState == false)
         {
-            if (!encounters.Last().active) StartEncounter();
+            if (!encounters.Last().Active) StartEncounter();
             lastCombatState = true;
         }
-
-        // end combat
         if (combatState == false && lastCombatState == true)
         {
             EndEncounter();
             lastCombatState = false;
         }
 
-        // ignore all data when not in combat 
-        if (combatState == false)
-        {
-            //return;
-        }
-
-        // parse data
-        try
-        {
-            LoglineParser.Parse(json, this);
-        }
-        catch (Exception ex)
-        {
-            PluginManager.Instance.PluginLog.Error(ex.ToString());
-            return;
-        }
-        return;
+        LoglineParser.Parse(json, this); // parse data
     }
 }

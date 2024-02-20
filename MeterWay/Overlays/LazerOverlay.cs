@@ -48,9 +48,9 @@ public class LazerOverlay : IMeterwayOverlay
 
     public void DataProcess(List<Encounter> encountersData)
     {
-        var currentEncounter = (encountersData.Last().active || encountersData.Last().finished) ? encountersData.Last() : (encountersData.Count() > 1 ? encountersData[encountersData.Count() - 2] : encountersData.Last());
+        var currentEncounter = (encountersData.Last().Active || encountersData.Last().Finished) ? encountersData.Last() : (encountersData.Count() > 1 ? encountersData[encountersData.Count() - 2] : encountersData.Last());
 
-        if (currentEncounter.id != this.combat.id)
+        if (currentEncounter.Id != this.combat.Id)
         {
             this.targetInfo = new Dictionary<uint, LerpPlayerData>();
             this.lerpedInfo = new Dictionary<uint, LerpPlayerData>();
@@ -83,7 +83,7 @@ public class LazerOverlay : IMeterwayOverlay
             return;
         }
 
-        Widget.Text($"{this.combat.Name} - ({(!this.combat.active ? "Completed in " : "")}{this.combat.duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
+        Widget.Text($"{this.combat.Name} - ({(!this.combat.Active ? "Completed in " : "")}{this.combat.Duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
 
         foreach (var id in this.sortCache)
         {
@@ -120,7 +120,7 @@ public class LazerOverlay : IMeterwayOverlay
 
         lerpedInfo[player.Id] = new LerpPlayerData
         {
-            DPS = player.DPS,
+            DPS = player.Dps,
             PctBar = player.DamagePercentage / topPlayerDamagePercentage * 100,
             TotalDMG = player.TotalDamage,
             Position = sortCache.IndexOf(player.Id) + 1
@@ -128,7 +128,7 @@ public class LazerOverlay : IMeterwayOverlay
 
         targetInfo[player.Id] = new LerpPlayerData
         {
-            DPS = player.DPS,
+            DPS = player.Dps,
             PctBar = player.DamagePercentage / topPlayerDamagePercentage * 100,
             TotalDMG = player.TotalDamage,
             Position = sortCache.IndexOf(player.Id) + 1
@@ -155,7 +155,7 @@ public class LazerOverlay : IMeterwayOverlay
         if (targetInfo[player.Id].TotalDMG <= player.TotalDamage)
         {
             double topPlayerTotalDamage = this.combat.Players[sortCache.First()].TotalDamage == 0 ? 1 : this.combat.Players[sortCache.First()].TotalDamage;
-            targetInfo[player.Id].DPS = player.DPS;
+            targetInfo[player.Id].DPS = player.Dps;
             targetInfo[player.Id].PctBar = (player.TotalDamage / topPlayerTotalDamage) * 100;
             targetInfo[player.Id].TotalDMG = player.TotalDamage;
             targetInfo[player.Id].Position = sortCache.IndexOf(player.Id) + 1;

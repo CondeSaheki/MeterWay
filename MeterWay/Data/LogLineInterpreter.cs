@@ -10,7 +10,7 @@ namespace MeterWay.Data;
 
 public static class LoglineParser
 {
-    // we are only getting the messages needed:
+    // we are only getting the messages needed
     private static Dictionary<MessageType, Action<List<string>, string, DataManager>> Handlers = new Dictionary<MessageType, Action<List<string>, string, DataManager>>
         {
             { MessageType.ActionEffect, MsgActionEffect },
@@ -18,8 +18,8 @@ public static class LoglineParser
             { MessageType.StartsCasting, MsgStartsCasting },
             { MessageType.DoTHoT, MsgDoTHoT },
             { MessageType.PartyList, MsgPartyList },
-            {MessageType.AddCombatant, MsgAddCombatant}
-                };
+            { MessageType.AddCombatant, MsgAddCombatant }
+        };
 
     public static void Parse(JObject json, DataManager recipient)
     {
@@ -30,14 +30,9 @@ public static class LoglineParser
         var messageType = messageTypeValue.ToObject<MessageType>();
         var rawValue = json["rawLine"];
         if (rawValue == null) return;
-        string raw = rawValue.ToObject<string>() ?? "";
+        string raw = rawValue.ToObject<string>() ?? string.Empty;
 
         List<string> linedata = data.Values<string>().ToList().ConvertAll(x => x ?? string.Empty);
-
-#if false //debug
-            var message = json["rawLine"]?.ToString() ?? "";
-            PluginManager.Instance.PluginLog.Info($"parsed a: \"{messagetype}\" | \"{message}\"");
-#endif
 
         try
         {
@@ -61,7 +56,7 @@ public static class LoglineParser
             recipient.encounters.Last().Players[parsed.ObjectId].RawActions.Add(parsed);
             found = true;
 
-            if (!recipient.encounters.Last().Players[parsed.ObjectId].InParty && !PluginManager.Instance.DutyState.IsDutyStarted)
+            if (!recipient.encounters.Last().Players[parsed.ObjectId].IsActive && !PluginManager.Instance.DutyState.IsDutyStarted)
             {
                 return;
             }
@@ -84,40 +79,47 @@ public static class LoglineParser
             if (ParserAssistant.IsSpecial((int)attribute.Key)) { }; // TODO
             if (ParserAssistant.IsDamage((int)attribute.Key))
             {
-                if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
+                if (!recipient.encounters.Last().Active) recipient.encounters.Last().StartEncounter();
                 rawattribute = attribute.Value;
                 actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
 
-                if (actionFromPet)
+                if (recipient.encounters.Last().Players[parsed.ObjectId].IsActive)
                 {
-                    if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
+                    if (actionFromPet)
                     {
-                        if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]] != null)
+                        if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
                         {
-                            recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]].TotalDamage += actionValue;
-                            recipient.encounters.Last().TotalDamage += actionValue;
+                            if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]] != null)
+                            {
+                                recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]].TotalDamage += actionValue;
+                                recipient.encounters.Last().TotalDamage += actionValue;
+                            }
                         }
+                    }
+                    else
+                    {
+                        recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += actionValue;
+                        recipient.encounters.Last().TotalDamage += actionValue;
                     }
                 }
                 else
                 {
-                    recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += actionValue;
-                    recipient.encounters.Last().TotalDamage += actionValue;
+                    Helpers.Log($"{recipient.encounters.Last().Players[parsed.ObjectId].Name} is deactivated, ignoring damage.");
                 }
+                    
             }
         }
 
-        //PluginManager.Instance.PluginLog.Info($"{parsed.ObjectId} | {parsed.Name} | {(parsed.TargetId == null ? "null" : parsed.TargetId)} | {actionValue} |  {actionValue} ");
     }
 
     private static void MsgAOEActionEffect(List<string> data, string raw, DataManager recipient)
     {
-        MsgActionEffect(data, raw, recipient);
+        MsgActionEffect(data, raw, recipient); // have same format
     }
 
     private static void MsgStartsCasting(List<string> data, string raw, DataManager recipient)
     {
-
+        // todo
     }
 
     private static void MsgDoTHoT(List<string> data, string raw, DataManager recipient)
@@ -132,7 +134,7 @@ public static class LoglineParser
             recipient.encounters.Last().Players[parsed.SourceId].RawActions.Add(parsed);
             found = true;
 
-            if (!recipient.encounters.Last().Players[parsed.SourceId].InParty && !(PluginManager.Instance.DutyState.IsDutyStarted))
+            if (!recipient.encounters.Last().Players[parsed.SourceId].IsActive && !(PluginManager.Instance.DutyState.IsDutyStarted))
             {
                 return;
             }
@@ -148,26 +150,27 @@ public static class LoglineParser
 
         if (!parsed.IsHeal)
         {
-            if (!recipient.encounters.Last().active) recipient.encounters.Last().StartEncounter();
-
-            if (actionFromPet)
+            if (!recipient.encounters.Last().Active) recipient.encounters.Last().StartEncounter();
+            if (recipient.encounters.Last().Players[parsed.SourceId].IsActive)
             {
-                if (recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId))
+                if (actionFromPet)
                 {
-                    if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]] != null)
+                    if (recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId))
                     {
-                        recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]].TotalDamage += parsed.Value;
-                        recipient.encounters.Last().TotalDamage += parsed.Value;
+                        if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]] != null)
+                        {
+                            recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]].TotalDamage += parsed.Value;
+                            recipient.encounters.Last().TotalDamage += parsed.Value;
+                        }
                     }
                 }
-            }
-            else
-            {
-                recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
-                recipient.encounters.Last().TotalDamage += parsed.Value;
+                else
+                {
+                    recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += parsed.Value;
+                    recipient.encounters.Last().TotalDamage += parsed.Value;
+                }
             }
 
-            PluginManager.Instance.PluginLog.Info($"DOT: {parsed.RawLine}");
         }
 
     }
@@ -180,7 +183,7 @@ public static class LoglineParser
     private static void MsgAddCombatant(List<string> data, string raw, DataManager recipient)
     {
         var parsed = new AddCombatant(data, raw);
-        // this will be used to make sure summoners have their pet, so we gotta check if it is a pet and if the owner is in the party, then add the pet to the recipient list
+        // this will be used to make sure summoners have their pet
 
         if (parsed.IsPet)
         {
