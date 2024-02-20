@@ -5,6 +5,7 @@ using ImGuiNET;
 using System.Collections.Generic;
 using MeterWay.Utils;
 using MeterWay.Data;
+using System.Linq;
 using MeterWay.Utils.Draw;
 
 namespace MeterWay.Overlays;
@@ -25,13 +26,15 @@ public class MoguOverlay : IMeterwayOverlay
         this.sortcache = new List<uint>();
     }
 
-    public void DataProcess(Encounter data)
+    public void DataProcess(List<Encounter> data)
     {
-        if (data.partyListId != this.data.partyListId) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
+        var currentEncounter = (data.Last().active || data.Last().finished) ? data.Last() : (data.Count() > 1 ? data[data.Count() - 2] : data.Last());
 
-        sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
+        // if (data.partyListId != this.data.partyListId) this.sortcache = Helpers.CreateDictionarySortCache(data.Players);
 
-        this.data = data;
+        // sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
+
+        this.data = currentEncounter;
     }
 
     public void Draw()

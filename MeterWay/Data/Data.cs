@@ -6,6 +6,8 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 
 using Meterway.Managers;
+using Dalamud.Game.ClientState.Party;
+using MeterWay.Utils;
 
 namespace MeterWay.Data;
 
@@ -78,53 +80,222 @@ public class Encounter
     {
         PluginManager.Instance.PluginLog.Info("Party has changed, triggering update.");
 
-        List<uint> newPlayerList = new List<uint>();
+        var partyList = PluginManager.Instance.PartyList;
+
+        List<uint> playersToRemove = this.Players.Keys.ToList().Where(p => !partyList.ToList().Select(p => p.ObjectId).Contains(p)).ToList();
+        List<uint> playersToAdd = partyList.ToList().Select(p => p.ObjectId).Where(p => !this.Players.ContainsKey(p)).ToList();
+
+        Helpers.Log("Players to remove: " + String.Join(", ", playersToRemove));
+        Helpers.Log("Players to add: " + String.Join(", ", playersToAdd));
+
+        if (PluginManager.Instance.ClientState.LocalPlayer != null && partyList.Length == 0)
+        {
+            if (!this.Players.ContainsKey((PluginManager.Instance.ClientState.LocalPlayer as Character).ObjectId))
+            {
+                playersToAdd.Add((PluginManager.Instance.ClientState.LocalPlayer as Character).ObjectId);
+            }
+            playersToRemove.Remove((PluginManager.Instance.ClientState.LocalPlayer as Character).ObjectId);
+        }
+
+        // step 2 - add new players and update existing ones
+        foreach (var player in playersToAdd)
+        {
+            var newPlayer = partyList.Where(p => p.ObjectId == player).Select(p => p).FirstOrDefault();
+
+            Helpers.Log("New player: " + newPlayer);
+            if (newPlayer != null)
+            {
+                var character = newPlayer.GameObject as Character;
+
+                Helpers.Log("Player character: " + character);
+                if (character != null)
+                {
+                    var existingNewPlayer = this.Players.Where(p => p.Value.Name == character.Name.ToString() && p.Value.World == (character as PlayerCharacter)?.HomeWorld.Id).Select(p => p.Value).FirstOrDefault();
+
+                    if (existingNewPlayer != null)
+                    {
+                        this.Players.Remove(existingNewPlayer.Id);
+
+                        existingNewPlayer.Id = character.ObjectId;
+                        existingNewPlayer.InParty = true;
+                        this.Players.Add(character.ObjectId, existingNewPlayer);
+
+                        Helpers.Log($"Player {existingNewPlayer.Name} returned the party.");
+                    }
+                    else
+                    {
+                        this.Players.Add(player, new Player(character, this));
+                        Helpers.Log($"Player {character.Name} joined the party for the first time.");
+                    }
+
+                }
+            }
+        }
+
+        // step 3 - remove players
+        foreach (var player in playersToRemove)
+        {
+            if (this.active)
+            {
+                this.Players[player].InParty = false;
+                Helpers.Log($"Player {this.Players[player].Name} left the party during combat.");
+            }
+            else
+            {
+                this.Players.Remove(player);
+                Helpers.Log($"Player {player} left the party.");
+            }
+        }
+
+        foreach (var player in partyList)
+        {
+            if (player.GameObject == null) continue;
+            if (Players.ContainsKey(player.ObjectId) && Players[player.ObjectId].InParty == false)
+            {
+                Players[player.ObjectId].InParty = true;
+            }
+        }
+
+        this.partyListId = CreateId();
+        PluginManager.Instance.PluginLog.Info("Party update complete: " + this.Players.Count + " players in encounter.");
+    }
+
+    public void UpdatePartyFallBack()
+    {
+        PluginManager.Instance.PluginLog.Info("Party has changed, triggering update.");
+
+        List<PartyMember> PlayerListadd = new List<PartyMember>();
+        List<uint> PlayerListremove = new List<uint>();
+
         var partyList = PluginManager.Instance.PartyList;
 
         if (PluginManager.Instance.PartyList.Length != 0)
         {
+            // fill lists to compare
             foreach (var player in partyList)
             {
-                if (player.GameObject != null)
-                    newPlayerList.Add((player.GameObject as GameObject).ObjectId);
-            }
-        }
-        else if (PluginManager.Instance.ClientState.LocalPlayer != null)
-        {
-            newPlayerList.Add((PluginManager.Instance.ClientState.LocalPlayer as Character).ObjectId);
-        }
-
-        foreach (var player in this.Players.Keys)
-        {
-            if (newPlayerList.Contains(player))
-            {
-                this.Players[player].InParty = true;
-            }
-            else if (this.active)
-            {
-                this.Players[player].InParty = false;
-            }
-            else
-            {
-                var playerToCheck = this.Players[player];
-                var existingNewPlayer = partyList.FirstOrDefault(p => p.GameObject != null && p.GameObject.Name.ToString() == playerToCheck.Name && (p.GameObject as PlayerCharacter)?.HomeWorld.Id == playerToCheck.World);
-
-                if (existingNewPlayer != null && existingNewPlayer.GameObject != null)
+                if (player.GameObject == null) continue;
+                if (!Players.ContainsKey(player.ObjectId))
                 {
-                    playerToCheck.Id = existingNewPlayer.GameObject.ObjectId;
-                    playerToCheck.InParty = true;
-
-                    this.Players.Add(playerToCheck.Id, playerToCheck);
+                    PlayerListadd.Add(player); // new players to be added later
                 }
-
-                this.Players.Remove(player);
+                PlayerListremove.Add(player.ObjectId); // players in common
             }
+            if (PlayerListremove.Count + PlayerListadd.Count == 0) return; // error all players are null
+        }
+        else
+        {
+            // keep only you
+            if (PluginManager.Instance.ClientState.LocalPlayer == null) return; // error you are null
+
+            var you = (PluginManager.Instance.ClientState.LocalPlayer as Character).ObjectId;
+            foreach (var player in Players)
+            {
+                if (player.Key != you) Players.Remove(player.Key); // remove copy
+            }
+
+            return; // ggs
         }
 
-        PluginManager.Instance.PluginLog.Info("Party update complete: " + this.Players.Count + " players in encounter.");
+        // remove players
+        foreach (var player in Players)
+        {
+            if (!PlayerListremove.Contains(player.Key)) Players.Remove(player.Key); // remove players not in common
+        }
 
+        foreach (var player in PlayerListadd)
+        {
+            var character = (player.GameObject as Character);
+            if (character == null) continue; // error could not retrieve player
+            Players.Add(character.ObjectId, new Player(character, this)); // add all new players to the player list
+        }
         this.partyListId = CreateId();
     }
+
+
+
+    public void UpdateParty2()
+    {
+        PluginManager.Instance.PluginLog.Info("Party has changed, triggering update.");
+
+        List<PartyMember> PlayerListadd = new List<PartyMember>();
+        List<uint> PlayerListremove = new List<uint>();
+
+        var partyList = PluginManager.Instance.PartyList;
+
+        if (PluginManager.Instance.PartyList.Length != 0)
+        {
+            // fill lists to compare
+            foreach (var player in partyList)
+            {
+                if (player.GameObject == null) continue;
+
+                // var a = player;
+                if (!Players.ContainsKey(player.ObjectId))
+                {
+                    PlayerListadd.Add(player); // new players to be added later
+                }
+                else
+                {
+                    Players[player.ObjectId].InParty = true; // re activate player
+                }
+                PlayerListremove.Add(player.ObjectId); // players in common
+            }
+            if (PlayerListremove.Count + PlayerListadd.Count == 0) return; // error all players are null
+        }
+        else
+        {
+            // keep only you
+            if (PluginManager.Instance.ClientState.LocalPlayer == null) return; // error you are null
+
+            var you = (PluginManager.Instance.ClientState.LocalPlayer as Character).ObjectId;
+            foreach (var player in Players)
+            {
+                if (player.Key != you)
+                {
+                    if (!this.active)
+                    {
+                        Players.Remove(player.Key); // true remove copy
+                    }
+                    else
+                    {
+                        player.Value.InParty = false; // disable player
+                    }
+                }
+
+                return; // ggs
+            }
+        }
+
+        // remove players
+        foreach (var player in Players)
+        {
+            if (!PlayerListremove.Contains(player.Key))
+            {
+                if (!this.active)
+                {
+                    Players.Remove(player.Key); // remove players not in common
+                }
+                else
+                {
+                    // we need to check and update for id changes here and not add them again down there
+                    player.Value.InParty = false; // disable player
+                }
+            }
+        }
+
+        foreach (var player in PlayerListadd)
+        {
+            var character = (player.GameObject as Character);
+            if (character == null) continue; // error could not retrieve player
+            Players.Add(character.ObjectId, new Player(character, this)); // add all new players to the player list
+
+        }
+        this.partyListId = CreateId();
+    }
+
+
+
 
     private string GetEncounterName()
     {

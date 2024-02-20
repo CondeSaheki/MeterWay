@@ -56,6 +56,7 @@ public class DataManager
         return encounters.Last();
     }
 
+    public List<Encounter> AllEncounters() { return this.encounters; }
 
     private bool GetInCombat()
     {

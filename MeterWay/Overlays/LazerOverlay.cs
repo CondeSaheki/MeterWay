@@ -6,6 +6,7 @@ using Meterway.Managers;
 using MeterWay.Data;
 using System.Linq;
 using MeterWay.Utils.Draw;
+using System;
 
 namespace MeterWay.Overlays;
 
@@ -45,28 +46,31 @@ public class LazerOverlay : IMeterwayOverlay
         this.sortCache = new List<uint>();
     }
 
-    public void DataProcess(Encounter data)
+    public void DataProcess(List<Encounter> encountersData)
     {
-        if (data.id != this.combat.id)
+        var currentEncounter = (encountersData.Last().active || encountersData.Last().finished) ? encountersData.Last() : (encountersData.Count() > 1 ? encountersData[encountersData.Count() - 2] : encountersData.Last());
+
+        if (currentEncounter.id != this.combat.id)
         {
-            lerpedInfo = new Dictionary<uint, LerpPlayerData>();
-            targetInfo = new Dictionary<uint, LerpPlayerData>();
-            this.sortCache = Helpers.CreateDictionarySortCache(data.Players);
+            this.targetInfo = new Dictionary<uint, LerpPlayerData>();
+            this.lerpedInfo = new Dictionary<uint, LerpPlayerData>();
+
+            this.sortCache = Helpers.CreateDictionarySortCache(currentEncounter.Players);
         }
 
-        if (data.partyListId != this.combat.partyListId)
+        if (true) //this.combat.partyListId != currentEncounter.partyListId
         {
-            this.sortCache = Helpers.CreateDictionarySortCache(data.Players);
+            this.sortCache = Helpers.CreateDictionarySortCache(currentEncounter.Players);
         }
-        this.combat = data;
+
+        this.combat = currentEncounter;
         this.combat.UpdateStats();
 
-        sortCache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
+        sortCache.Sort((uint first, uint second) => { return this.combat.Players[second].TotalDamage.CompareTo(this.combat.Players[first].TotalDamage); });
     }
 
     public void Draw()
     {
-
         UpdateWindowSize();
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Instance.Configuration.OverlayBackgroundColor));
 
@@ -78,7 +82,6 @@ public class LazerOverlay : IMeterwayOverlay
             Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center, dropShadow: true);
             return;
         }
-
 
         Widget.Text($"{this.combat.Name} - ({(!this.combat.active ? "Completed in " : "")}{this.combat.duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
 

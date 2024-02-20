@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Reflection;
 using System.Security.AccessControl;
+using Meterway.Managers;
 
 namespace MeterWay.Utils
 {
@@ -66,6 +67,11 @@ namespace MeterWay.Utils
             }
 
             return sorted;
+        }
+
+        public static void Log(string message)
+        {
+            PluginManager.Instance.PluginLog.Info(message);
         }
     }
 }

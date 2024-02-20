@@ -35,7 +35,6 @@ public class ActionEffect : INetworkMessage
     public ActionEffect(List<string> data, string raw)
     {
         this.RawLine = raw;
-        PluginManager.Instance.PluginLog.Info(raw);
 
         // int crypto = Convert.ToInt32(data[47].ToString(), 16);
         this.MultiMessageCount = Convert.ToUInt32(data[46].ToString());

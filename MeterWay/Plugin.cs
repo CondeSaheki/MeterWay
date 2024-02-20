@@ -58,7 +58,7 @@ namespace MeterWay
             IpcClient.receivers.Add(MWDataManager.Receiver);
 
             MainWindow = new MainWindow();
-            OverlayWindow = new OverlayWindow(this.MWDataManager.Current);
+            OverlayWindow = new OverlayWindow(this.MWDataManager.AllEncounters);
             ConfigWindow = new ConfigWindow(this.IpcClient, OverlayWindow);
 
             WindowSystem.AddWindow(ConfigWindow);

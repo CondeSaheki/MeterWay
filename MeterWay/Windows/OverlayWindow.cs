@@ -18,9 +18,9 @@ public class OverlayWindow : Window, IDisposable
     public List<IMeterwayOverlay> Overlays;
     public ImFontPtr font;
 
-    private readonly Func<Encounter> GetEncounter;
+    private readonly Func<List<Encounter>> GetEncounters;
 
-    public OverlayWindow(Func<Encounter> GetEncounter) : base("OverlayWindow")
+    public OverlayWindow(Func<List<Encounter>> GetEncounters) : base("OverlayWindow")
     {
 
         // window configs
@@ -32,7 +32,7 @@ public class OverlayWindow : Window, IDisposable
         this.IsOpen = true;
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
-        this.GetEncounter = GetEncounter;
+        this.GetEncounters = GetEncounters;
 
         this.Overlays = new List<IMeterwayOverlay>();
     }
@@ -45,7 +45,7 @@ public class OverlayWindow : Window, IDisposable
         ImGui.SetWindowFontScale(ConfigurationManager.Instance.Configuration.OverlayFontScale);
 
         // adicionar isso aqui ou no handler ?? 
-        Overlays[ConfigurationManager.Instance.Configuration.OverlayType].DataProcess(GetEncounter());
+        Overlays[ConfigurationManager.Instance.Configuration.OverlayType].DataProcess(GetEncounters());
 
         // Custom Overlay
         Overlays[ConfigurationManager.Instance.Configuration.OverlayType].Draw();
