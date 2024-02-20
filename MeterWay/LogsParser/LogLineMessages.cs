@@ -24,8 +24,8 @@ public class ActionEffect : INetworkMessage
     public uint? TargetMaxHp { get; }
     public List<KeyValuePair<uint, uint>> ActionAttributes { get; } // index 8 to 23
     public Vector4? TargetPos { get; }
-    public uint Mp { get; }
-    public Vector4 Pos { get; }
+    public uint? Mp { get; }
+    public Vector4? Pos { get; }
     public uint MultiMessageIndex { get; }
     public uint MultiMessageCount { get; }
     public string RawLine { get; }
@@ -40,13 +40,16 @@ public class ActionEffect : INetworkMessage
         this.MultiMessageIndex = Convert.ToUInt32(data[45].ToString());
         // uint loglinescount = Convert.ToUInt32(data[44].ToString(), 16);
 
-        this.Pos = new Vector4((float)Convert.ToDouble(data[40].ToString()), (float)Convert.ToDouble(data[41].ToString()),
+        if (data[40].ToString() != "" || data[41].ToString() != "" || data[42].ToString() != "" || data[43].ToString() != "")
+        {
+            this.Pos = new Vector4((float)Convert.ToDouble(data[40].ToString()), (float)Convert.ToDouble(data[41].ToString()),
             (float)Convert.ToDouble(data[42].ToString()), (float)Convert.ToDouble(data[43].ToString()));
+        }
 
         // var separator = data[39]; // null
         // var separator = data[38]; // null
         // uint maxMp = Convert.ToUInt32(data[37].ToString());
-        this.Mp = Convert.ToUInt32(data[36].ToString());
+        this.Mp = data[36].ToString() == "" ? null : Convert.ToUInt32(data[36].ToString());
         // uint maxHp = Convert.ToUInt32(data[35].ToString());
         // uint hp = Convert.ToUInt32(data[34].ToString());
 
@@ -183,6 +186,8 @@ public class StartsCasting : INetworkMessage
         // TODO
     }
 }
+
+// missing 26, 30, 
 
 public class DoTHoT : INetworkMessage
 {

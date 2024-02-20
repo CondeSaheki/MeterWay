@@ -32,7 +32,8 @@ public static class LoglineParser
         var rawValue = json["rawLine"];
         if (rawValue == null) return;
         string raw = rawValue.ToObject<string>() ?? string.Empty;
-
+        if (raw == "") return;
+        
         List<string> linedata = data.Values<string>().ToList().ConvertAll(x => x ?? string.Empty);
 
         try
@@ -41,7 +42,7 @@ public static class LoglineParser
         }
         catch (Exception ex)
         {
-            InterfaceManager.Inst.PluginLog.Warning("fail -> " + ex.ToString());
+            InterfaceManager.Inst.PluginLog.Warning($"fail -> {rawValue} \n {ex.ToString()}");
         }
     }
 
