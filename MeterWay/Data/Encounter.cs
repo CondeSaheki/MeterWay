@@ -12,7 +12,6 @@ using MeterWay.LogParser;
 
 namespace MeterWay.Data;
 
-
 public class Encounter
 {
     public uint Id { get; set; }
@@ -41,23 +40,23 @@ public class Encounter
         this.PartyListId = CreateId();
         this.Name = GetEncounterName();
         this.Players = GetPlayers();
-        this.Pets = new Dictionary<uint, uint>();
+        this.Pets = [];
         this.TotalDamage = 0;
         this.Dps = 0;
-        this.RawActions = new List<LogLineData>();
+        this.RawActions = [];
     }
 
-    private uint CreateId()
+    private static uint CreateId()
     {
         return (uint)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
     }
 
     public void Parse()
     {
-        foreach(var action in RawActions)
+        foreach (var action in RawActions)
         {
             action.Parse();
-            if(false)
+            if (false)
             {
                 // TODO 
             }
@@ -121,8 +120,8 @@ public class Encounter
             return; // done
         }
 
-        List<PartyMember> newPlayers = new List<PartyMember>();
-        List<uint> commonPlayers = new List<uint>();
+        List<PartyMember> newPlayers = [];
+        List<uint> commonPlayers = [];
 
         // fill commonPlayers & newPlayers
         foreach (var player in partyList)
@@ -229,7 +228,7 @@ public class Encounter
         // this.Pets = new Dictionary<uint, uint>();
     }
 
-    private string GetEncounterName()
+    private static string GetEncounterName()
     {
         var locationRow = InterfaceManager.Inst.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(InterfaceManager.Inst.ClientState.TerritoryType);
         var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();

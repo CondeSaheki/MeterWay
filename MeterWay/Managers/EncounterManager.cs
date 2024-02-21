@@ -23,17 +23,17 @@ public class EncounterManager : IDisposable
     // constructor
     public EncounterManager()
     {
-        this.encounters = new List<Encounter>();
+        this.encounters = [];
         encounters.Add(new Encounter());
         this.lastCombatState = false;
-        this.Clients = new List<Action>();
+        this.Clients = [];
 
         InterfaceManager.Inst.DutyState.DutyStarted += EncounterManagerOnDutyStart;
 
         Inst = this;
     }
 
-    private void EncounterManagerOnDutyStart<ArgType>(Object? sender, ArgType Args)
+    private static void EncounterManagerOnDutyStart<ArgType>(Object? sender, ArgType Args)
     {
         Helpers.Log("EncounterManager OnDutyStart Event Trigerred!");
         if(!EndEncounter()) ResetEncounter();
@@ -69,28 +69,22 @@ public class EncounterManager : IDisposable
     public static void ResetEncounter()
     {
         Inst.encounters.Add(new Encounter());
-        Inst.encounters.Remove(Inst.encounters[Inst.encounters.Count() - 1]);
+        Inst.encounters.Remove(Inst.encounters[Inst.encounters.Count - 1]);
     }
 
     public static List<Encounter> AllEncounters() { return Inst.encounters; }
 
     public Encounter CurrentEncounter()
     {
-        if (encounters.Last().Active || encounters.Last().Finished)
-        {
-            return encounters.Last();
-        }
-        else if (encounters.Count > 1)
-        {
-            return encounters[encounters.Count - 2];
-        }
+        if (encounters.Last().Active || encounters.Last().Finished) return encounters.Last();
+        else if (encounters.Count > 1) return encounters[^2];
         return encounters.Last();
     }
 
     private static bool GetInCombat()
     {
         var partyList = InterfaceManager.Inst.PartyList;
-        if (partyList.Count() == 0)
+        if (partyList.Length == 0)
         {
             return InterfaceManager.Inst.Condition[ConditionFlag.InCombat];
         }

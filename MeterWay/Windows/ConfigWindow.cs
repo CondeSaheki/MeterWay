@@ -3,7 +3,6 @@ using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using Dalamud.Interface.Utility.Raii;
-using System.Collections.Generic;
 
 using MeterWay.Managers;
 using MeterWay.IINACT;
@@ -12,8 +11,8 @@ namespace MeterWay.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
-    private IpcClient iinactIpcClient;
-    private OverlayWindow OverlayWindow;
+    private readonly IpcClient iinactIpcClient;
+    private readonly OverlayWindow OverlayWindow;
 
     public ConfigWindow(IpcClient iinactIpcClient, OverlayWindow OverlayWindow) : base(
         "MeterWay Configurations",
@@ -114,7 +113,6 @@ public class ConfigWindow : Window, IDisposable
             OverlayWindow.updatefont();
         }
     }
-
 
     private void DrawAppearenceTab()
     {

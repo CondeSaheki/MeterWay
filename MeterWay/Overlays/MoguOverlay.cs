@@ -25,7 +25,7 @@ public class MoguOverlay : IMeterwayOverlay
         this.data = new Encounter();
         this.WindowMin = new Vector2();
         this.WindowMax = new Vector2();
-        this.sortcache = new List<uint>();
+        this.sortcache = [];
     }
 
     public void DataProcess()
@@ -78,7 +78,6 @@ public class MoguOverlay : IMeterwayOverlay
 
             ImGui.GetWindowDrawList().AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) - Widget.CalcTextSize(damageinfo).X, 0), Helpers.Color(255, 255, 255, 255), damageinfo);
             cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
-
         }
     }
 

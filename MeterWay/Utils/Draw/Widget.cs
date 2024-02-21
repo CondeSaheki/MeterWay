@@ -60,7 +60,6 @@ public static class Widget
         ImGui.GetWindowDrawList().AddImage(jobIcon, position, position + size);
     }
 
-
     public static Vector2 CalcTextSize(string text)
     {
         float width = 0;
@@ -81,5 +80,21 @@ public static class Widget
     public static void DrawBorder(Vector2 startPoint, Vector2 endPoint, uint color)
     {
         ImGui.GetWindowDrawList().AddRect(startPoint, endPoint, color);
+    }
+
+    public static void DrawProgressBarWithText(float size, uint color, float progress, string text)
+    {
+        //wip
+        var windowMin = ImGui.GetCursorScreenPos();
+        var windowMax = new Vector2(ImGui.GetWindowSize().X + windowMin.X - 32, windowMin.Y + size);
+        DrawProgressBar(windowMin, windowMax, color, progress);
+        DrawBorder(windowMin, windowMax, color);
+        ImGui.GetWindowDrawList().AddText(new Vector2(windowMin.X + 15, windowMin.Y + 10), Helpers.Color(255, 255, 255, 255), text);
+    }
+
+    public static void DrawProgressBarCheckpoint(Vector2 pmin, Vector2 pmax, uint color, float checkpoint)
+    {
+        var p = pmin.X + (pmax.X - pmin.X) * checkpoint;
+        ImGui.GetWindowDrawList().AddLine(new Vector2(p, pmin.Y), new Vector2(p, pmax.Y), Helpers.Color(255, 255, 255, 255));
     }
 }

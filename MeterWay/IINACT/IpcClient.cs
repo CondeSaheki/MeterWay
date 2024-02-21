@@ -25,7 +25,7 @@ public class IpcClient : IDisposable
 
     public IpcClient()
     {
-        this.receivers = new List<Action<JObject>>();
+        this.receivers = [];
         connectionStatus = false;
 
         subscriptionReceiver = InterfaceManager.Inst.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);

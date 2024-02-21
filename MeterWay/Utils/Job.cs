@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
-using ImGuiNET;
 using MeterWay.Managers;
+
+namespace MeterWay.Utils;
 
 public static class Job
 {
