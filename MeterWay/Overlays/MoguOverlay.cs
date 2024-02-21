@@ -30,7 +30,7 @@ public class MoguOverlay : IMeterwayOverlay
 
     public void DataProcess()
     {
-        EncounterManager.Inst.CurrentEncounter().UpdateStats();
+        EncounterManager.Inst.CurrentEncounter().UpdateENncounterData();
         
         var oldListId = this.data.PartyListId;
         

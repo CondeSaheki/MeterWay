@@ -6,17 +6,18 @@ using System.Linq;
 
 using MeterWay.Data;
 using MeterWay.LogParser;
+using MeterWay.Utils;
 
 namespace MeterWay.Managers;
 
-public class EncounterManager
+public class EncounterManager : IDisposable
 {
     // data
     public readonly List<Encounter> encounters;
     public readonly List<Action> Clients;
-    
+
     private bool lastCombatState;
-    
+
     public static EncounterManager Inst { get; private set; } = null!;
 
     // constructor
@@ -27,28 +28,48 @@ public class EncounterManager
         this.lastCombatState = false;
         this.Clients = new List<Action>();
 
-        Inst = this;
+        InterfaceManager.Inst.DutyState.DutyStarted += EncounterManagerOnDutyStart;
 
+        Inst = this;
+    }
+
+    private void EncounterManagerOnDutyStart<ArgType>(Object? sender, ArgType Args)
+    {
+        Helpers.Log("EncounterManager OnDutyStart Event Trigerred!");
+        if(!EndEncounter()) ResetEncounter();
+        Inst.encounters.Last().UpdateEncounter();
+    }
+
+    public void Dispose()
+    {
+        InterfaceManager.Inst.DutyState.DutyStarted -= EncounterManagerOnDutyStart;
     }
 
     // metods
-    public static void StartEncounter()
+    public static bool StartEncounter()
     {
-        if (Inst.encounters.Last().Active) return;
+        if (Inst.encounters.Last().Active) return false;
+        if (Inst.encounters.Last().Finished) Inst.encounters.Add(new Encounter());
 
-        if (Inst.encounters.Last().Finished)
-        {
-            Inst.encounters.Add(new Encounter());
-            Inst.encounters.Last().StartEncounter();
-        }
-
+        Inst.encounters.Last().UpdateEncounter();
         Inst.encounters.Last().RawActions.RemoveAll(r => r.DateTime < Inst.encounters.Last().Start - TimeSpan.FromSeconds(30));
+        Inst.encounters.Last().StartEncounter();
+        return true;
     }
 
-    public static void EndEncounter()
+    public static bool EndEncounter()
     {
+        if(Inst.encounters.Last().Finished) return false;
         Inst.encounters.Last().EndEncounter();
+        Inst.encounters.Last().UpdateEncounter();
         Inst.encounters.Add(new Encounter());
+        return true;
+    }
+
+    public static void ResetEncounter()
+    {
+        Inst.encounters.Add(new Encounter());
+        Inst.encounters.Remove(Inst.encounters[Inst.encounters.Count() - 1]);
     }
 
     public static List<Encounter> AllEncounters() { return Inst.encounters; }
@@ -104,10 +125,10 @@ public class EncounterManager
 
         LoglineParser.Parse(json, Inst); // parse data
     }
- 
+
     public static void UpdateClients()
     {
-        if(Inst.CurrentEncounter().Finished) return;
+        if (Inst.CurrentEncounter().Finished) return;
         foreach (var client in Inst.Clients) client.Invoke();
     }
 }

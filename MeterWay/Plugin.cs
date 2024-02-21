@@ -91,31 +91,11 @@ namespace MeterWay
 
             InterfaceManager.Inst.PluginInterface.UiBuilder.Draw += DrawUI;
             InterfaceManager.Inst.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
-
-
-            InterfaceManager.Inst.DutyState.DutyStarted += Teste;
-
-            // var asdsad = new EventHandler(InterfaceManager.Inst.DutyState.DutyStarted, e);    
-
         }
-
-
-        // private event EventHandler<ushort> DutyStarted;
-        // protected virtual void OnDutyStarted()
-        // {
-        //     EndEncounter();
-        //     Helpers.Log("Duty started event");
-        // }
-
-        public void Teste<Args>(Object? sender, Args a)
-        {
-            // EventHandler<ushort>
-            Helpers.Log("Duty started event AAAAAAAAAAAAAAAAAAAAAAAAAAA");
-        }
-    
 
     public void Dispose()
     {
+        EncounterManager.Dispose();
         this.WindowSystem.RemoveAllWindows();
         IpcClient.Dispose();
         ConfigWindow.Dispose();

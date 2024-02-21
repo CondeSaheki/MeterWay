@@ -86,7 +86,7 @@ public static class LoglineParser
             if (ParserAssistant.IsSpecial((int)attribute.Key)) { }; // TODO
             if (ParserAssistant.IsDamage((int)attribute.Key))
             {
-                if (!recipient.encounters.Last().Active) recipient.encounters.Last().StartEncounter();
+                EncounterManager.StartEncounter();
                 rawattribute = attribute.Value;
                 actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
 
@@ -163,7 +163,7 @@ public static class LoglineParser
 
         if (!parsed.IsHeal)
         {
-            if (!recipient.encounters.Last().Active) recipient.encounters.Last().StartEncounter();
+            // EncounterManager.StartEncounter();
             // dots are calculated even if the player is deactivated, pet actions should probably do the same #for analyzing the data later
             // or add a flag to the damaged saying it was ignored idk
             // if (recipient.encounters.Last().Players[parsed.SourceId].IsActive)

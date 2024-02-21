@@ -52,7 +52,7 @@ public class LazerOverlay : IMeterwayOverlay
         var oldCombatId = this.combat.Id;
 
         this.combat = currentEncounter;
-        this.combat.UpdateStats();
+        this.combat.UpdateENncounterData();
 
 
         if (currentEncounter.Id != oldCombatId)

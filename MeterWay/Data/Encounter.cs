@@ -106,7 +106,6 @@ public class Encounter
             }
             this.PartyListId = CreateId();
             Helpers.Log("Party updated");
-            CheckEncounterChanges(partyList);
             return; // done
         }
 
@@ -158,8 +157,6 @@ public class Encounter
         }
         Helpers.Log("Party updated");
         this.PartyListId = CreateId();
-        // update encounter stuff
-        CheckEncounterChanges(partyList);
     }
 
     public uint? GetPartyMemberOrRecoverId(PartyMember player)
@@ -200,22 +197,24 @@ public class Encounter
         return false;
     }
 
-    private void CheckEncounterChanges(IPartyList partyList)
+    public void UpdateEncounter()
     {
-        if (this.Name != GetEncounterName())
-        {
-            EndEncounter();
-            return;
-        }
-
+        this.Name = GetEncounterName();
+        var partyList = InterfaceManager.Inst.PartyList;
+        if (PartyMembersChanged(partyList)) UpdateParty();
+        // fix jobs and stuff from player
         foreach (var player in partyList)
         {
-            if (Players.ContainsKey(player.ObjectId) && Players[player.ObjectId].IsActive && Players[player.ObjectId].Job != player.ClassJob.Id)
+            if (Players.ContainsKey(player.ObjectId) && Players[player.ObjectId].IsActive)
             {
-                EndEncounter();
-                return;
+                Players[player.ObjectId].Name = player.Name.ToString();
+                Players[player.ObjectId].World = player.World.Id;
+                Players[player.ObjectId].Job = player.ClassJob.Id;
             }
         }
+
+        // TODO
+        // this.Pets = new Dictionary<uint, uint>();
     }
 
     private string GetEncounterName()
@@ -237,16 +236,16 @@ public class Encounter
     public void StartEncounter()
     {
         InterfaceManager.Inst.PluginLog.Info("Encounter started.");
-        if (this.Start == null) this.Start = DateTime.Now;
+        if (this.Start == null) this.Start = DateTime.Now; // Active go to true
     }
 
     public void EndEncounter()
     {
         InterfaceManager.Inst.PluginLog.Info("Encounter ended.");
-        if (this.End == null) this.End = DateTime.Now;
+        if (this.End == null) this.End = DateTime.Now; // finished go to true
     }
 
-    public void UpdateStats()
+    public void UpdateENncounterData()
     {
         var currentSeconds = this.Duration.TotalSeconds <= 1 ? 1 : this.Duration.TotalSeconds;
         this.Dps = (float)(this.TotalDamage / currentSeconds);
