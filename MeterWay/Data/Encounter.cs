@@ -25,7 +25,7 @@ public class Encounter
     public DateTime? End { get; set; }
     public TimeSpan Duration => _Duration();
 
-    public List<INetworkMessage> RawActions { get; set; }
+    public List<LogLineData> RawActions { get; set; }
 
     public uint PartyListId { get; set; }
     public Dictionary<uint, Player> Players { get; set; }
@@ -44,12 +44,24 @@ public class Encounter
         this.Pets = new Dictionary<uint, uint>();
         this.TotalDamage = 0;
         this.Dps = 0;
-        this.RawActions = new List<INetworkMessage>();
+        this.RawActions = new List<LogLineData>();
     }
 
     private uint CreateId()
     {
         return (uint)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
+    }
+
+    public void Parse()
+    {
+        foreach(var action in RawActions)
+        {
+            action.Parse();
+            if(false)
+            {
+                // TODO 
+            }
+        }
     }
 
     private Dictionary<uint, Player> GetPlayers()

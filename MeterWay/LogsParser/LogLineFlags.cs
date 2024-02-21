@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace MeterWay.LogParser;
 
-public enum MessageType : uint
+public enum LogLineType : uint
 {
     ChatLog = 0,
     Territory = 1,
@@ -42,16 +42,17 @@ public enum MessageType : uint
     Error = 254, // 0x000000FE
 }
 
-public static class ParserAssistant
+public static class ActionEffectFlag
 {
-    public enum DamageType
+    public enum Damage
     {
         Magic = 0x50000,
         Physical = 0x10000,
         MagicMelee = 0x30000,
         Ranged = 0x20000,
     }
-    public enum EffectEntryType
+    
+    public enum EffectEntry
     {
         Nothing = 0,
         Miss = 1,
@@ -73,159 +74,120 @@ public static class ParserAssistant
         FullResistStatus = 0x37,
         Interrupt = 0x4B,
         Unknown_3F = 0x3F,
-
     }
 
-    public static bool IsNothing(int flag) => (flag & 0xF) == (int)EffectEntryType.Nothing;
-    public static bool IsMiss(int flag) => (flag & 0xF) == (int)EffectEntryType.Miss;
-    public static bool IsFullResist(int flag) => (flag & 0xF) == (int)EffectEntryType.FullResist;
-    public static bool IsDamage(int flag) => (flag & 0xF) == (int)EffectEntryType.Damage;
-    public static bool IsCrit(int flag) => (flag & 0xF000) == (int)EffectEntryType.CritHit;
-    public static bool IsDirect(int flag) => (flag & 0xF000) == (int)EffectEntryType.DirectHit;
-    public static bool IsDirectCrit(int flag) => (flag & 0xF000) == (int)EffectEntryType.DirectCritHit;
-
-    public static bool IsHeal(int flag) => (flag & 0xF) == (int)EffectEntryType.Heal;
-    public static bool IsCritHeal(int flag) => (flag & 0xF0000F) == (int)EffectEntryType.CritHeal;
-    public static bool IsBlockedDamage(int flag) => (flag & 0xF) == (int)EffectEntryType.BlockedDamage;
-    public static bool IsParriedDamage(int flag) => (flag & 0xF) == (int)EffectEntryType.ParriedDamage;
-    public static bool IsInvulnerable(int flag) => (flag & 0xF) == (int)EffectEntryType.Invulnerable;
-    public static bool IsApplyStatusEffectTarget(int flag) => (flag & 0xF) == (int)EffectEntryType.ApplyStatusEffectTarget;
-    public static bool IsApplyStatusEffectSource(int flag) => (flag & 0xF) == (int)EffectEntryType.ApplyStatusEffectSource;
-    public static bool IsRecoveredFromStatusEffect(int flag) => (flag & 0xF) == (int)EffectEntryType.RecoveredFromStatusEffect;
-    public static bool IsLoseStatusEffectTarget(int flag) => (flag & 0xF) == (int)EffectEntryType.LoseStatusEffectTarget;
-    public static bool IsLoseStatusEffectSource(int flag) => (flag & 0xF) == (int)EffectEntryType.LoseStatusEffectSource;
-    public static bool IsFullResistStatus(int flag) => (flag & 0xF) == (int)EffectEntryType.FullResistStatus;
-    public static bool IsInterrupt(int flag) => (flag & 0xF) == (int)EffectEntryType.Interrupt;
-    public static bool IsSpecial(int flag)
+    private static int Masker(int data)
     {
-        if ((flag & 0xFFF) == (int)EffectEntryType.Unknown_3F)
+        int mask = ((0xF000000 & data) != 0x0000000) ? 0xF000000 : 0x0000000;
+        mask |= ((0x0F00000 & data) != 0x0000000) ? 0x0F00000 : 0x0000000;
+        mask |= ((0x00F0000 & data) != 0x0000000) ? 0x00F0000 : 0x0000000;
+        mask |= ((0x000F000 & data) != 0x0000000) ? 0x000F000 : 0x0000000;
+        mask |= ((0x0000F00 & data) != 0x0000000) ? 0x0000F00 : 0x0000000;
+        mask |= ((0x00000F0 & data) != 0x0000000) ? 0x00000F0 : 0x0000000;
+        mask |= ((0x000000F & data) != 0x0000000) ? 0x000000F : 0x0000000;
+        return mask;
+    }
+
+    private static bool Compare(int data, EffectEntry flag) => (data & Masker((int)flag)) == (int)flag;
+
+    public static bool IsNothing(int data) => Compare(data, EffectEntry.Nothing);
+    public static bool IsMiss(int data) => Compare(data, EffectEntry.Miss);
+    public static bool IsFullResist(int data) => Compare(data, EffectEntry.FullResist);
+    public static bool IsDamage(int data) => Compare(data, EffectEntry.Damage);
+    public static bool IsCrit(int data) => Compare(data, EffectEntry.CritHit);
+    public static bool IsDirect(int data) => Compare(data, EffectEntry.DirectHit);
+    public static bool IsDirectCrit(int data) => Compare(data, EffectEntry.DirectCritHit);
+
+    public static bool IsHeal(int data) => Compare(data, EffectEntry.Heal);
+    public static bool IsCritHeal(int data) => Compare(data, EffectEntry.CritHeal);
+    public static bool IsBlockedDamage(int data) => Compare(data, EffectEntry.BlockedDamage);
+    public static bool IsParriedDamage(int data) => Compare(data, EffectEntry.ParriedDamage);
+    public static bool IsInvulnerable(int data) => Compare(data, EffectEntry.Invulnerable);
+    public static bool IsApplyStatusEffectTarget(int data) => Compare(data, EffectEntry.ApplyStatusEffectTarget);
+    public static bool IsApplyStatusEffectSource(int data) => Compare(data, EffectEntry.ApplyStatusEffectSource);
+    public static bool IsRecoveredFromStatusEffect(int data) => Compare(data, EffectEntry.RecoveredFromStatusEffect);
+    public static bool IsLoseStatusEffectTarget(int data) => Compare(data, EffectEntry.LoseStatusEffectTarget);
+    public static bool IsLoseStatusEffectSource(int data) => Compare(data, EffectEntry.LoseStatusEffectSource);
+    public static bool IsFullResistStatus(int data) => Compare(data, EffectEntry.FullResistStatus);
+    public static bool IsInterrupt(int data) => Compare(data, EffectEntry.Interrupt);
+    public static bool IsSpecial(int data)
+    {
+        if ((data & 0xFFF) == (int)EffectEntry.Unknown_3F)
         {
             return true;
         }
         return false;
     }
 
-
-    public static List<EffectEntryType> ParseFlag(int flag)
+    public static List<EffectEntry> EffectEntryFlags(int data)
     {
-        List<EffectEntryType> parsedflag = new List<EffectEntryType>();
+        List<EffectEntry> flags = [];
 
-        if (IsNothing(flag))
+        if (IsNothing(data))
         {
-            parsedflag.Add(EffectEntryType.Nothing);
-            return parsedflag;
-        };
-        if (IsMiss(flag))
-        {
-            parsedflag.Add(EffectEntryType.Miss);
-        };
-        if (IsFullResist(flag))
-        {
-            parsedflag.Add(EffectEntryType.FullResist);
-        };
-        // HITS AND STUFF
-        if (IsDamage(flag))
-        {
-            if (IsCrit(flag))
-            {
-                parsedflag.Add(EffectEntryType.CritHit);
-            }
-            else if (IsDirect(flag))
-            {
-                parsedflag.Add(EffectEntryType.DirectHit);
-            }
-            else if (IsDirectCrit(flag))
-            {
-                parsedflag.Add(EffectEntryType.DirectCritHit);
-            }
-            parsedflag.Add(EffectEntryType.Damage);
-        };
-        // HEALS AND STUFF
-        if (IsHeal(flag) && !IsCritHeal(flag))
-        {
-            if (IsCritHeal(flag))
-            {
-                parsedflag.Add(EffectEntryType.CritHeal);
-            }
-            else
-            {
-                parsedflag.Add(EffectEntryType.Heal);
-            }
-        };
-        if (IsBlockedDamage(flag))
-        {
-            parsedflag.Add(EffectEntryType.BlockedDamage);
-        };
-        if (IsParriedDamage(flag))
-        {
-            parsedflag.Add(EffectEntryType.ParriedDamage);
+            flags.Add(EffectEntry.Nothing);
+            return flags;
         }
-        if (IsInvulnerable(flag))
-        {
-            parsedflag.Add(EffectEntryType.Invulnerable);
-        };
-        // APLLY EFFECTS FROM TARGET
-        if (IsApplyStatusEffectTarget(flag))
-        {
-            parsedflag.Add(EffectEntryType.ApplyStatusEffectTarget);
-        };
-        // APPLY EFFECTS FROM SOURCE
-        if (IsApplyStatusEffectSource(flag))
-        {
-            parsedflag.Add(EffectEntryType.ApplyStatusEffectSource);
-        };
-        if (IsRecoveredFromStatusEffect(flag))
-        {
-            parsedflag.Add(EffectEntryType.RecoveredFromStatusEffect);
-        };
-        // CLEAR AFFLICTED STATUS FROM TARGET
-        if (IsLoseStatusEffectTarget(flag))
-        {
-            parsedflag.Add(EffectEntryType.LoseStatusEffectTarget);
-        };
-        // CLEAR AFFLICTED STATUS FROM SOURCE
-        if (IsLoseStatusEffectSource(flag))
-        {
-            parsedflag.Add(EffectEntryType.LoseStatusEffectSource);
-        };
-        // RESIST STATUS
-        if (IsFullResistStatus(flag))
-        {
-            parsedflag.Add(EffectEntryType.FullResistStatus);
-        };
-        if (IsFullResistStatus(flag))
-        {
-            parsedflag.Add(EffectEntryType.Interrupt);
-        };
+        if (IsMiss(data)) flags.Add(EffectEntry.Miss);
+        if (IsFullResist(data)) flags.Add(EffectEntry.FullResist);
 
-        return parsedflag;
+        // HITS AND STUFF
+        if (IsDamage(data))
+        {
+            if (IsCrit(data)) flags.Add(EffectEntry.CritHit);
+            else if (IsDirect(data)) flags.Add(EffectEntry.DirectHit);
+            else if (IsDirectCrit(data)) flags.Add(EffectEntry.DirectCritHit);
+            flags.Add(EffectEntry.Damage);
+        }
+
+        // HEALS AND STUFF
+        if (IsHeal(data) && !IsCritHeal(data))
+        {
+            if (IsCritHeal(data)) flags.Add(EffectEntry.CritHeal);
+            else flags.Add(EffectEntry.Heal);
+        }
+
+        if (IsBlockedDamage(data)) flags.Add(EffectEntry.BlockedDamage);
+        if (IsParriedDamage(data)) flags.Add(EffectEntry.ParriedDamage);
+        if (IsInvulnerable(data)) flags.Add(EffectEntry.Invulnerable);
+
+        // APLLY EFFECTS FROM TARGET
+        if (IsApplyStatusEffectTarget(data)) flags.Add(EffectEntry.ApplyStatusEffectTarget);
+
+        // APPLY EFFECTS FROM SOURCE
+        if (IsApplyStatusEffectSource(data)) flags.Add(EffectEntry.ApplyStatusEffectSource);
+        if (IsRecoveredFromStatusEffect(data)) flags.Add(EffectEntry.RecoveredFromStatusEffect);
+
+        // CLEAR AFFLICTED STATUS FROM TARGET
+        if (IsLoseStatusEffectTarget(data)) flags.Add(EffectEntry.LoseStatusEffectTarget);
+
+        // CLEAR AFFLICTED STATUS FROM SOURCE
+        if (IsLoseStatusEffectSource(data)) flags.Add(EffectEntry.LoseStatusEffectSource);
+
+        // RESIST STATUS
+        if (IsFullResistStatus(data)) flags.Add(EffectEntry.FullResistStatus);
+
+        if (IsInterrupt(data)) flags.Add(EffectEntry.Interrupt);
+
+        return flags;
     }
 
+    private static bool Compare(int data, Damage flag) => (data & Masker((int)flag)) == (int)flag;
 
-    public static bool IsMagic(int flag) => (flag & 0xF0000) == (int)DamageType.Magic;
-    public static bool IsPhysical(int flag) => (flag & 0xF0000) == (int)DamageType.Physical;
-    public static bool IsRanged(int flag) => (flag & 0xF0000) == (int)DamageType.Ranged;
-    public static bool IsMagicMelee(int flag) => (flag & 0xF0000) == (int)DamageType.MagicMelee;
+    public static bool IsMagic(int data) => Compare(data, Damage.Magic);
+    public static bool IsPhysical(int data) => Compare(data, Damage.Physical);
+    public static bool IsRanged(int data) => Compare(data, Damage.Ranged);
+    public static bool IsMagicMelee(int data) => Compare(data, Damage.MagicMelee);
 
-    public static List<DamageType> ParseTypes(int flag)
+    public static List<Damage> DamageFlags(int data)
     {
-        List<DamageType> parsedTypes = new List<DamageType>();
-        if (IsMagic(flag))
-        {
-            parsedTypes.Add(DamageType.Magic);
-        }
-        else if (IsPhysical(flag))
-        {
-            parsedTypes.Add(DamageType.Physical);
-        }
-        else if (IsRanged(flag))
-        {
-            parsedTypes.Add(DamageType.Ranged);
-        }
-        else if (IsMagicMelee(flag))
-        {
-            parsedTypes.Add(DamageType.MagicMelee);
-        }
-        return parsedTypes;
+        List<Damage> flags = [];
+
+        if (IsMagic(data)) flags.Add(Damage.Magic);
+        else if (IsPhysical(data)) flags.Add(Damage.Physical);
+        else if (IsRanged(data)) flags.Add(Damage.Ranged);
+        else if (IsMagicMelee(data)) flags.Add(Damage.MagicMelee);
+
+        return flags;
     }
 }

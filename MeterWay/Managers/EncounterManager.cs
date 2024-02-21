@@ -123,7 +123,7 @@ public class EncounterManager : IDisposable
             Inst.lastCombatState = false;
         }
 
-        LoglineParser.Parse(json, Inst); // parse data
+        LoglineParser.Parse(json); // parse data
     }
 
     public static void UpdateClients()

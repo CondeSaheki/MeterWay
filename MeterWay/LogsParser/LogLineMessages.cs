@@ -2,49 +2,47 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using FFXIVClientStructs.FFXIV.Client.UI;
-using Lumina.Excel.GeneratedSheets2;
 
 namespace MeterWay.LogParser;
 
-public interface INetworkMessage
-{
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
+public class LogLine : Attribute { }
 
-}
-
-public class Message
+public class LogLineData
 {
     public bool Parsed { get; set; }
-    public INetworkMessage? Value { get; set; }
-    public string RawLine { get; set; }
-    public Func<List<string>, string, INetworkMessage> Type { get; set; }
+    public LogLine? Value { get; set; }
 
-    public Message(bool parsed, List<string> data, string raw, Func<List<string>, string, INetworkMessage> type)
+    public readonly LogLineType MsgType;
+    public readonly DateTime DateTime;
+    public readonly string RawLine;
+
+    public Func<List<string>, LogLine>? LogLineTypefn { get; set; }
+
+    public LogLineData(LogLineType msgType, DateTime dateTime, string raw)
     {
-        this.Parsed = parsed;
+        this.Parsed = false;
+        this.MsgType = msgType;
+        this.DateTime = dateTime;
         this.RawLine = raw;
-        this.Type = type;
-        if (parsed) this.Value = type(data, raw);
+
+        this.LogLineTypefn = null;
     }
 
     public void Parse()
     {
-        if (!Parsed)
+        if (!Parsed && LogLineTypefn != null)
         {
             var data = RawLine.Split('|').ToList();
-            this.Value = Type(data, RawLine);
+            this.Value = LogLineTypefn(data);
             this.Parsed = true;
+            // return true;
         }
+        // return false;
     }
 }
 
-public class ActionEffect : INetworkMessage
+public class ActionEffect : LogLine
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
     public uint SourceId { get; }
     public string SourceName { get; }
     public uint Id { get; }
@@ -59,15 +57,9 @@ public class ActionEffect : INetworkMessage
     public Vector4? Pos { get; }
     public uint MultiMessageIndex { get; }
     public uint MultiMessageCount { get; }
-    public string RawLine { get; }
 
-
-    public ActionEffect(List<string> data, string raw)
+    public ActionEffect(List<string> data)
     {
-        this.MsgType = 21;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Parse(data[1]);
-
         this.SourceId = Convert.ToUInt32(data[2], 16);
         this.SourceName = data[3].ToString();
         this.Id = Convert.ToUInt32(data[4], 16);
@@ -146,12 +138,8 @@ public class ActionEffect : INetworkMessage
     }
 }
 
-public class PlayerStats : INetworkMessage
+public class PlayerStats : LogLine
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-
     public uint JobID { get; }
     public uint Str { get; }
     public uint Dex { get; }
@@ -170,12 +158,8 @@ public class PlayerStats : INetworkMessage
     public uint Tenacity { get; }
     public ulong LocalContentId { get; }
 
-    public PlayerStats(List<string> data, string raw)
+    public PlayerStats(List<string> data)
     {
-        this.MsgType = 12;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Parse(data[1].ToString());
-
         this.JobID = Convert.ToUInt32(data[2]);
         this.Str = Convert.ToUInt32(data[3]);
         this.Dex = Convert.ToUInt32(data[4]);
@@ -197,12 +181,8 @@ public class PlayerStats : INetworkMessage
     }
 }
 
-public class StartsCasting : INetworkMessage
+public class StartsCasting : LogLine
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-
     public uint SourceId { get; }
     public string SourceName { get; }
     public uint ActionId { get; }
@@ -212,12 +192,8 @@ public class StartsCasting : INetworkMessage
     public float CastTime { get; }
     public Vector4? TargetPos { get; }
 
-    public StartsCasting(List<string> data, string raw)
+    public StartsCasting(List<string> data)
     {
-        this.MsgType = 20;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Parse(data[1]);
-
         this.SourceId = Convert.ToUInt32(data[2], 16);
         this.SourceName = data[3];
         this.ActionId = Convert.ToUInt32(data[4], 16);
@@ -234,12 +210,8 @@ public class StartsCasting : INetworkMessage
     }
 }
 
-public class StatusApply : INetworkMessage
+public class StatusApply : LogLine
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-
     public uint Id { get; }
     public string Name { get; }
     public float Duration { get; }
@@ -251,12 +223,8 @@ public class StatusApply : INetworkMessage
     public int? TargetMaxHP { get; }
     public int? SourceMaxHP { get; }
 
-    public StatusApply(List<string> data, string raw)
+    public StatusApply(List<string> data)
     {
-        this.MsgType = 26;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Parse(data[1]);
-
         this.Id = Convert.ToUInt32(data[2], 16);
         this.Name = data[3];
         this.Duration = float.Parse(data[4]);
@@ -267,17 +235,11 @@ public class StatusApply : INetworkMessage
         this.Unknown = Convert.ToUInt32(data[9]);
         this.TargetMaxHP = Convert.ToInt32(data[10]);
         this.SourceMaxHP = Convert.ToInt32(data[11]);
-        // criptoid = data[12]
-
     }
 }
 
-public class StatusRemove : INetworkMessage
+public class StatusRemove : LogLine
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-
     public uint Id { get; }
     public string Name { get; }
     public float Duration { get; }
@@ -289,12 +251,8 @@ public class StatusRemove : INetworkMessage
     public int? TargetMaxHP { get; }
     public int? SourceMaxHP { get; }
 
-    public StatusRemove(List<string> data, string raw)
+    public StatusRemove(List<string> data)
     {
-        this.MsgType = 30;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Parse(data[1]);
-
         this.Id = Convert.ToUInt32(data[2], 16);
         this.Name = data[3];
         this.Duration = float.Parse(data[4]); // seems to always be 0.00
@@ -305,27 +263,18 @@ public class StatusRemove : INetworkMessage
         this.Unknown = Convert.ToUInt32(data[9]);
         this.TargetMaxHP = Convert.ToInt32(data[10]);
         this.SourceMaxHP = Convert.ToInt32(data[11]);
-        // criptoid = data[12]
     }
 }
 
-public class Death : INetworkMessage
+public class Death : LogLine
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-
     public uint targetId { get; }
     public string targetName { get; }
     public uint sourceId { get; }
     public string? sourceName { get; }
 
-    public Death(List<string> data, string raw)
+    public Death(List<string> data)
     {
-        this.MsgType = 25;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Parse(data[1]);
-
         this.targetId = Convert.ToUInt32(data[2], 16);
         this.targetName = data[3];
         // if source is nothing id is E0000000
@@ -334,12 +283,8 @@ public class Death : INetworkMessage
     }
 }
 
-public class DoTHoT : INetworkMessage
+public class DoTHoT : LogLine
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; }
-    public string RawLine { get; }
-
     public uint TargetId { get; }
     public string TargetName { get; }
     public bool IsHeal { get; }
@@ -359,14 +304,10 @@ public class DoTHoT : INetworkMessage
     public int? SourceMaxMp { get; }
     public Vector4? SourcePos { get; }
 
-    public DoTHoT(List<string> data, string raw)
+    public DoTHoT(List<string> data)
     {
         // 24|2024-02-19T05:36:56.1640000-03:00|40003EC7|Striking Dummy|DoT|0|466|44|44|0|10000|||-727.13|-810.75|10.02|-0.96|1089ED18|Aruna Rhen|FFFFFFFF|31362|31362|9478|10000|||-723.48|-821.16|10.00|-0.34|2df8dd482da88ed7
         // PluginManager.Instance.PluginLog.Info(raw);
-        this.MsgType = 24;
-        this.RawLine = raw;
-        this.DateTime = DateTime.Parse(data[1]);
-
         this.TargetId = Convert.ToUInt32(data[2], 16);
         this.TargetName = data[3];
         this.IsHeal = data[4] == "HoT";
@@ -407,11 +348,9 @@ public class DoTHoT : INetworkMessage
 
     }
 }
-public class AddCombatant : INetworkMessage
+
+public class AddCombatant : LogLine
 {
-    public uint MsgType { get; }
-    public DateTime DateTime { get; set; }
-    public string RawLine { get; }
     public uint Id { get; set; }
     public string Name { get; set; }
     public string Job { get; set; }
@@ -434,12 +373,8 @@ public class AddCombatant : INetworkMessage
 
     public bool IsPet { get; }
 
-    public AddCombatant(List<string> data, string raw)
+    public AddCombatant(List<string> data)
     {
-        this.RawLine = raw;
-
-        this.MsgType = Convert.ToUInt32(data[0], 16);
-        this.DateTime = DateTime.Parse(data[1]);
         this.Id = Convert.ToUInt32(data[2], 16);
         this.Name = data[3];
         this.Job = data[4];
@@ -462,9 +397,4 @@ public class AddCombatant : INetworkMessage
 
         this.IsPet = this.OwnerId != 0 && ((this.Id >> 24) & 0xFF) == 64;
     }
-
-
-
 }
-
-

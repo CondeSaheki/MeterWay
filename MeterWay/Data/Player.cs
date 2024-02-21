@@ -21,7 +21,7 @@ public class Player
     public float Dps { get; set; }
     public float DamagePercentage { get; set; }
 
-    public List<INetworkMessage> RawActions { get; set; }
+    public List<LogLine> RawActions { get; set; }
 
     public void UpdateStats()
     {
@@ -40,7 +40,7 @@ public class Player
         this.TotalDamage = 0;
         this.DamagePercentage = 0;
         this.IsActive = true;
-        this.RawActions = new List<INetworkMessage>();
+        this.RawActions = new List<LogLine>();
         this.World = (character as PlayerCharacter)?.HomeWorld.Id;
     }
 }
