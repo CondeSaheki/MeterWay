@@ -106,13 +106,14 @@ public class Encounter
             }
             this.PartyListId = CreateId();
             Helpers.Log("Party updated");
+            CheckEncounterChanges(partyList);
             return; // done
         }
 
         List<PartyMember> newPlayers = new List<PartyMember>();
-        List<uint> communPlayers = new List<uint>();
+        List<uint> commonPlayers = new List<uint>();
 
-        // fill communPlayers & newPlayers
+        // fill commonPlayers & newPlayers
         foreach (var player in partyList)
         {
             var tmpPlayerId = GetPartyMemberOrRecoverId(player);
@@ -127,14 +128,14 @@ public class Encounter
             {
                 Players[(uint)tmpPlayerId].IsActive = true;
             }
-            communPlayers.Add((uint)tmpPlayerId);
+            commonPlayers.Add((uint)tmpPlayerId);
         }
-        if (communPlayers.Count + newPlayers.Count == 0) return; // all players are null
+        if (commonPlayers.Count + newPlayers.Count == 0) return; // all players are null
 
         // remove players not in common
         foreach (var player in Players)
         {
-            if (!communPlayers.Contains(player.Key))
+            if (!commonPlayers.Contains(player.Key))
             {
                 if (!this.Active)
                 {
@@ -157,6 +158,8 @@ public class Encounter
         }
         Helpers.Log("Party updated");
         this.PartyListId = CreateId();
+        // update encounter stuff
+        CheckEncounterChanges(partyList);
     }
 
     public uint? GetPartyMemberOrRecoverId(PartyMember player)
@@ -195,6 +198,24 @@ public class Encounter
             if (!Players.ContainsKey((uint)recoveredId)) return true; // new player
         }
         return false;
+    }
+
+    private void CheckEncounterChanges(IPartyList partyList)
+    {
+        if (this.Name != GetEncounterName())
+        {
+            EndEncounter();
+            return;
+        }
+
+        foreach (var player in partyList)
+        {
+            if (Players.ContainsKey(player.ObjectId) && Players[player.ObjectId].IsActive && Players[player.ObjectId].Job != player.ClassJob.Id)
+            {
+                EndEncounter();
+                return;
+            }
+        }
     }
 
     private string GetEncounterName()

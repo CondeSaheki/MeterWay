@@ -13,6 +13,7 @@ using MeterWay.Overlays;
 
 using System.Linq;
 using MeterWay.Utils;
+using System;
 
 namespace MeterWay
 {
@@ -70,11 +71,11 @@ namespace MeterWay
             OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay()];
 
             // TODO make only Active Overlay subscribed
-            foreach(var overlay in OverlayWindow.Overlays)
+            foreach (var overlay in OverlayWindow.Overlays)
             {
                 EncounterManager.Inst.Clients.Add(overlay.DataProcess);
             }
-            
+
             if (ConfigurationManager.Instance.Configuration.Overlay)
             {
                 WindowSystem.AddWindow(OverlayWindow);
@@ -90,85 +91,106 @@ namespace MeterWay
 
             InterfaceManager.Inst.PluginInterface.UiBuilder.Draw += DrawUI;
             InterfaceManager.Inst.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+
+
+            InterfaceManager.Inst.DutyState.DutyStarted += Teste;
+
+            // var asdsad = new EventHandler(InterfaceManager.Inst.DutyState.DutyStarted, e);    
+
         }
 
-        public void Dispose()
+
+        // private event EventHandler<ushort> DutyStarted;
+        // protected virtual void OnDutyStarted()
+        // {
+        //     EndEncounter();
+        //     Helpers.Log("Duty started event");
+        // }
+
+        public void Teste<Args>(Object? sender, Args a)
         {
-            this.WindowSystem.RemoveAllWindows();
-            IpcClient.Dispose();
-            ConfigWindow.Dispose();
-            MainWindow.Dispose();
-            InterfaceManager.Inst.CommandManager.RemoveHandler(CommandName);
+            // EventHandler<ushort>
+            Helpers.Log("Duty started event AAAAAAAAAAAAAAAAAAAAAAAAAAA");
         }
+    
 
-        private List<MeterWayCommand> RegisterCommands()
-        {
-            List<MeterWayCommand> commandlist = new List<MeterWayCommand>();
-            commandlist.Add(new MeterWayCommand("", "Display MeterWay main window.", () =>
-                {
-                    MainWindow.IsOpen = true;
-                }
-            ));
-            commandlist.Add(new MeterWayCommand("config", "Display MeterWay configuration window.", () =>
-                {
-                    ConfigWindow.IsOpen = true;
-                }
-            ));
-            commandlist.Add(new MeterWayCommand("status", "Display the connection to IINACT status.", () =>
-                {
-                    var msg = "MeterWay is " + (IpcClient.Status() ? "connected" : "disconnected") + " to IINACT.";
-                    //ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload(msg), new UIForegroundPayload(0)));
-                    InterfaceManager.Inst.ChatGui.Print(msg);
-                }
-            ));
-            commandlist.Add(new MeterWayCommand("start", "Try to connect to IINACT.", () =>
-                {
-                    IpcClient.Connect();
-                }
-            ));
-            commandlist.Add(new MeterWayCommand("stop", "Diconnect from IINACT.", () =>
-                {
-                    IpcClient.Disconnect();
-                }
-            ));
-            commandlist.Add(new MeterWayCommand("restart", "Try to reconnect to IINACT.", () =>
-                {
-                    IpcClient.Reconnect();
-                }
-            ));
-            string HelpMessage = "";
-            commandlist.Add(new MeterWayCommand("help", "Display this help message", () =>
-                {
-                    InterfaceManager.Inst.ChatGui.Print(HelpMessage);
-                }
-            ));
-
-            // create help message
-            foreach (MeterWayCommand cmd in commandlist)
-            {
-                HelpMessage += CommandName + (cmd.Argument != "" ? " " : "") + cmd.Argument + " -> " + cmd.Help + (cmd.Argument != "help" ? "\n" : "");
-            }
-
-            return commandlist;
-        }
-
-        private void OnCommand(string command, string args)
-        {
-            var i = commands.FindIndex((MeterWayCommand cmd) =>
-            {
-                return cmd.Argument == args.ToLower();
-            });
-            commands[i].Function.Invoke();
-        }
-
-        private void DrawUI()
-        {
-            this.WindowSystem.Draw();
-        }
-
-        public void DrawConfigUI()
-        {
-            ConfigWindow.IsOpen = true;
-        }
+    public void Dispose()
+    {
+        this.WindowSystem.RemoveAllWindows();
+        IpcClient.Dispose();
+        ConfigWindow.Dispose();
+        MainWindow.Dispose();
+        InterfaceManager.Inst.CommandManager.RemoveHandler(CommandName);
     }
+
+    private List<MeterWayCommand> RegisterCommands()
+    {
+        List<MeterWayCommand> commandlist = new List<MeterWayCommand>();
+        commandlist.Add(new MeterWayCommand("", "Display MeterWay main window.", () =>
+            {
+                MainWindow.IsOpen = true;
+            }
+        ));
+        commandlist.Add(new MeterWayCommand("config", "Display MeterWay configuration window.", () =>
+            {
+                ConfigWindow.IsOpen = true;
+            }
+        ));
+        commandlist.Add(new MeterWayCommand("status", "Display the connection to IINACT status.", () =>
+            {
+                var msg = "MeterWay is " + (IpcClient.Status() ? "connected" : "disconnected") + " to IINACT.";
+                //ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload(msg), new UIForegroundPayload(0)));
+                InterfaceManager.Inst.ChatGui.Print(msg);
+            }
+        ));
+        commandlist.Add(new MeterWayCommand("start", "Try to connect to IINACT.", () =>
+            {
+                IpcClient.Connect();
+            }
+        ));
+        commandlist.Add(new MeterWayCommand("stop", "Diconnect from IINACT.", () =>
+            {
+                IpcClient.Disconnect();
+            }
+        ));
+        commandlist.Add(new MeterWayCommand("restart", "Try to reconnect to IINACT.", () =>
+            {
+                IpcClient.Reconnect();
+            }
+        ));
+        string HelpMessage = "";
+        commandlist.Add(new MeterWayCommand("help", "Display this help message", () =>
+            {
+                InterfaceManager.Inst.ChatGui.Print(HelpMessage);
+            }
+        ));
+
+        // create help message
+        foreach (MeterWayCommand cmd in commandlist)
+        {
+            HelpMessage += CommandName + (cmd.Argument != "" ? " " : "") + cmd.Argument + " -> " + cmd.Help + (cmd.Argument != "help" ? "\n" : "");
+        }
+
+        return commandlist;
+    }
+
+    private void OnCommand(string command, string args)
+    {
+        var i = commands.FindIndex((MeterWayCommand cmd) =>
+        {
+            return cmd.Argument == args.ToLower();
+        });
+        commands[i].Function.Invoke();
+    }
+
+    private void DrawUI()
+    {
+        this.WindowSystem.Draw();
+    }
+
+    public void DrawConfigUI()
+    {
+        ConfigWindow.IsOpen = true;
+    }
+}
 }

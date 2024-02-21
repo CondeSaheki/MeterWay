@@ -30,14 +30,15 @@ public class MoguOverlay : IMeterwayOverlay
 
     public void DataProcess()
     {
-        var currentEncounter = EncounterManager.Inst.CurrentEncounter();
+        EncounterManager.Inst.CurrentEncounter().UpdateStats();
+        
         var oldListId = this.data.PartyListId;
-        this.data = currentEncounter;
-        this.data.UpdateStats();
+        
+        this.data = EncounterManager.Inst.CurrentEncounter();
+ 
+        if (data.PartyListId != oldListId) this.sortcache = Helpers.CreateDictionarySortCache(data.Players, (x) => { return true; });
 
-        if (currentEncounter.PartyListId != oldListId) this.sortcache = Helpers.CreateDictionarySortCache(currentEncounter.Players, (x) => { return true; });
-
-        sortcache.Sort((uint first, uint second) => { return currentEncounter.Players[second].TotalDamage.CompareTo(currentEncounter.Players[first].TotalDamage); });
+        sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
     }
 
     private List<uint> getSortCache()
@@ -45,11 +46,18 @@ public class MoguOverlay : IMeterwayOverlay
         return this.sortcache.ToList();
     }
 
+    private Encounter getData()
+    {
+        return this.data;
+    }
+
     public void Draw()
     {
-        UpdateWindowSize();
-
+        var data = getData();
         var sortCache = getSortCache();
+        
+        UpdateWindowSize();
+        
         //ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(0, 0, 0, 64));
 
         Vector2 cursor = WindowMin;

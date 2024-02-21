@@ -19,7 +19,12 @@ public static class LoglineParser
             { MessageType.StartsCasting, MsgStartsCasting },
             { MessageType.DoTHoT, MsgDoTHoT },
             { MessageType.PartyList, MsgPartyList },
-            { MessageType.AddCombatant, MsgAddCombatant }
+            { MessageType.AddCombatant, MsgAddCombatant },
+            { MessageType.PlayerStats, MsgPlayerStats },
+            { MessageType.StatusApply, MsgStatusApply },
+            { MessageType.StatusRemove, MsgStatusRemove },
+            { MessageType.Death, MsgDeath },
+
         };
 
     public static void Parse(JObject json, EncounterManager recipient)
@@ -53,17 +58,17 @@ public static class LoglineParser
         bool found = false;
 
         bool actionFromPet = false;
-        if (recipient.encounters.Last().Players.ContainsKey(parsed.ObjectId))
+        if (recipient.encounters.Last().Players.ContainsKey(parsed.SourceId))
         {
-            recipient.encounters.Last().Players[parsed.ObjectId].RawActions.Add(parsed);
+            recipient.encounters.Last().Players[parsed.SourceId].RawActions.Add(parsed);
             found = true;
 
-            if (!recipient.encounters.Last().Players[parsed.ObjectId].IsActive && !InterfaceManager.Inst.DutyState.IsDutyStarted)
+            if (!recipient.encounters.Last().Players[parsed.SourceId].IsActive && !InterfaceManager.Inst.DutyState.IsDutyStarted)
             {
                 return;
             }
 
-            actionFromPet = ((parsed.ObjectId >> 24) & 0xFF) == 64 && recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId);
+            actionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId);
         }
         else if (parsed.TargetId != null && recipient.encounters.Last().Players.ContainsKey((uint)parsed.TargetId))
         {
@@ -85,34 +90,34 @@ public static class LoglineParser
                 rawattribute = attribute.Value;
                 actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
 
-                if (!recipient.encounters.Last().Players.ContainsKey(parsed.ObjectId))
+                if (!recipient.encounters.Last().Players.ContainsKey(parsed.SourceId))
                 {
                     Helpers.Log($"Damage from {parsed.Name} not accounted because they are not in the Party.");
                 }
-                else if (recipient.encounters.Last().Players[parsed.ObjectId].IsActive)
+                else if (recipient.encounters.Last().Players[parsed.SourceId].IsActive)
                 {
                     // pet actions should probably be calculated even if the owner is deactivated #for analyzing the data later
                     // or add a flag to the damaged saying it was ignored idk
                     if (actionFromPet)
                     {
-                        if (recipient.encounters.Last().Pets.ContainsKey(parsed.ObjectId))
+                        if (recipient.encounters.Last().Pets.ContainsKey(parsed.SourceId))
                         {
-                            if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]] != null)
+                            if (recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]] != null)
                             {
-                                recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.ObjectId]].TotalDamage += actionValue;
+                                recipient.encounters.Last().Players[recipient.encounters.Last().Pets[parsed.SourceId]].TotalDamage += actionValue;
                                 recipient.encounters.Last().TotalDamage += actionValue;
                             }
                         }
                     }
                     else
                     {
-                        recipient.encounters.Last().Players[parsed.ObjectId].TotalDamage += actionValue;
+                        recipient.encounters.Last().Players[parsed.SourceId].TotalDamage += actionValue;
                         recipient.encounters.Last().TotalDamage += actionValue;
                     }
                 }
                 else
                 {
-                    Helpers.Log($"{recipient.encounters.Last().Players[parsed.ObjectId].Name} is deactivated, ignoring damage.");
+                    Helpers.Log($"{recipient.encounters.Last().Players[parsed.SourceId].Name} is deactivated, ignoring damage.");
                 }
             }
         }
@@ -210,4 +215,25 @@ public static class LoglineParser
 
         EncounterManager.UpdateClients();
     }
+
+    private static void MsgPlayerStats(List<string> data, string raw, EncounterManager recipient)
+    { 
+        // todo
+    }
+    private static void MsgStatusApply(List<string> data, string raw, EncounterManager recipient)
+    {
+        // todo
+    }
+
+    private static void MsgStatusRemove(List<string> data, string raw, EncounterManager recipient)
+    {
+        // todo
+    }
+
+    private static void MsgDeath(List<string> data, string raw, EncounterManager recipient)
+    {
+        //var parsed = new Message(false, data, raw, Death);
+        // todo
+    }
+
 }

@@ -17,7 +17,7 @@ public enum MessageType : uint
     CancelAction = 23, // 0x00000017
     DoTHoT = 24, // 0x00000018
     Death = 25, // 0x00000019
-    StatusAdd = 26, // 0x0000001A
+    StatusApply = 26, // 0x0000001A
     TargetIcon = 27, // 0x0000001B
     WaymarkMarker = 28, // 0x0000001C
     SignMarker = 29, // 0x0000001D
