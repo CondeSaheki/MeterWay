@@ -30,7 +30,7 @@ public class MoguOverlay : IMeterwayOverlay
 
     public void DataProcess()
     {
-        EncounterManager.Inst.CurrentEncounter().UpdateENncounterData();
+        EncounterManager.Inst.CurrentEncounter().RecalculateData();
         
         var oldListId = this.data.PartyListId;
         
@@ -38,7 +38,7 @@ public class MoguOverlay : IMeterwayOverlay
  
         if (data.PartyListId != oldListId) this.sortcache = Helpers.CreateDictionarySortCache(data.Players, (x) => { return true; });
 
-        sortcache.Sort((uint first, uint second) => { return data.Players[second].TotalDamage.CompareTo(data.Players[first].TotalDamage); });
+        sortcache.Sort((uint first, uint second) => { return data.Players[second].Damage.Total.CompareTo(data.Players[first].Damage.Total); });
     }
 
     private List<uint> getSortCache()
@@ -55,7 +55,8 @@ public class MoguOverlay : IMeterwayOverlay
     {
         var data = getData();
         var sortCache = getSortCache();
-        
+        if(!data.Finished && data.Active)data.RecalculateData(); // this will ignore last frame data ??
+
         UpdateWindowSize();
         
         //ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(0, 0, 0, 64));
@@ -69,12 +70,10 @@ public class MoguOverlay : IMeterwayOverlay
         foreach (var id in sortCache)
         {
             Player p = data.Players[id];
-            p.UpdateStats();
-            
-            if (p.TotalDamage == 0) continue;
+            if (p.Damage.Total == 0) continue;
 
             Widget.JobIcon(p.Job, cursor, ImGui.GetFontSize());
-            var damageinfo = $"{Helpers.HumanizeNumber(p.Dps, 2).ToString()} {p.DamagePercentage.ToString()}%"; //{p.TotalDamage.ToString()}
+            var damageinfo = $"{Helpers.HumanizeNumber(p.Dps, 2).ToString()} {p.DamagePercent.ToString()}%"; //{p.TotalDamage.ToString()}
 
             ImGui.GetWindowDrawList().AddText(cursor + new Vector2(ImGui.GetFontSize(), 0), Helpers.Color(255, 255, 255, 255), $"{p.Name}");
 

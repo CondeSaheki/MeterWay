@@ -30,8 +30,22 @@ public class Encounter
     public Dictionary<uint, Player> Players { get; set; }
     public Dictionary<uint, uint> Pets { get; set; }
 
-    public Int64 TotalDamage { get; set; }
+    public DamageData Damage { get; set; }
+    public DamageData DamageTaken { get; set; }
+    public HitsCount DamageCount { get; set; }
+    public HitsCount DamageTakenCount { get; set; }
+
+    public HealingData Healing { get; set; }
+    public HealingData HealingTaken { get; set; }
+    public HitsCount HealingCount { get; set; }
+    public HitsCount HealingTakenCount { get; set; }
+
+    //calculated
     public float Dps { get; set; }
+    
+    public float CritPercent { get; set; }
+    public float DirecHitPercent { get; set; }
+    public float DirectCritHitPercent { get; set; }
 
     // constructor
     public Encounter()
@@ -41,7 +55,16 @@ public class Encounter
         this.Name = GetEncounterName();
         this.Players = GetPlayers();
         this.Pets = [];
-        this.TotalDamage = 0;
+        this.Damage = new DamageData();
+        this.DamageTaken = new DamageData();
+        // HitsCount(uint hit, uint damageCrit, uint damageDh, uint damageCritDh, uint healCrit)
+        this.DamageCount = new HitsCount();
+        this.DamageTakenCount = new HitsCount();
+
+        this.Healing = new HealingData();
+        this.HealingTaken = new HealingData();
+        this.HealingCount = new HitsCount();
+        this.HealingTakenCount = new HitsCount();
         this.Dps = 0;
         this.RawActions = [];
     }
@@ -256,13 +279,18 @@ public class Encounter
         if (this.End == null) this.End = DateTime.Now; // finished go to true
     }
 
-    public void UpdateENncounterData()
+    public void RecalculateData()
     {
-        var currentSeconds = this.Duration.TotalSeconds <= 1 ? 1 : this.Duration.TotalSeconds;
-        this.Dps = (float)(this.TotalDamage / currentSeconds);
+        var seconds = Duration.TotalSeconds <= 1 ? 1 : Duration.TotalSeconds; // overflow protection
+        Dps = (float)(Damage.Total / seconds);
+
+        CritPercent = DamageCount.Hit != 0 ? (DamageCount.Crit * 100 / DamageCount.Hit) : 0;
+        DirecHitPercent = DamageCount.Hit != 0 ? (DamageCount.Dh * 100 / DamageCount.Hit) : 0;
+        DirectCritHitPercent = DamageCount.Hit != 0 ? (DamageCount.CritDh * 100 / DamageCount.Hit) : 0;
+
         foreach (var player in this.Players.Values)
         {
-            player.UpdateStats();
+            player.RecalculateData();
         }
     }
 

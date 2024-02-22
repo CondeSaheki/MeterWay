@@ -51,14 +51,14 @@ public static class LoglineParser
         }
     }
 
-    private static void MsgActionEffect(LogLineData loglinedata)
+    private static void MsgActionEffect(LogLineData logLineData)
     {
-        loglinedata.LogLineTypefn = (List<string> data) => { return new ActionEffect(data); };
+        logLineData.LogLineTypefn = (List<string> data) => { return new ActionEffect(data); };
+        
+        if (false) return; // todo ignore parsing
 
-        if (false) return; // use return here if you dont want to parse this message
-
-        loglinedata.Parse();
-        ActionEffect parsed = (ActionEffect)loglinedata.Value!;
+        logLineData.Parse();
+        ActionEffect parsed = (ActionEffect)logLineData.Value!;
 
         Encounter encounter = EncounterManager.Inst.encounters.Last();
 
@@ -67,8 +67,6 @@ public static class LoglineParser
         bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
-        uint actionValue = 0;
-        uint rawattribute = 0;
         foreach (KeyValuePair<uint, uint> attribute in parsed.ActionAttributes)
         {
             if (ActionEffectFlag.IsNothing((int)attribute.Key)) break;
@@ -76,116 +74,96 @@ public static class LoglineParser
 
             if (sourceIsPlayer && encounter.Players[parsed.SourceId].IsActive)
             {
+                var player = encounter.Players[parsed.SourceId];
                 if (ActionEffectFlag.IsDamage((int)attribute.Key))
                 {
-                    EncounterManager.StartEncounter();
-                    Helpers.Log("is damage");
-                    rawattribute = attribute.Value;
-                    actionValue = rawattribute >> 16 | rawattribute << 16 & 0x0FFFFFFF;
-                    
+                    EncounterManager.StartEncounter(); // gamer
 
-                    encounter.Players[parsed.SourceId].TotalDamage += actionValue;
-                    encounter.TotalDamage += actionValue;
-                    encounter.Players[parsed.SourceId].UpdateStats();
+                    var actionValue = attribute.Value >> 16 | attribute.Value << 16 & 0x0FFFFFFF;
+                    player.Damage.Total += actionValue;
+                    encounter.Damage.Total += actionValue;
                 }
                 else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
                     if (ActionEffectFlag.IsCritHeal((int)attribute.Key))
                     {
-                        
+                        player.Healing.Count.Crit += 1;
+                        player.Healing.TotalCrit += attribute.Value;
                     }
-                    // total healing done
+                    player.Healing.Total += attribute.Value;
                 }
             }
 
-            // TODO
             if (targetIsPlayer)
             {
+                var player = encounter.Players[(uint)parsed.TargetId!];
                 if (ActionEffectFlag.IsDamage((int)attribute.Key))
                 {
-                    // total damage taken
+                    player.DamageTaken.Total = attribute.Value >> 16 | attribute.Value << 16 & 0x0FFFFFFF;
                 }
-                else
+                else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
-                    // total Healing taken
+                    player.HealingTaken.Total = attribute.Value >> 16 | attribute.Value << 16 & 0x0FFFFFFF;
                 }
             }
 
-            // TODO
-            // if (actionFromPet)
-            // {
-            //     if (EncounterManager.Inst.encounters.Last().Pets.ContainsKey(parsed.SourceId))
-            //     {
-            //         if (EncounterManager.Inst.encounters.Last().Players[EncounterManager.Inst.encounters.Last().Pets[parsed.SourceId]] != null)
-            //         {
-            //             EncounterManager.Inst.encounters.Last().Players[EncounterManager.Inst.encounters.Last().Pets[parsed.SourceId]].TotalDamage += actionValue;
-            //             EncounterManager.Inst.encounters.Last().TotalDamage += actionValue;
-            //         }
-            //     }
-            // }
-            // else
-            // {
-            //     EncounterManager.Inst.encounters.Last().Players[parsed.SourceId].TotalDamage += actionValue;
-            //     EncounterManager.Inst.encounters.Last().TotalDamage += actionValue;
-            // }
+            // TODO Pets
+            if (ActionFromPet)
+            {
+                Helpers.Log("Detected Action From Pet");
+            }
 
             break;
         }
     }
 
-    private static void MsgAOEActionEffect(LogLineData loglinedata)
+    private static void MsgAOEActionEffect(LogLineData logLineData)
     {
-        MsgActionEffect(loglinedata); // have same format
+        MsgActionEffect(logLineData); // have same format
     }
 
-    private static void MsgStartsCasting(LogLineData loglinedata)
+    private static void MsgStartsCasting(LogLineData logLineData)
     {
-        loglinedata.LogLineTypefn = (List<string> data) => { return new StartsCasting(data); };
+        logLineData.LogLineTypefn = (List<string> data) => { return new StartsCasting(data); };
 
         if (true) return; // todo
 
-        loglinedata.Parse();
-        var parsed = (StartsCasting)loglinedata.Value!;
+        logLineData.Parse();
+        var parsed = (StartsCasting)logLineData.Value!;
 
         // todo
     }
 
-    private static void MsgDoTHoT(LogLineData loglinedata)
+    private static void MsgDoTHoT(LogLineData logLineData)
     {
         // dots are calculated even if the player is deactivated, pet actions should probably do the same #for analyzing the data later
         // or add a flag to the damaged saying it was ignored idk
 
-        loglinedata.LogLineTypefn = (List<string> data) => { return new DoTHoT(data); };
+        logLineData.LogLineTypefn = (List<string> data) => { return new DoTHoT(data); };
 
-        if (false) return; // todo
+        if (false) return; // todo ignore parsing
+        logLineData.Parse();
+        var parsed = (DoTHoT)logLineData.Value!;
 
-        loglinedata.Parse();
-        var parsed = (DoTHoT)loglinedata.Value!;
+        Encounter encounter = EncounterManager.Inst.encounters.Last();
 
-
-        Encounter thisEnconter = EncounterManager.Inst.encounters.Last();
-
-        bool sourceIsPlayer = thisEnconter.Players.ContainsKey(parsed.SourceId);
-        bool targetIsPlayer = thisEnconter.Players.ContainsKey(parsed.TargetId);
-        bool IsActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && thisEnconter.Pets.ContainsKey(parsed.SourceId);
-
-        if (!sourceIsPlayer && !targetIsPlayer && !IsActionFromPet) return;
-
-
+        bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
+        bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
+        bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
         if (sourceIsPlayer)
         {
             //if (!thisEnconter.Players[parsed.SourceId].IsActive) return;
             if (!parsed.IsHeal) // IsDamage
             {
-                // total damage
-                thisEnconter.Players[parsed.SourceId].TotalDamage += parsed.Value;
-                thisEnconter.TotalDamage += parsed.Value;
+                encounter.Players[parsed.SourceId].Damage.Total += parsed.Value;
+                encounter.Damage.Total += parsed.Value;
             }
             else
             {
-                // total healing done
-
+                encounter.Players[parsed.SourceId].Healing.Total += parsed.Value;
+                encounter.Healing.Total += parsed.Value;
             }
         }
 
@@ -193,112 +171,125 @@ public static class LoglineParser
         {
             if (!parsed.IsHeal) // IsDamage
             {
-                // total damage taken
+                encounter.Players[parsed.TargetId].DamageTaken.Total += parsed.Value;
+                encounter.DamageTaken.Total += parsed.Value;
             }
             else
             {
-                // total Healing taken
+                encounter.Players[parsed.SourceId].HealingTaken.Total += parsed.Value;
+                encounter.HealingTaken.Total += parsed.Value;
             }
         }
 
         // TODO Pets
+        if (ActionFromPet)
+        {
+            Helpers.Log("Detected Action From Pet");
+        }
 
-        // if (IsActionFromPet)
-        // {
-        //     if (!parsed.IsHeal) // IsDamage
-        //     {
-
-
-        //         if (current.Pets.ContainsKey(parsed.SourceId))
-        //         {
-        //             if (current.Players[current.Pets[parsed.SourceId]] != null)
-        //             {
-        //                 current.Players[current.Pets[parsed.SourceId]].TotalDamage += parsed.Value;
-        //                 current.TotalDamage += parsed.Value;
-        //             }
-        //         }
-        //     }
-        //     else
-        //     {
-
-        //     }
-        // }
     }
 
-    private static void MsgPartyList(LogLineData loglinedata)
+    private static void MsgPartyList(LogLineData logLineData)
     {
         EncounterManager.Inst.encounters.Last().UpdateParty();
         return;
     }
 
-    private static void MsgAddCombatant(LogLineData loglinedata)
+    // this will be used to make sure summoners have their pets damage accounted
+    private static void MsgAddCombatant(LogLineData logLineData)
     {
-        loglinedata.LogLineTypefn = (List<string> data) => { return new AddCombatant(data); };
+        logLineData.LogLineTypefn = (List<string> data) => { return new AddCombatant(data); };
 
         if (true) return; // todo
+        logLineData.Parse();
+        var parsed = (AddCombatant)logLineData.Value!;
 
-        loglinedata.Parse();
-        var parsed = (AddCombatant)loglinedata.Value!;
+        Encounter encounter = EncounterManager.Inst.encounters.Last();
+
+        // bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
+        // bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
+        // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
         // todo
-
-        // this will be used to make sure summoners have their pet
 
         if (parsed.IsPet)
             if (EncounterManager.Inst.encounters.Last().Players.ContainsKey(parsed.OwnerId) && EncounterManager.Inst.encounters.Last().Players[parsed.OwnerId] != null)
                 if (!EncounterManager.Inst.encounters.Last().Pets.ContainsKey(parsed.Id))
                     EncounterManager.Inst.encounters.Last().Pets.Add(parsed.Id, parsed.OwnerId);
-
-
     }
 
-    private static void MsgPlayerStats(LogLineData loglinedata)
+    private static void MsgPlayerStats(LogLineData logLineData)
     {
-        loglinedata.LogLineTypefn = (List<string> data) => { return new PlayerStats(data); };
+        logLineData.LogLineTypefn = (List<string> data) => { return new PlayerStats(data); };
 
         if (true) return; // todo
+        logLineData.Parse();
+        var parsed = (PlayerStats)logLineData.Value!;
 
-        loglinedata.Parse();
-        var parsed = (PlayerStats)loglinedata.Value!;
+        Encounter encounter = EncounterManager.Inst.encounters.Last();
+
+        // bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
+        // bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
+        // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
         // todo
 
     }
 
-    private static void MsgStatusApply(LogLineData loglinedata)
+    private static void MsgStatusApply(LogLineData logLineData)
     {
-        loglinedata.LogLineTypefn = (List<string> data) => { return new StatusApply(data); };
+        logLineData.LogLineTypefn = (List<string> data) => { return new StatusApply(data); };
 
         if (true) return; // todo
+        logLineData.Parse();
+        var parsed = (StatusApply)logLineData.Value!;
 
-        loglinedata.Parse();
-        var parsed = (StatusApply)loglinedata.Value!;
+        Encounter encounter = EncounterManager.Inst.encounters.Last();
+
+        // bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
+        // bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
+        // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
         // todo
 
     }
 
-    private static void MsgStatusRemove(LogLineData loglinedata)
+    private static void MsgStatusRemove(LogLineData logLineData)
     {
-        loglinedata.LogLineTypefn = (List<string> data) => { return new StatusRemove(data); };
+        logLineData.LogLineTypefn = (List<string> data) => { return new StatusRemove(data); };
 
         if (true) return; // todo
+        logLineData.Parse();
+        var parsed = (StatusRemove)logLineData.Value!;
 
-        loglinedata.Parse();
-        var parsed = (StatusRemove)loglinedata.Value!;
+        Encounter encounter = EncounterManager.Inst.encounters.Last();
+
+        // bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
+        // bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
+        // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
         // todo
 
     }
 
-    private static void MsgDeath(LogLineData loglinedata)
+    private static void MsgDeath(LogLineData logLineData)
     {
-        loglinedata.LogLineTypefn = (List<string> data) => { return new Death(data); };
+        logLineData.LogLineTypefn = (List<string> data) => { return new Death(data); };
 
         if (true) return; // todo
+        logLineData.Parse();
+        var parsed = (Death)logLineData.Value!;
 
-        loglinedata.Parse();
-        var parsed = (Death)loglinedata.Value!;
+        Encounter encounter = EncounterManager.Inst.encounters.Last();
+
+        // bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
+        // bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
+        // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
         // todo
 

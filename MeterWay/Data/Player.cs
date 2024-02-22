@@ -6,41 +6,41 @@ using MeterWay.LogParser;
 
 namespace MeterWay.Data;
 
-public class Player
+public class Player(Character character, Encounter encounter)
 {
-    private Encounter Encounter { get; init; }
+    private Encounter Encounter { get; init; } = encounter;
 
-    public uint Id { get; set; }
-    public bool IsActive { get; set; }    
+    public uint Id { get; set; } = character.ObjectId;
+    public bool IsActive { get; set; } = true;
 
-    public string Name { get; set; }
-    public uint? World { get; set; }
-    public uint Job { get; set; }
+    public string Name { get; set; } = character.Name.ToString();
+    public uint? World { get; set; } = (character as PlayerCharacter)?.HomeWorld.Id;
+    public uint Job { get; set; } = character.ClassJob.Id;
 
-    public uint TotalDamage { get; set; }
-    public float Dps { get; set; }
-    public float DamagePercentage { get; set; }
+    public DamageData Damage { get; set; } = new DamageData();
+    public DamageData DamageTaken { get; set; } = new DamageData();
 
-    public List<LogLine> RawActions { get; set; }
+    public HealingData Healing { get; set; } = new HealingData();
+    public HealingData HealingTaken { get; set; } = new HealingData();
 
-    public void UpdateStats()
+    // calculated
+    public float DamagePercent { get; set; } = 0;
+    public float CritPercent { get; set; } = 0;
+    public float DirecHitPercent { get; set; } = 0;
+    public float DirectCritHitPercent { get; set; } = 0;
+    public float Crithealspercent { get; set; } = 0;
+    
+    public float Dps { get; set; } = 0;
+
+    public void RecalculateData()
     {
-        var currentSeconds = this.Encounter.Duration.TotalSeconds <= 1 ? 1 : this.Encounter.Duration.TotalSeconds;
-        this.Dps = (float)(this.TotalDamage / currentSeconds);
-        this.DamagePercentage = this.Encounter.TotalDamage != 0 ? (float)((this.TotalDamage * 100) / this.Encounter.TotalDamage) : 0;
-    }
+        var seconds = Encounter.Duration.TotalSeconds <= 1 ? 1 : Encounter.Duration.TotalSeconds; // overflow protection
 
-    public Player(Character character, Encounter encounter)
-    {
-        this.Encounter = encounter;
-        this.Id = character.ObjectId;
-        this.Name = character.Name.ToString();
-        this.Job = character.ClassJob.Id;
-        this.Dps = 0;
-        this.TotalDamage = 0;
-        this.DamagePercentage = 0;
-        this.IsActive = true;
-        this.RawActions = new List<LogLine>();
-        this.World = (character as PlayerCharacter)?.HomeWorld.Id;
+        Dps = (float)(Damage.Total / seconds);
+        DamagePercent = Encounter.Damage.Total != 0 ? (Damage.Total * 100 / Encounter.Damage.Total) : 0;
+
+        CritPercent = Encounter.DamageCount.Hit != 0 ? (Encounter.DamageCount.Crit * 100 / Encounter.DamageCount.Hit) : 0;
+        DirecHitPercent = Encounter.DamageCount.Hit != 0 ? (Encounter.DamageCount.Dh * 100 / Encounter.DamageCount.Hit) : 0;
+        DirectCritHitPercent = Encounter.DamageCount.Hit != 0 ? (Encounter.DamageCount.CritDh * 100 / Encounter.DamageCount.Hit) : 0;
     }
 }
