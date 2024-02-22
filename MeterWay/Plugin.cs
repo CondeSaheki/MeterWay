@@ -62,7 +62,7 @@ public sealed class Plugin : IDalamudPlugin
         }
 
         // register any overlay here
-        OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay()];
+        OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay(), new DebugOverlay()];
 
         // TODO make only Active Overlay subscribed
         foreach (var overlay in OverlayWindow.Overlays)

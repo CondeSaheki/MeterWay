@@ -25,22 +25,28 @@ public class Player(Character character, Encounter encounter)
 
     // calculated
     public float DamagePercent { get; set; } = 0;
+    public float HealsPercent { get; set; } = 0;
     public float CritPercent { get; set; } = 0;
     public float DirecHitPercent { get; set; } = 0;
     public float DirectCritHitPercent { get; set; } = 0;
     public float Crithealspercent { get; set; } = 0;
     
     public float Dps { get; set; } = 0;
+    public float Hps { get; set; } = 0;
 
     public void RecalculateData()
     {
         var seconds = Encounter.Duration.TotalSeconds <= 1 ? 1 : Encounter.Duration.TotalSeconds; // overflow protection
 
-        Dps = (float)(Damage.Total / seconds);
-        DamagePercent = Encounter.Damage.Total != 0 ? (Damage.Total * 100 / Encounter.Damage.Total) : 0;
+        this.Dps = (float)(Damage.Total / seconds);
+        this.Hps = (float)(Healing.Total / seconds);
 
-        CritPercent = Encounter.DamageCount.Hit != 0 ? (Encounter.DamageCount.Crit * 100 / Encounter.DamageCount.Hit) : 0;
-        DirecHitPercent = Encounter.DamageCount.Hit != 0 ? (Encounter.DamageCount.Dh * 100 / Encounter.DamageCount.Hit) : 0;
-        DirectCritHitPercent = Encounter.DamageCount.Hit != 0 ? (Encounter.DamageCount.CritDh * 100 / Encounter.DamageCount.Hit) : 0;
+        this.DamagePercent = Encounter.Damage.Total != 0 ? (this.Damage.Total * 100 / Encounter.Damage.Total) : 0;
+        this.HealsPercent = Encounter.Healing.Total != 0 ? (this.Healing.Total * 100 / Encounter.Healing.Total) : 0;
+
+        this.CritPercent = Encounter.Damage.Count.Hit != 0 ? (this.Damage.Count.Crit * 100 / Encounter.Damage.Count.Hit) : 0;
+        this.DirecHitPercent = Encounter.Damage.Count.Hit != 0 ? (this.Damage.Count.Dh * 100 / Encounter.Damage.Count.Hit) : 0;
+        this.DirectCritHitPercent = Encounter.Damage.Count.Hit != 0 ? (this.Damage.Count.CritDh * 100 / Encounter.Damage.Count.Hit) : 0;
+        this.Crithealspercent = Encounter.Healing.Count.Hit != 0 ? (this.Healing.Count.Crit * 100 / Encounter.Healing.Count.Hit) : 0;
     }
 }

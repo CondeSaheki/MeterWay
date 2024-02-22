@@ -79,18 +79,19 @@ public static class LoglineParser
                 {
                     EncounterManager.StartEncounter(); // gamer
 
-                    var actionValue = attribute.Value >> 16 | attribute.Value << 16 & 0x0FFFFFFF;
+                    var actionValue = (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
                     player.Damage.Total += actionValue;
                     encounter.Damage.Total += actionValue;
                 }
                 else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
-                    if (ActionEffectFlag.IsCritHeal((int)attribute.Key))
+                    if (ActionEffectFlag.IsCritHeal((int)attribute.Key >> 16))
                     {
                         player.Healing.Count.Crit += 1;
-                        player.Healing.TotalCrit += attribute.Value;
+                        player.Healing.TotalCrit += (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
                     }
-                    player.Healing.Total += attribute.Value;
+                    player.Healing.Total += (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                    player.Healing.Count.Hit += 1;
                 }
             }
 
@@ -99,11 +100,18 @@ public static class LoglineParser
                 var player = encounter.Players[(uint)parsed.TargetId!];
                 if (ActionEffectFlag.IsDamage((int)attribute.Key))
                 {
-                    player.DamageTaken.Total = attribute.Value >> 16 | attribute.Value << 16 & 0x0FFFFFFF;
+                    player.DamageTaken.Total = (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                    player.DamageTaken.Count.Hit += 1;
                 }
                 else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
-                    player.HealingTaken.Total = attribute.Value >> 16 | attribute.Value << 16 & 0x0FFFFFFF;
+                    if (ActionEffectFlag.IsCritHeal((int)attribute.Key >> 16))
+                    {
+                        player.HealingTaken.TotalCrit = (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                        player.HealingTaken.Count.Crit += 1;
+                    }
+                    player.HealingTaken.Total = (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                    player.HealingTaken.Count.Hit += 1;
                 }
             }
 

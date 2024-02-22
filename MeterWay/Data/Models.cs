@@ -30,4 +30,3 @@ public class HealingData(uint total = 0, uint totalCrit = 0, uint count = 0, uin
     public uint TotalCrit { get; set; } = totalCrit;
     public HealsCount Count { get; set; } = new HealsCount(count, countCrit);
 }
-

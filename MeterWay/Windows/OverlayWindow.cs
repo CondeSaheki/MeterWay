@@ -31,7 +31,7 @@ public class OverlayWindow : Window, IDisposable
         this.RespectCloseHotkey = false;
         this.Flags = Gerateflags();
 
-        this.Overlays = new List<IMeterwayOverlay>();
+        this.Overlays = [];
     }
 
     // draw

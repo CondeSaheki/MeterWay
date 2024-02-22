@@ -83,6 +83,22 @@ public class Commands : IDisposable
                     Plugin.IpcClient.Reconnect();
                 }
             ),
+            new BasicCommand("debug_reset", "reset encounter", () =>
+                {
+                    EncounterManager.ResetEncounter();
+                    
+                }
+            ),
+            new BasicCommand("debug_end", "end encounter", () =>
+                {
+                    EncounterManager.EndEncounter();
+                }
+            ),
+            new BasicCommand("debug_start", "start encounter", () =>
+                {
+                    EncounterManager.StartEncounter();
+                }
+            )
         ];
         string HelpMessage = "";
         commands.Add(new BasicCommand("help", "Display this help message", () =>

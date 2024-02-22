@@ -123,7 +123,7 @@ public class ConfigWindow : Window, IDisposable
         var OverlayTypeValue = ConfigurationManager.Instance.Configuration.OverlayType;
         if (ImGui.InputInt("Overlay Type", ref OverlayTypeValue))
         {
-            if (OverlayTypeValue == 1 || OverlayTypeValue == 0)
+            if (OverlayTypeValue == 1 || OverlayTypeValue == 0 || OverlayTypeValue == 2)
             {
                 ConfigurationManager.Instance.Configuration.OverlayType = OverlayTypeValue;
                 ConfigurationManager.Instance.Configuration.Save();

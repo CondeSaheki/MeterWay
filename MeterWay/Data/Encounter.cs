@@ -32,20 +32,20 @@ public class Encounter
 
     public DamageData Damage { get; set; }
     public DamageData DamageTaken { get; set; }
-    public HitsCount DamageCount { get; set; }
-    public HitsCount DamageTakenCount { get; set; }
 
     public HealingData Healing { get; set; }
     public HealingData HealingTaken { get; set; }
-    public HitsCount HealingCount { get; set; }
-    public HitsCount HealingTakenCount { get; set; }
 
     //calculated
-    public float Dps { get; set; }
+    public float DamagePercent { get; set; } = 0;
+    public float HealsPercent { get; set; } = 0;
+    public float CritPercent { get; set; } = 0;
+    public float DirecHitPercent { get; set; } = 0;
+    public float DirectCritHitPercent { get; set; } = 0;
+    public float Crithealspercent { get; set; } = 0;
     
-    public float CritPercent { get; set; }
-    public float DirecHitPercent { get; set; }
-    public float DirectCritHitPercent { get; set; }
+    public float Dps { get; set; } = 0;
+    public float Hps { get; set; } = 0;
 
     // constructor
     public Encounter()
@@ -57,15 +57,16 @@ public class Encounter
         this.Pets = [];
         this.Damage = new DamageData();
         this.DamageTaken = new DamageData();
-        // HitsCount(uint hit, uint damageCrit, uint damageDh, uint damageCritDh, uint healCrit)
-        this.DamageCount = new HitsCount();
-        this.DamageTakenCount = new HitsCount();
-
         this.Healing = new HealingData();
         this.HealingTaken = new HealingData();
-        this.HealingCount = new HitsCount();
-        this.HealingTakenCount = new HitsCount();
+        this.DamagePercent = 0;
+        this.HealsPercent = 0;
+        this.CritPercent = 0;
+        this.DirecHitPercent = 0;
+        this.DirectCritHitPercent = 0;
+        this.Crithealspercent = 0;
         this.Dps = 0;
+        this.Hps = 0;
         this.RawActions = [];
     }
 
@@ -197,7 +198,7 @@ public class Encounter
     {
         if (player.GameObject != null) return player.GameObject.ObjectId; // no recover
 
-        // atempt recover
+        // attempt recover
         uint? recovered = null;
         foreach (KeyValuePair<uint, Player> cachedPlayer in Players)
         {
@@ -270,23 +271,28 @@ public class Encounter
     public void StartEncounter()
     {
         InterfaceManager.Inst.PluginLog.Info("Encounter started.");
-        if (this.Start == null) this.Start = DateTime.Now; // Active go to true
+        if (this.Start == null) this.Start = DateTime.Now; // Active = true
     }
 
     public void EndEncounter()
     {
         InterfaceManager.Inst.PluginLog.Info("Encounter ended.");
-        if (this.End == null) this.End = DateTime.Now; // finished go to true
+        if (this.End == null) this.End = DateTime.Now; // finished = true
     }
 
     public void RecalculateData()
     {
         var seconds = Duration.TotalSeconds <= 1 ? 1 : Duration.TotalSeconds; // overflow protection
         Dps = (float)(Damage.Total / seconds);
+        Hps = (float)(Healing.Total / seconds);
 
-        CritPercent = DamageCount.Hit != 0 ? (DamageCount.Crit * 100 / DamageCount.Hit) : 0;
-        DirecHitPercent = DamageCount.Hit != 0 ? (DamageCount.Dh * 100 / DamageCount.Hit) : 0;
-        DirectCritHitPercent = DamageCount.Hit != 0 ? (DamageCount.CritDh * 100 / DamageCount.Hit) : 0;
+        DamagePercent = Damage.Total != 0 ? (Damage.Total * 100 / Damage.Total) : 0;
+        HealsPercent = Healing.Total != 0 ? (Healing.Total * 100 / Healing.Total) : 0;
+
+        CritPercent = Damage.Count.Hit != 0 ? (Damage.Count.Crit * 100 / Damage.Count.Hit) : 0;
+        DirecHitPercent = Damage.Count.Hit != 0 ? (Damage.Count.Dh * 100 / Damage.Count.Hit) : 0;
+        DirectCritHitPercent = Damage.Count.Hit != 0 ? (Damage.Count.CritDh * 100 / Damage.Count.Hit) : 0;
+        Crithealspercent = Healing.Count.Hit != 0 ? (Healing.Count.Crit * 100 / Healing.Count.Hit) : 0;
 
         foreach (var player in this.Players.Values)
         {
