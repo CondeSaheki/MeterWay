@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using MeterWay.Managers;
 using MeterWay.Data;
+using MeterWay.Utils;
 
 namespace MeterWay.LogParser;
 
@@ -12,17 +13,17 @@ public static class LoglineParser
     // we are only getting the messages needed
     private static readonly Dictionary<LogLineType, Action<LogLineData>> Handlers = new()
     {
-            { LogLineType.ActionEffect, MsgActionEffect },
-            { LogLineType.AOEActionEffect, MsgAOEActionEffect },
-            { LogLineType.StartsCasting, MsgStartsCasting },
-            { LogLineType.DoTHoT, MsgDoTHoT },
-            { LogLineType.PartyList, MsgPartyList },
-            { LogLineType.AddCombatant, MsgAddCombatant },
-            { LogLineType.PlayerStats, MsgPlayerStats },
-            { LogLineType.StatusApply, MsgStatusApply },
-            { LogLineType.StatusRemove, MsgStatusRemove },
-            { LogLineType.Death, MsgDeath }
-        };
+        { LogLineType.ActionEffect, MsgActionEffect },
+        { LogLineType.AOEActionEffect, MsgAOEActionEffect },
+        { LogLineType.StartsCasting, MsgStartsCasting },
+        { LogLineType.DoTHoT, MsgDoTHoT },
+        { LogLineType.PartyList, MsgPartyList },
+        { LogLineType.AddCombatant, MsgAddCombatant },
+        { LogLineType.PlayerStats, MsgPlayerStats },
+        { LogLineType.StatusApply, MsgStatusApply },
+        { LogLineType.StatusRemove, MsgStatusRemove },
+        { LogLineType.Death, MsgDeath }
+    };
 
     public static void Parse(JObject json)
     {
@@ -54,17 +55,17 @@ public static class LoglineParser
     {
         loglinedata.LogLineTypefn = (List<string> data) => { return new ActionEffect(data); };
 
-        if(false) return; // use return here if you dont want to parse this message
+        if (false) return; // use return here if you dont want to parse this message
 
         loglinedata.Parse();
         ActionEffect parsed = (ActionEffect)loglinedata.Value!;
 
-        Encounter thisEnconter = EncounterManager.Inst.encounters.Last();
+        Encounter encounter = EncounterManager.Inst.encounters.Last();
 
-        bool sourceIsPlayer = thisEnconter.Players.ContainsKey(parsed.SourceId);
-        bool targetIsPlayer = parsed.TargetId == null ? false : thisEnconter.Players.ContainsKey((uint)parsed.TargetId);
-        bool IsActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && thisEnconter.Pets.ContainsKey(parsed.SourceId);
-        if (!sourceIsPlayer && !targetIsPlayer && !IsActionFromPet) return;
+        bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
+        bool targetIsPlayer = parsed.TargetId == null ? false : encounter.Players.ContainsKey((uint)parsed.TargetId);
+        bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
         uint actionValue = 0;
         uint rawattribute = 0;
@@ -73,23 +74,31 @@ public static class LoglineParser
             if (ActionEffectFlag.IsNothing((int)attribute.Key)) break;
             if (ActionEffectFlag.IsSpecial((int)attribute.Key)) { }; // TODO
 
-            rawattribute = attribute.Value;
-            actionValue = (UInt32)((UInt32)(attribute.Value >> 16) | (UInt32)((attribute.Value << 16)) & 0x0FFFFFFF);
-            if (sourceIsPlayer && thisEnconter.Players[parsed.SourceId].IsActive)
+            if (sourceIsPlayer && encounter.Players[parsed.SourceId].IsActive)
             {
                 if (ActionEffectFlag.IsDamage((int)attribute.Key))
                 {
                     EncounterManager.StartEncounter();
+                    Helpers.Log("is damage");
+                    rawattribute = attribute.Value;
+                    actionValue = rawattribute >> 16 | rawattribute << 16 & 0x0FFFFFFF;
+                    
 
-                    thisEnconter.Players[parsed.SourceId].TotalDamage += actionValue;
-                    thisEnconter.TotalDamage += actionValue;
+                    encounter.Players[parsed.SourceId].TotalDamage += actionValue;
+                    encounter.TotalDamage += actionValue;
+                    encounter.Players[parsed.SourceId].UpdateStats();
                 }
-                else
+                else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
+                    if (ActionEffectFlag.IsCritHeal((int)attribute.Key))
+                    {
+                        
+                    }
                     // total healing done
                 }
             }
 
+            // TODO
             if (targetIsPlayer)
             {
                 if (ActionEffectFlag.IsDamage((int)attribute.Key))
@@ -120,6 +129,7 @@ public static class LoglineParser
             //     EncounterManager.Inst.encounters.Last().TotalDamage += actionValue;
             // }
 
+            break;
         }
     }
 
@@ -152,7 +162,7 @@ public static class LoglineParser
         loglinedata.Parse();
         var parsed = (DoTHoT)loglinedata.Value!;
 
-        
+
         Encounter thisEnconter = EncounterManager.Inst.encounters.Last();
 
         bool sourceIsPlayer = thisEnconter.Players.ContainsKey(parsed.SourceId);
@@ -161,7 +171,7 @@ public static class LoglineParser
 
         if (!sourceIsPlayer && !targetIsPlayer && !IsActionFromPet) return;
 
-        
+
 
         if (sourceIsPlayer)
         {

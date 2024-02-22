@@ -97,6 +97,7 @@ public class LazerOverlay : IMeterwayOverlay
         foreach (var id in sortCache)
         {
             Player player = combat.Players[id];
+            player.UpdateStats();
             DoLerpPlayerData(player);
             DrawPlayerLine(lerpedInfo[player.Id], player);
         }

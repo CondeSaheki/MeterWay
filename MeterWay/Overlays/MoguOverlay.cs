@@ -69,6 +69,8 @@ public class MoguOverlay : IMeterwayOverlay
         foreach (var id in sortCache)
         {
             Player p = data.Players[id];
+            p.UpdateStats();
+            
             if (p.TotalDamage == 0) continue;
 
             Widget.JobIcon(p.Job, cursor, ImGui.GetFontSize());
