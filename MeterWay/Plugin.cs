@@ -52,24 +52,18 @@ public sealed class Plugin : IDalamudPlugin
 
         MainWindow = new MainWindow();
         OverlayWindow = new OverlayWindow();
-        ConfigWindow = new ConfigWindow(this.IpcClient, OverlayWindow);
+        ConfigWindow = new ConfigWindow(IpcClient, OverlayWindow);
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
-        if (ConfigurationManager.Inst.Configuration.Overlay)
-        {
-            WindowSystem.AddWindow(OverlayWindow);
-        }
+        if (ConfigurationManager.Inst.Configuration.Overlay) WindowSystem.AddWindow(OverlayWindow);
 
-        // register any overlay here
+        // register overlays here
         OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay(), new DebugOverlay()];
 
         // TODO make only Active Overlay subscribed
-        foreach (var overlay in OverlayWindow.Overlays)
-        {
-            EncounterManager.Inst.Clients.Add(overlay.DataProcess);
-        }
-
+        foreach (var overlay in OverlayWindow.Overlays) EncounterManager.Inst.Clients.Add(overlay.DataProcess);
+        
         Commands = new Commands(this);
 
         InterfaceManager.Inst.PluginInterface.UiBuilder.Draw += DrawUI;
@@ -82,6 +76,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
         IpcClient.Dispose();
         ConfigWindow.Dispose();
+        OverlayWindow.Dispose();
         MainWindow.Dispose();
         Commands.Dispose();
     }

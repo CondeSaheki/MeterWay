@@ -16,13 +16,14 @@ public class ConfigWindow : Window, IDisposable
 
     public ConfigWindow(IpcClient iinactIpcClient, OverlayWindow OverlayWindow) : base(
         "MeterWay Configurations",
-        ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
+        ImGuiWindowFlags.NoCollapse |
+        ImGuiWindowFlags.NoScrollbar |
         ImGuiWindowFlags.NoScrollWithMouse) // ImGuiWindowFlags.NoResize | 
     {
-        this.Size = new Vector2(400, 400);
-        this.SizeCondition = ImGuiCond.Always;
-        this.iinactIpcClient = iinactIpcClient;
+        Size = new Vector2(400, 400);
+        SizeCondition = ImGuiCond.Always;
 
+        this.iinactIpcClient = iinactIpcClient;
         this.OverlayWindow = OverlayWindow;
     }
 
@@ -75,7 +76,7 @@ public class ConfigWindow : Window, IDisposable
         {
             ConfigurationManager.Inst.Configuration.OverlayClickThrough = OverlayClickThroughValue;
             ConfigurationManager.Inst.Configuration.Save();
-            OverlayWindow.Flags = OverlayWindow.Gerateflags();
+            OverlayWindow.Flags = OverlayWindow.GetFlags();
 
         }
 
@@ -85,7 +86,7 @@ public class ConfigWindow : Window, IDisposable
         {
             ConfigurationManager.Inst.Configuration.OverlayBackground = OverlayBackgroundValue;
             ConfigurationManager.Inst.Configuration.Save();
-            OverlayWindow.Flags = OverlayWindow.Gerateflags();
+            OverlayWindow.Flags = OverlayWindow.GetFlags();
         }
 
         if (OverlayBackgroundValue)
@@ -109,8 +110,6 @@ public class ConfigWindow : Window, IDisposable
         {
             ConfigurationManager.Inst.Configuration.OverlayFontScale = OverlayFontScaleValue;
             ConfigurationManager.Inst.Configuration.Save();
-
-            OverlayWindow.updatefont();
         }
     }
 

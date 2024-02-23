@@ -7,113 +7,86 @@ namespace MeterWay;
 
 public class Commands : IDisposable
 {
-    private class BasicCommand
-    {
-        public string Argument;
-        public string Help;
-        public Action Function;
-
-        public BasicCommand(string argument, string help, Action function)
-        {
-            this.Argument = argument;
-            this.Help = help;
-            this.Function = function;
-        }
-    }
-
-    private readonly List<BasicCommand> List;
     private const string CommandName = "/meterway";
     private readonly Plugin Plugin;
 
     public Commands(Plugin plugin)
     {
         Plugin = plugin;
-        List = CreateComands();
+        Dictionary<string, Action> args = [];
 
-        InterfaceManager.Inst.CommandManager.AddHandler(CommandName,
-        new CommandInfo(OnCommand)
+        // add command
+        InterfaceManager.Inst.CommandManager.AddHandler(CommandName, new CommandInfo((string command, string arg) =>
         {
-            HelpMessage = "Display MeterWay main window.\nAditional help with the command \'" + CommandName + " help\'."
-        }
-        );
-    }
-
-    private void OnCommand(string command, string args)
-    {
-        var i = List.FindIndex((BasicCommand cmd) =>
+            if (args.TryGetValue(arg, out Action? value)) value.Invoke();
+        })
         {
-            return cmd.Argument == args.ToLower();
+            HelpMessage = $"Display MeterWay main window.\nAditional help with the command \'{CommandName} help\'."
         });
-        List[i].Function.Invoke();
-    }
 
-    private List<BasicCommand> CreateComands()
-    {
-        List<BasicCommand> commands =
-            [
-                new BasicCommand("", "Display MeterWay main window.", () =>
-                {
-                    Plugin.MainWindow.IsOpen = true;
-                }
-            ),
-            new BasicCommand("config", "Display MeterWay configuration window.", () =>
-                {
-                    Plugin.ConfigWindow.IsOpen = true;
-                }
-            ),
-            new BasicCommand("status", "Display the connection to IINACT status.", () =>
-                {
-                    var msg = "MeterWay is " + (Plugin.IpcClient.Status() ? "connected" : "disconnected") + " to IINACT.";
-                    //ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload(msg), new UIForegroundPayload(0)));
-                    InterfaceManager.Inst.ChatGui.Print(msg);
-                }
-            ),
-            new BasicCommand("start", "Try to connect to IINACT.", () =>
-                {
-                    Plugin.IpcClient.Connect();
-                }
-            ),
-            new BasicCommand("stop", "Diconnect from IINACT.", () =>
-                {
-                    Plugin.IpcClient.Disconnect();
-                }
-            ),
-            new BasicCommand("restart", "Try to reconnect to IINACT.", () =>
-                {
-                    Plugin.IpcClient.Reconnect();
-                }
-            ),
-            new BasicCommand("debug_reset", "reset encounter", () =>
-                {
-                    EncounterManager.Reset();
-                    
-                }
-            ),
-            new BasicCommand("debug_end", "end encounter", () =>
-                {
-                    EncounterManager.Stop();
-                }
-            ),
-            new BasicCommand("debug_start", "start encounter", () =>
-                {
-                    EncounterManager.Start();
-                }
-            )
-        ];
-        string HelpMessage = "";
-        commands.Add(new BasicCommand("help", "Display this help message", () =>
-                {
-                    InterfaceManager.Inst.ChatGui.Print(HelpMessage);
-                }
-            ));
-
-        // create help message
-        foreach (BasicCommand command in commands)
+        // add command arg
+        string AddArg(string arg, string help, Action fn)
         {
-            HelpMessage += CommandName + (command.Argument != "" ? " " : "") + command.Argument + " -> " + command.Help + (command.Argument != "help" ? "\n" : "");
+            args.Add(arg, fn);
+            return $"{CommandName}{(arg != "" ? " " : "")}{arg} -> {help}\n";
         }
 
-        return commands;
+        string help = AddArg("", "Display MeterWay main window.", () =>
+        {
+            Plugin.MainWindow.IsOpen = true;
+        });
+
+        help += AddArg("config", "Display MeterWay configuration window.", () =>
+        {
+            Plugin.ConfigWindow.IsOpen = true;
+        });
+
+        help += AddArg("status", "Display the connection to IINACT status.", () =>
+        {
+            var msg = $"MeterWay is {(Plugin.IpcClient.Status() ? "connected" : "disconnected")} to IINACT.";
+            InterfaceManager.Inst.ChatGui.Print(msg);
+        });
+
+        help += AddArg("connect", "Try to connect to IINACT.", () =>
+        {
+            Plugin.IpcClient.Connect();
+        });
+
+        help += AddArg("disconnect", "Diconnect from IINACT.", () =>
+        {
+            Plugin.IpcClient.Disconnect();
+        });
+
+        help += AddArg("reconnect", "Try to reconnect to IINACT.", () =>
+        {
+            Plugin.IpcClient.Reconnect();
+        });
+
+        help += AddArg("help", "Display this help message", () =>
+        {
+            InterfaceManager.Inst.ChatGui.Print(help.Remove(help.Length - 1));
+        });
+
+
+        #if true // debug
+
+        help += AddArg("_clear", "", () =>
+        {
+            EncounterManager.Inst.encounters.Clear();
+            EncounterManager.Inst.encounters.Add(new Data.Encounter());
+        });
+
+        help += AddArg("_Stop", "", () =>
+        {
+            EncounterManager.Stop();
+        });
+
+        help += AddArg("_start", "", () =>
+        {
+            EncounterManager.Start();
+        });
+
+        #endif
     }
 
     public void Dispose()
