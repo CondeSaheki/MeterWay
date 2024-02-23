@@ -64,8 +64,10 @@ public static class LoglineParser
 
         bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
         bool targetIsPlayer = parsed.TargetId == null ? false : encounter.Players.ContainsKey((uint)parsed.TargetId);
-        bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        bool ActionFromPet = false; // ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
+
+        static uint DamageHealCalc(uint val) => (val >> 16 | val << 16) & 0x0FFFFFFF;
 
         foreach (KeyValuePair<uint, uint> attribute in parsed.ActionAttributes)
         {
@@ -77,20 +79,20 @@ public static class LoglineParser
                 var player = encounter.Players[parsed.SourceId];
                 if (ActionEffectFlag.IsDamage((int)attribute.Key))
                 {
-                    EncounterManager.StartEncounter(); // gamer
+                    EncounterManager.Start(); // gamer
 
-                    var actionValue = (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                    var actionValue = DamageHealCalc(attribute.Value);
                     player.Damage.Total += actionValue;
                     encounter.Damage.Total += actionValue;
                 }
                 else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
-                    if (ActionEffectFlag.IsCritHeal((int)attribute.Key >> 16))
+                    if (ActionEffectFlag.IsCritHeal((int)attribute.Key))
                     {
                         player.Healing.Count.Crit += 1;
-                        player.Healing.TotalCrit += (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                        player.Healing.TotalCrit += DamageHealCalc(attribute.Value);
                     }
-                    player.Healing.Total += (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                    player.Healing.Total += DamageHealCalc(attribute.Value);
                     player.Healing.Count.Hit += 1;
                 }
             }
@@ -100,17 +102,17 @@ public static class LoglineParser
                 var player = encounter.Players[(uint)parsed.TargetId!];
                 if (ActionEffectFlag.IsDamage((int)attribute.Key))
                 {
-                    player.DamageTaken.Total = (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                    player.DamageTaken.Total = DamageHealCalc(attribute.Value);
                     player.DamageTaken.Count.Hit += 1;
                 }
                 else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
                     if (ActionEffectFlag.IsCritHeal((int)attribute.Key >> 16))
                     {
-                        player.HealingTaken.TotalCrit = (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                        player.HealingTaken.TotalCrit = DamageHealCalc(attribute.Value);
                         player.HealingTaken.Count.Crit += 1;
                     }
-                    player.HealingTaken.Total = (attribute.Value >> 16 | attribute.Value << 16) & 0x0FFFFFFF;
+                    player.HealingTaken.Total = DamageHealCalc(attribute.Value);
                     player.HealingTaken.Count.Hit += 1;
                 }
             }
@@ -157,7 +159,7 @@ public static class LoglineParser
 
         bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
         bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
-        bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
+        bool ActionFromPet = false; // ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
         if (sourceIsPlayer)
@@ -184,7 +186,7 @@ public static class LoglineParser
             }
             else
             {
-                encounter.Players[parsed.SourceId].HealingTaken.Total += parsed.Value;
+                encounter.Players[parsed.TargetId].HealingTaken.Total += parsed.Value;
                 encounter.HealingTaken.Total += parsed.Value;
             }
         }
@@ -199,7 +201,7 @@ public static class LoglineParser
 
     private static void MsgPartyList(LogLineData logLineData)
     {
-        EncounterManager.Inst.encounters.Last().UpdateParty();
+        EncounterManager.Inst.encounters.Last().Update();
         return;
     }
 
@@ -222,9 +224,9 @@ public static class LoglineParser
         // todo
 
         if (parsed.IsPet)
-            if (EncounterManager.Inst.encounters.Last().Players.ContainsKey(parsed.OwnerId) && EncounterManager.Inst.encounters.Last().Players[parsed.OwnerId] != null)
-                if (!EncounterManager.Inst.encounters.Last().Pets.ContainsKey(parsed.Id))
-                    EncounterManager.Inst.encounters.Last().Pets.Add(parsed.Id, parsed.OwnerId);
+        {
+            Helpers.Log("Detected Action From Pet");
+        }
     }
 
     private static void MsgPlayerStats(LogLineData logLineData)

@@ -7,6 +7,8 @@ using System.Linq;
 using MeterWay.Data;
 using MeterWay.LogParser;
 using MeterWay.Utils;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Objects.Enums;
 
 namespace MeterWay.Managers;
 
@@ -20,53 +22,54 @@ public class EncounterManager : IDisposable
 
     public static EncounterManager Inst { get; private set; } = null!;
 
+    private static Encounter LastEncounter => LastEncounter;
+
     // constructor
     public EncounterManager()
     {
-        this.encounters = [];
+        encounters = [];
         encounters.Add(new Encounter());
-        this.lastCombatState = false;
-        this.Clients = [];
+        lastCombatState = false;
+        Clients = [];
 
-        InterfaceManager.Inst.DutyState.DutyStarted += EncounterManagerOnDutyStart;
+        InterfaceManager.Inst.DutyState.DutyStarted += OnDutyStart;
 
         Inst = this;
     }
 
-    private static void EncounterManagerOnDutyStart<ArgType>(Object? sender, ArgType Args)
+    private static void OnDutyStart<ArgType>(object? sender, ArgType Args)
     {
         Helpers.Log("EncounterManager OnDutyStart Event Trigerred!");
-        if(!EndEncounter()) ResetEncounter();
-        Inst.encounters.Last().UpdateEncounter();
+        if(!Stop()) Reset();
+        LastEncounter.Update();
     }
 
     public void Dispose()
     {
-        InterfaceManager.Inst.DutyState.DutyStarted -= EncounterManagerOnDutyStart;
+        InterfaceManager.Inst.DutyState.DutyStarted -= OnDutyStart;
     }
 
-    // metods
-    public static bool StartEncounter()
+    public static bool Start()
     {
-        if (Inst.encounters.Last().Active) return false;
-        if (Inst.encounters.Last().Finished) Inst.encounters.Add(new Encounter());
+        if (LastEncounter.Active) return false;
+        if (LastEncounter.Finished) Inst.encounters.Add(new Encounter());
 
-        Inst.encounters.Last().UpdateEncounter();
-        Inst.encounters.Last().RawActions.RemoveAll(r => r.DateTime < Inst.encounters.Last().Start - TimeSpan.FromSeconds(30));
-        Inst.encounters.Last().StartEncounter();
+        LastEncounter.Update();
+        LastEncounter.RawActions.RemoveAll(r => r.DateTime < LastEncounter.Begin - TimeSpan.FromSeconds(30));
+        LastEncounter.Start();
         return true;
     }
 
-    public static bool EndEncounter()
+    public static bool Stop()
     {
-        if(Inst.encounters.Last().Finished) return false;
-        Inst.encounters.Last().EndEncounter();
-        Inst.encounters.Last().UpdateEncounter();
+        if(LastEncounter.Finished) return false;
+        LastEncounter.Stop();
+        LastEncounter.Update();
         Inst.encounters.Add(new Encounter());
         return true;
     }
 
-    public static void ResetEncounter()
+    public static void Reset()
     {
         Inst.encounters.Add(new Encounter());
         Inst.encounters.Remove(Inst.encounters[Inst.encounters.Count - 1]);
@@ -81,7 +84,7 @@ public class EncounterManager : IDisposable
         return encounters.Last();
     }
 
-    private static bool GetInCombat()
+    private static bool IsInCombat() // TODO change this to Delegate / Hook
     {
         var partyList = InterfaceManager.Inst.PartyList;
         if (partyList.Length == 0)
@@ -92,8 +95,8 @@ public class EncounterManager : IDisposable
         {
             if (player.GameObject == null) continue;
 
-            var character = (Dalamud.Game.ClientState.Objects.Types.Character)player.GameObject;
-            if ((character.StatusFlags & Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat) == Dalamud.Game.ClientState.Objects.Enums.StatusFlags.InCombat)
+            var character = (Character)player.GameObject;
+            if ((character.StatusFlags & StatusFlags.InCombat) == StatusFlags.InCombat)
             {
                 return true;
             }
@@ -103,17 +106,17 @@ public class EncounterManager : IDisposable
 
     public static void Receiver(JObject json)
     {
-        var combatState = GetInCombat();
+        var combatState = IsInCombat();
 
         // Start/End Combat
         if ((combatState == true) && Inst.lastCombatState == false)
         {
-            if (!Inst.encounters.Last().Active) StartEncounter();
+            if (!LastEncounter.Active) Start();
             Inst.lastCombatState = true;
         }
         if (combatState == false && Inst.lastCombatState == true)
         {
-            EndEncounter();
+            Stop();
             Inst.lastCombatState = false;
         }
 

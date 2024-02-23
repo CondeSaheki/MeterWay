@@ -20,12 +20,12 @@ public class LogLineData
 
     public LogLineData(LogLineType msgType, DateTime dateTime, string raw)
     {
-        this.Parsed = false;
-        this.MsgType = msgType;
-        this.DateTime = dateTime;
-        this.RawLine = raw;
+        Parsed = false;
+        MsgType = msgType;
+        DateTime = dateTime;
+        RawLine = raw;
 
-        this.LogLineTypefn = null;
+        LogLineTypefn = null;
     }
 
     public void Parse()
@@ -33,11 +33,9 @@ public class LogLineData
         if (!Parsed && LogLineTypefn != null)
         {
             var data = RawLine.Split('|').ToList();
-            this.Value = LogLineTypefn(data);
-            this.Parsed = true;
-            // return true;
+            Value = LogLineTypefn(data);
+            Parsed = true;
         }
-        // return false;
     }
 }
 
@@ -60,20 +58,20 @@ public class ActionEffect : LogLine
 
     public ActionEffect(List<string> data)
     {
-        this.SourceId = Convert.ToUInt32(data[2], 16);
-        this.SourceName = data[3].ToString();
-        this.Id = Convert.ToUInt32(data[4], 16);
-        this.Name = data[5];
-        this.TargetId = data[6] == "" ? null : Convert.ToUInt32(data[6], 16);
-        this.TargetName = data[7] == "" ? null : data[7];
+        SourceId = Convert.ToUInt32(data[2], 16);
+        SourceName = data[3].ToString();
+        Id = Convert.ToUInt32(data[4], 16);
+        Name = data[5];
+        TargetId = data[6] == "" ? null : Convert.ToUInt32(data[6], 16);
+        TargetName = data[7] == "" ? null : data[7];
 
-        this.ActionAttributes = new List<KeyValuePair<uint, uint>>();
+        ActionAttributes = new List<KeyValuePair<uint, uint>>();
         for (var i = 0; i != 8; ++i)
         {
             uint key = Convert.ToUInt32(data[8 + i], 16);
             uint value = Convert.ToUInt32(data[9 + i], 16);
             if (key == 0 && value == 0) break;
-            this.ActionAttributes.Add(new KeyValuePair<uint, uint>(key, value));
+            ActionAttributes.Add(new KeyValuePair<uint, uint>(key, value));
         }
 
         // skillatributes = data[9];
@@ -100,8 +98,8 @@ public class ActionEffect : LogLine
         // skillatributes = data[23];
         // skillatributes = data[22];
 
-        this.TargetHp = data[24] == "" ? null : Convert.ToInt32(data[24]);
-        this.TargetMaxHp = data[25] == "" ? null : Convert.ToUInt32(data[25]);
+        TargetHp = data[24] == "" ? null : Convert.ToInt32(data[24]);
+        TargetMaxHp = data[25] == "" ? null : Convert.ToUInt32(data[25]);
         // int? targetMp = data[26].ToString() == "" ? null : Convert.ToInt32(data[26].ToString());
         // int? targetMaxMp = data[27].ToString() == "" ? null : Convert.ToInt32(data[27].ToString());
 
@@ -110,12 +108,12 @@ public class ActionEffect : LogLine
 
         if (data[33] != "" || data[32] != "" || data[31] != "" || data[30] != "")
         {
-            this.TargetPos = new Vector4(float.Parse(data[30]), float.Parse(data[31]),
+            TargetPos = new Vector4(float.Parse(data[30]), float.Parse(data[31]),
                 float.Parse(data[32]), float.Parse(data[33]));
         }
         // else null
 
-        this.SourceMp = data[36] == "" ? null : Convert.ToUInt32(data[36]);
+        SourceMp = data[36] == "" ? null : Convert.ToUInt32(data[36]);
         // maxHp = Convert.ToUInt32(data[35].ToString());
         // hp = Convert.ToUInt32(data[34].ToString());
         // maxMp = Convert.ToUInt32(data[37].ToString());
@@ -125,13 +123,13 @@ public class ActionEffect : LogLine
 
         if (data[40] != "" || data[41] != "" || data[42] != "" || data[43] != "")
         {
-            this.Pos = new Vector4(float.Parse(data[40]), float.Parse(data[41]),
+            Pos = new Vector4(float.Parse(data[40]), float.Parse(data[41]),
             float.Parse(data[42]), float.Parse(data[43]));
         }
 
         // loglinescount = Convert.ToUInt32(data[44].ToString(), 16);
-        this.MultiMessageIndex = Convert.ToUInt32(data[45]);
-        this.MultiMessageCount = Convert.ToUInt32(data[46]);
+        MultiMessageIndex = Convert.ToUInt32(data[45]);
+        MultiMessageCount = Convert.ToUInt32(data[46]);
         // criptoid = data[47]
 
 
@@ -160,23 +158,23 @@ public class PlayerStats : LogLine
 
     public PlayerStats(List<string> data)
     {
-        this.JobID = Convert.ToUInt32(data[2]);
-        this.Str = Convert.ToUInt32(data[3]);
-        this.Dex = Convert.ToUInt32(data[4]);
-        this.Vit = Convert.ToUInt32(data[5]);
-        this.Intel = Convert.ToUInt32(data[6]);
-        this.Mind = Convert.ToUInt32(data[7]);
-        this.Piety = Convert.ToUInt32(data[8]);
-        this.Attack = Convert.ToUInt32(data[9]);
-        this.DirectHit = Convert.ToUInt32(data[10]);
-        this.Crit = Convert.ToUInt32(data[11]);
-        this.AttackMagicPotency = Convert.ToUInt32(data[12]);
-        this.HealMagicPotency = Convert.ToUInt32(data[13]);
-        this.Det = Convert.ToUInt32(data[14]);
-        this.SkillSpeed = Convert.ToUInt32(data[15]);
-        this.SpellSpeed = Convert.ToUInt32(data[16]);
-        this.Tenacity = Convert.ToUInt32(data[17]);
-        this.LocalContentId = Convert.ToUInt64(data[18]);
+        JobID = Convert.ToUInt32(data[2]);
+        Str = Convert.ToUInt32(data[3]);
+        Dex = Convert.ToUInt32(data[4]);
+        Vit = Convert.ToUInt32(data[5]);
+        Intel = Convert.ToUInt32(data[6]);
+        Mind = Convert.ToUInt32(data[7]);
+        Piety = Convert.ToUInt32(data[8]);
+        Attack = Convert.ToUInt32(data[9]);
+        DirectHit = Convert.ToUInt32(data[10]);
+        Crit = Convert.ToUInt32(data[11]);
+        AttackMagicPotency = Convert.ToUInt32(data[12]);
+        HealMagicPotency = Convert.ToUInt32(data[13]);
+        Det = Convert.ToUInt32(data[14]);
+        SkillSpeed = Convert.ToUInt32(data[15]);
+        SpellSpeed = Convert.ToUInt32(data[16]);
+        Tenacity = Convert.ToUInt32(data[17]);
+        LocalContentId = Convert.ToUInt64(data[18]);
         // criptoid = data[19]
     }
 }
@@ -194,17 +192,16 @@ public class StartsCasting : LogLine
 
     public StartsCasting(List<string> data)
     {
-        this.SourceId = Convert.ToUInt32(data[2], 16);
-        this.SourceName = data[3];
-        this.ActionId = Convert.ToUInt32(data[4], 16);
-        this.ActionName = data[5];
-        this.TargetId = Convert.ToUInt32(data[6], 16);
-        this.TargetName = data[7];
-        this.CastTime = float.Parse(data[8]);
+        SourceId = Convert.ToUInt32(data[2], 16);
+        SourceName = data[3];
+        ActionId = Convert.ToUInt32(data[4], 16);
+        ActionName = data[5];
+        TargetId = Convert.ToUInt32(data[6], 16);
+        TargetName = data[7];
+        CastTime = float.Parse(data[8]);
         if (data[9] != "" || data[10] != "" || data[11] != "" || data[12] != "")
         {
-            this.TargetPos = new Vector4(float.Parse(data[9]), float.Parse(data[10]),
-                float.Parse(data[11]), float.Parse(data[12]));
+            TargetPos = new Vector4(float.Parse(data[9]), float.Parse(data[10]), float.Parse(data[11]), float.Parse(data[12]));
         }
         // criptoid = data[13]
     }
@@ -225,16 +222,16 @@ public class StatusApply : LogLine
 
     public StatusApply(List<string> data)
     {
-        this.Id = Convert.ToUInt32(data[2], 16);
-        this.Name = data[3];
-        this.Duration = float.Parse(data[4]);
-        this.SourceId = Convert.ToUInt32(data[5], 16);
-        this.SourceName = data[6];
-        this.TargetID = Convert.ToUInt32(data[7], 16);
-        this.TargetName = data[8];
-        this.Unknown = Convert.ToUInt32(data[9]);
-        this.TargetMaxHP = Convert.ToInt32(data[10]);
-        this.SourceMaxHP = Convert.ToInt32(data[11]);
+        Id = Convert.ToUInt32(data[2], 16);
+        Name = data[3];
+        Duration = float.Parse(data[4]);
+        SourceId = Convert.ToUInt32(data[5], 16);
+        SourceName = data[6];
+        TargetID = Convert.ToUInt32(data[7], 16);
+        TargetName = data[8];
+        Unknown = Convert.ToUInt32(data[9]);
+        TargetMaxHP = Convert.ToInt32(data[10]);
+        SourceMaxHP = Convert.ToInt32(data[11]);
     }
 }
 
@@ -253,16 +250,16 @@ public class StatusRemove : LogLine
 
     public StatusRemove(List<string> data)
     {
-        this.Id = Convert.ToUInt32(data[2], 16);
-        this.Name = data[3];
-        this.Duration = float.Parse(data[4]); // seems to always be 0.00
-        this.SourceId = Convert.ToUInt32(data[5], 16);
-        this.SourceName = data[6];
-        this.TargetID = Convert.ToUInt32(data[7], 16);
-        this.TargetName = data[8];
-        this.Unknown = Convert.ToUInt32(data[9]);
-        this.TargetMaxHP = Convert.ToInt32(data[10]);
-        this.SourceMaxHP = Convert.ToInt32(data[11]);
+        Id = Convert.ToUInt32(data[2], 16);
+        Name = data[3];
+        Duration = float.Parse(data[4]); // seems to always be 0.00
+        SourceId = Convert.ToUInt32(data[5], 16);
+        SourceName = data[6];
+        TargetID = Convert.ToUInt32(data[7], 16);
+        TargetName = data[8];
+        Unknown = Convert.ToUInt32(data[9]);
+        TargetMaxHP = Convert.ToInt32(data[10]);
+        SourceMaxHP = Convert.ToInt32(data[11]);
     }
 }
 
@@ -275,11 +272,11 @@ public class Death : LogLine
 
     public Death(List<string> data)
     {
-        this.targetId = Convert.ToUInt32(data[2], 16);
-        this.targetName = data[3];
+        targetId = Convert.ToUInt32(data[2], 16);
+        targetName = data[3];
         // if source is nothing id is E0000000
-        this.sourceId = Convert.ToUInt32(data[4], 16);
-        this.sourceName = data[4] == "" ? null : data[4];
+        sourceId = Convert.ToUInt32(data[4], 16);
+        sourceName = data[4] == "" ? null : data[4];
     }
 }
 
@@ -308,41 +305,38 @@ public class DoTHoT : LogLine
     {
         // 24|2024-02-19T05:36:56.1640000-03:00|40003EC7|Striking Dummy|DoT|0|466|44|44|0|10000|||-727.13|-810.75|10.02|-0.96|1089ED18|Aruna Rhen|FFFFFFFF|31362|31362|9478|10000|||-723.48|-821.16|10.00|-0.34|2df8dd482da88ed7
         // PluginManager.Instance.PluginLog.Info(raw);
-        this.TargetId = Convert.ToUInt32(data[2], 16);
-        this.TargetName = data[3];
-        this.IsHeal = data[4] == "HoT";
+        TargetId = Convert.ToUInt32(data[2], 16);
+        TargetName = data[3];
+        IsHeal = data[4] == "HoT";
         // data[5] == 0 if from source; BuffId
-        this.Value = Convert.ToUInt32(data[6], 16);
-        this.SourceHp = Convert.ToInt32(data[7]);
-        this.SourceMaxHp = Convert.ToInt32(data[8]);
-        this.SourceMp = Convert.ToInt32(data[9]);
-        this.SourceMaxMp = Convert.ToInt32(data[10]);
+        Value = Convert.ToUInt32(data[6], 16);
+        SourceHp = Convert.ToInt32(data[7]);
+        SourceMaxHp = Convert.ToInt32(data[8]);
+        SourceMp = Convert.ToInt32(data[9]);
+        SourceMaxMp = Convert.ToInt32(data[10]);
         // data[11] == null
         // data[12] == null
         if (data[13] != "" || data[14] != "" || data[15] != "" || data[16] != "")
         {
-            this.SourcePos = new Vector4(float.Parse(data[13]), float.Parse(data[14]),
-                float.Parse(data[15]), float.Parse(data[16]));
+            SourcePos = new Vector4(float.Parse(data[13]), float.Parse(data[14]), float.Parse(data[15]), float.Parse(data[16]));
         }
 
         // else null
 
+        SourceId = Convert.ToUInt32(data[17].ToString(), 16);
+        SourceName = data[18];
 
-        this.SourceId = Convert.ToUInt32(data[17].ToString(), 16);
-        this.SourceName = data[18];
+        // DamageType = Convert.ToUInt32(data[19]); // seems to be meaningless
 
-        // this.DamageType = Convert.ToUInt32(data[19]); // seems to be meaningless
-
-        this.TargetHp = data[20] == "" ? 0 : Convert.ToInt32(data[20]);
-        this.TargetMaxHp = data[21] == "" ? 0 : Convert.ToInt32(data[21]);
-        this.TargetMp = data[22] == "" ? 0 : Convert.ToInt32(data[22]);
-        this.TargetMaxMp = data[23] == "" ? 0 : Convert.ToInt32(data[23]);
+        TargetHp = data[20] == "" ? 0 : Convert.ToInt32(data[20]);
+        TargetMaxHp = data[21] == "" ? 0 : Convert.ToInt32(data[21]);
+        TargetMp = data[22] == "" ? 0 : Convert.ToInt32(data[22]);
+        TargetMaxMp = data[23] == "" ? 0 : Convert.ToInt32(data[23]);
         // data[24] = null
         // data[25] = null
         if (data[26] != "" || data[27] != "" || data[28] != "" || data[29] != "")
         {
-            this.TargetPos = new Vector4(float.Parse(data[26]), float.Parse(data[27]),
-                float.Parse(data[28]), float.Parse(data[29]));
+            TargetPos = new Vector4(float.Parse(data[26]), float.Parse(data[27]), float.Parse(data[28]), float.Parse(data[29]));
         }
         // data[30] = criptoid
 
@@ -375,26 +369,26 @@ public class AddCombatant : LogLine
 
     public AddCombatant(List<string> data)
     {
-        this.Id = Convert.ToUInt32(data[2], 16);
-        this.Name = data[3];
-        this.Job = data[4];
-        this.Level = Convert.ToInt32(data[5], 16);
-        this.OwnerId = Convert.ToUInt32(data[6], 16);
-        this.WorldId = Convert.ToUInt32(data[7], 16);
-        this.World = data[8];
-        this.NpcNameId = Convert.ToUInt32(data[9], 16);
-        this.NpcBaseId = Convert.ToUInt32(data[10], 16);
-        this.CurrentHp = Convert.ToInt32(data[11], 16);
-        this.Hp = Convert.ToInt32(data[12], 16);
-        this.CurrentMp = Convert.ToInt32(data[13], 16);
-        this.Mp = Convert.ToInt32(data[14], 16);
-        this.Unknown1 = data[15];
-        this.Unknown2 = data[16];
-        this.X = Convert.ToDouble(data[17]);
-        this.Y = Convert.ToDouble(data[18]);
-        this.Z = Convert.ToDouble(data[19]);
-        this.Heading = Convert.ToDouble(data[20]);
+        Id = Convert.ToUInt32(data[2], 16);
+        Name = data[3];
+        Job = data[4];
+        Level = Convert.ToInt32(data[5], 16);
+        OwnerId = Convert.ToUInt32(data[6], 16);
+        WorldId = Convert.ToUInt32(data[7], 16);
+        World = data[8];
+        NpcNameId = Convert.ToUInt32(data[9], 16);
+        NpcBaseId = Convert.ToUInt32(data[10], 16);
+        CurrentHp = Convert.ToInt32(data[11], 16);
+        Hp = Convert.ToInt32(data[12], 16);
+        CurrentMp = Convert.ToInt32(data[13], 16);
+        Mp = Convert.ToInt32(data[14], 16);
+        Unknown1 = data[15];
+        Unknown2 = data[16];
+        X = Convert.ToDouble(data[17]);
+        Y = Convert.ToDouble(data[18]);
+        Z = Convert.ToDouble(data[19]);
+        Heading = Convert.ToDouble(data[20]);
 
-        this.IsPet = this.OwnerId != 0 && ((this.Id >> 24) & 0xFF) == 64;
+        IsPet = OwnerId != 0 && ((Id >> 24) & 0xFF) == 64;
     }
 }

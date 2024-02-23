@@ -15,7 +15,7 @@ public static class Widget
 
     public static void Text(string text, Vector2 position, uint color, Vector2 windowMin, Vector2 windowMax, bool fullLine = true, TextAnchor anchor = TextAnchor.Left, bool dropShadow = false, float scale = 1f)
     {
-        ImGui.SetWindowFontScale(scale * ConfigurationManager.Instance.Configuration.OverlayFontScale);
+        ImGui.SetWindowFontScale(scale * ConfigurationManager.Inst.Configuration.OverlayFontScale);
         var size = CalcTextSize(text);
         switch (anchor)
         {
@@ -35,7 +35,7 @@ public static class Widget
 
         if (scale != 1)
         {
-            position.Y += 3f * scale * ConfigurationManager.Instance.Configuration.OverlayFontScale;
+            position.Y += 3f * scale * ConfigurationManager.Inst.Configuration.OverlayFontScale;
         }
 
         if (dropShadow)
@@ -44,7 +44,7 @@ public static class Widget
         }
 
         ImGui.GetWindowDrawList().AddText(position, color, text);
-        ImGui.SetWindowFontScale(ConfigurationManager.Instance.Configuration.OverlayFontScale);
+        ImGui.SetWindowFontScale(ConfigurationManager.Inst.Configuration.OverlayFontScale);
     }
 
     public static void JobIcon(uint job, Vector2 position, float scale = 1f, bool drawBorder = false)
@@ -68,7 +68,7 @@ public static class Widget
         {
             width += ImGui.GetFont().GetCharAdvance(c) * ImGui.GetFont().Scale;
         }
-        return new Vector2(width * ConfigurationManager.Instance.Configuration.OverlayFontScale, ImGui.GetFontSize() * ImGui.GetFont().Scale * ConfigurationManager.Instance.Configuration.OverlayFontScale);
+        return new Vector2(width * ConfigurationManager.Inst.Configuration.OverlayFontScale, ImGui.GetFontSize() * ImGui.GetFont().Scale * ConfigurationManager.Inst.Configuration.OverlayFontScale);
     }
 
     public static void DrawProgressBar(Vector2 startPoint, Vector2 endPoint, uint color, float progress)

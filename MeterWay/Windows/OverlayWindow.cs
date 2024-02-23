@@ -39,28 +39,28 @@ public class OverlayWindow : Window, IDisposable
     public override void Draw()
     {
         // font
-        ImGui.SetWindowFontScale(ConfigurationManager.Instance.Configuration.OverlayFontScale);
+        ImGui.SetWindowFontScale(ConfigurationManager.Inst.Configuration.OverlayFontScale);
 
         // Custom Overlay
-        Overlays[ConfigurationManager.Instance.Configuration.OverlayType].Draw();
+        Overlays[ConfigurationManager.Inst.Configuration.OverlayType].Draw();
     }
 
     public void Dispose()
     {
-        Overlays[ConfigurationManager.Instance.Configuration.OverlayType].Dispose();
+        Overlays[ConfigurationManager.Inst.Configuration.OverlayType].Dispose();
     }
 
     public ImGuiWindowFlags Gerateflags()
     {
         var flags = defaultflags;
-        flags |= ConfigurationManager.Instance.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
+        flags |= ConfigurationManager.Inst.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None;
         //flags |= !PluginManager.Instance.Configuration.OverlayBackground ? ImGuiWindowFlags.NoBackground : ImGuiWindowFlags.None;
         return flags;
     }
 
     public void updatefont()
     {
-        var conf = ConfigurationManager.Instance.Configuration;
+        var conf = ConfigurationManager.Inst.Configuration;
         //PluginManager.Instance.PluginLog.Info("trying to load path: " + conf.OverlayFontPath);
 
         //PluginManager.Instance.OverlayWindow.font = ImGui.GetIO().Fonts.AddFontFromFileTTF(conf.OverlayFontPath, conf.OverlayFontSize);

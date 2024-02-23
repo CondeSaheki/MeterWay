@@ -10,22 +10,20 @@ using MeterWay.Managers;
 
 public class IpcClient : IDisposable
 {
-
     public List<Action<JObject>> receivers;
 
+    private bool connectionStatus;
+
     private readonly ICallGateProvider<JObject, bool> subscriptionReceiver;
-    // CombatData json ->  JObject.Parse("""{"call":"subscribe","events":["CombatData"]}""");
-    private static readonly JObject IINACTSubscribeMessage = JObject.Parse("""{"call":"subscribe","events":["LogLine"]}""");
+    private static readonly JObject IINACTSubscribeMessage = JObject.Parse("""{"call":"subscribe","events":["LogLine"]}"""); // CombatData
     private const string MeterwaySubscriptionReceiver = "Meterway.SubscriptionReceiver";
     private const string IINACTSubscribe = "IINACT.IpcProvider." + MeterwaySubscriptionReceiver;
     private const string IINACTUnubscribe = "IINACT.Unsubscribe";
     private const string IINACTCreateSubscriber = "IINACT.CreateSubscriber";
 
-    private bool connectionStatus;
-
     public IpcClient()
     {
-        this.receivers = [];
+        receivers = [];
         connectionStatus = false;
 
         subscriptionReceiver = InterfaceManager.Inst.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);
@@ -100,7 +98,7 @@ public class IpcClient : IDisposable
 
     public bool Status()
     {
-        return this.connectionStatus;
+        return connectionStatus;
     }
 
     public void Dispose()

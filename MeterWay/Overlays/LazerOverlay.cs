@@ -6,7 +6,6 @@ using MeterWay.Managers;
 using MeterWay.Data;
 using System.Linq;
 using MeterWay.Utils.Draw;
-using FFXIVClientStructs.FFXIV.Client.Game;
 
 namespace MeterWay.Overlays;
 
@@ -36,20 +35,20 @@ public class LazerOverlay : IMeterwayOverlay
 
     public LazerOverlay()
     {
-        this.WindowMin = new Vector2();
-        this.WindowMax = new Vector2();
+        WindowMin = new Vector2();
+        WindowMax = new Vector2();
 
-        this.lerpedInfo = new Dictionary<uint, LerpPlayerData>();
-        this.targetInfo = new Dictionary<uint, LerpPlayerData>();
+        lerpedInfo = [];
+        targetInfo = [];
 
-        this.combat = new Encounter();
-        this.sortCache = new List<uint>();
+        combat = new Encounter();
+        sortCache = [];
     }
 
     public void DataProcess()
     {
         var currentEncounter = EncounterManager.Inst.CurrentEncounter();
-        var oldListId = this.combat.PartyListId;
+        var oldListId = this.combat.Party.Id;
         var oldCombatId = this.combat.Id;
 
         this.combat = currentEncounter;
@@ -64,7 +63,7 @@ public class LazerOverlay : IMeterwayOverlay
         }
 
 
-        if (oldListId != currentEncounter.PartyListId)
+        if (oldListId != currentEncounter.Party.Id)
         {
             this.sortCache = Helpers.CreateDictionarySortCache(this.combat.Players, (x) => { return true; });
         }
@@ -81,14 +80,14 @@ public class LazerOverlay : IMeterwayOverlay
     {
         var sortCache = localSortCache();
         UpdateWindowSize();
-        if(!combat.Finished && combat.Active)combat.RecalculateData(); // this will ignore last frame data ??
+        if(!combat.Finished && combat.Active)combat.Calculate(); // this will ignore last frame data ??
 
-        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Instance.Configuration.OverlayBackgroundColor));
+        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Inst.Configuration.OverlayBackgroundColor));
 
-        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * ConfigurationManager.Instance.Configuration.OverlayFontScale), Helpers.Color(26, 26, 39, 190));
+        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * ConfigurationManager.Inst.Configuration.OverlayFontScale), Helpers.Color(26, 26, 39, 190));
 
 
-        if (this.combat.Start == null)
+        if (this.combat.Begin == null)
         {
             Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center, dropShadow: true);
             return;
@@ -99,7 +98,7 @@ public class LazerOverlay : IMeterwayOverlay
         foreach (var id in sortCache)
         {
             Player player = combat.Players[id];
-            player.RecalculateData();
+            player.Calculate();
             DoLerpPlayerData(player);
             DrawPlayerLine(lerpedInfo[player.Id], player);
         }
@@ -120,7 +119,6 @@ public class LazerOverlay : IMeterwayOverlay
         this.WindowMin = vMin;
         this.WindowMax = vMax;
     }
-
 
     private void GenerateCombatLerping(Player player)
     {

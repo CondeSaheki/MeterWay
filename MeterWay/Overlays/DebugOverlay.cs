@@ -26,13 +26,13 @@ public class DebugOverlay : IMeterwayOverlay
 
     public void DataProcess()
     {
-        EncounterManager.Inst.CurrentEncounter().RecalculateData();
+        EncounterManager.Inst.CurrentEncounter().Calculate();
         data = EncounterManager.Inst.encounters.Last();
     }
 
     public void Draw()
     {
-        data.RecalculateData();
+        data.Calculate();
         UpdateWindowSize();
 
         // background
@@ -83,7 +83,7 @@ public class DebugOverlay : IMeterwayOverlay
         vMin.Y += ImGui.GetWindowPos().Y;
         vMax.X += ImGui.GetWindowPos().X;
         vMax.Y += ImGui.GetWindowPos().Y;
-        this.WindowMin = vMin;
-        this.WindowMax = vMax;
+        WindowMin = vMin;
+        WindowMax = vMax;
     }
 }

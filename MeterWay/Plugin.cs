@@ -56,7 +56,7 @@ public sealed class Plugin : IDalamudPlugin
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
-        if (ConfigurationManager.Instance.Configuration.Overlay)
+        if (ConfigurationManager.Inst.Configuration.Overlay)
         {
             WindowSystem.AddWindow(OverlayWindow);
         }
@@ -79,7 +79,7 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         EncounterManager.Dispose();
-        this.WindowSystem.RemoveAllWindows();
+        WindowSystem.RemoveAllWindows();
         IpcClient.Dispose();
         ConfigWindow.Dispose();
         MainWindow.Dispose();
@@ -88,7 +88,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void DrawUI()
     {
-        this.WindowSystem.Draw();
+        WindowSystem.Draw();
     }
 
     public void DrawConfigUI()

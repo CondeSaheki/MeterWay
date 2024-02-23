@@ -34,17 +34,17 @@ public class InterfaceManager
         IDutyState dutyState
     )
     {
-        this.WindowSystem = windowsystem;
-        this.PluginInterface = pluginInterface;
-        this.CommandManager = commandManager;
-        this.PluginLog = pluginLog;
-        this.ChatGui = chatGui;
-        this.ClientState = clientState;
-        this.Condition = condition;
-        this.PartyList = partyList;
-        this.DataManager = dataManager;
-        this.TextureProvider = textureProvider;
-        this.DutyState = dutyState;
+        WindowSystem = windowsystem;
+        PluginInterface = pluginInterface;
+        CommandManager = commandManager;
+        PluginLog = pluginLog;
+        ChatGui = chatGui;
+        ClientState = clientState;
+        Condition = condition;
+        PartyList = partyList;
+        DataManager = dataManager;
+        TextureProvider = textureProvider;
+        DutyState = dutyState;
 
         Inst = this;
     }

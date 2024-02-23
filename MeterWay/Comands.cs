@@ -85,18 +85,18 @@ public class Commands : IDisposable
             ),
             new BasicCommand("debug_reset", "reset encounter", () =>
                 {
-                    EncounterManager.ResetEncounter();
+                    EncounterManager.Reset();
                     
                 }
             ),
             new BasicCommand("debug_end", "end encounter", () =>
                 {
-                    EncounterManager.EndEncounter();
+                    EncounterManager.Stop();
                 }
             ),
             new BasicCommand("debug_start", "start encounter", () =>
                 {
-                    EncounterManager.StartEncounter();
+                    EncounterManager.Start();
                 }
             )
         ];

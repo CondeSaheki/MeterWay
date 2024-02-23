@@ -8,6 +8,11 @@ namespace MeterWay.Utils;
 
 public static class Helpers
 {
+    public static uint CreateId()
+    {
+        return (uint)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
+    }
+
     public static double Lerp(double firstFloat, double secondFloat, double by)
     {
         return firstFloat + (secondFloat - firstFloat) * by;

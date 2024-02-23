@@ -22,48 +22,37 @@ public class MoguOverlay : IMeterwayOverlay
     private List<uint> sortcache;
     public MoguOverlay()
     {
-        this.data = new Encounter();
-        this.WindowMin = new Vector2();
-        this.WindowMax = new Vector2();
-        this.sortcache = [];
+        data = new Encounter();
+        WindowMin = new Vector2();
+        WindowMax = new Vector2();
+        sortcache = [];
     }
 
     public void DataProcess()
     {
-        EncounterManager.Inst.CurrentEncounter().RecalculateData();
-        
-        var oldListId = this.data.PartyListId;
-        
-        this.data = EncounterManager.Inst.CurrentEncounter();
- 
-        if (data.PartyListId != oldListId) this.sortcache = Helpers.CreateDictionarySortCache(data.Players, (x) => { return true; });
+        var oldPartyId = data.Party.Id;
+
+        data = EncounterManager.Inst.CurrentEncounter();
+
+        if (data.Party.Id != oldPartyId) sortcache = Helpers.CreateDictionarySortCache(data.Players, (x) => { return true; });
 
         sortcache.Sort((uint first, uint second) => { return data.Players[second].Damage.Total.CompareTo(data.Players[first].Damage.Total); });
     }
 
-    private List<uint> getSortCache()
-    {
-        return this.sortcache.ToList();
-    }
-
-    private Encounter getData()
-    {
-        return this.data;
-    }
+    private List<uint> getSortCache() { return sortcache.ToList(); }
 
     public void Draw()
     {
-        var data = getData();
         var sortCache = getSortCache();
-        if(!data.Finished && data.Active)data.RecalculateData(); // this will ignore last frame data ??
-
+        if (!data.Finished && data.Active) data.Calculate(); // this will ignore last frame data ??
         UpdateWindowSize();
+        var Draw = ImGui.GetWindowDrawList();
         
-        //ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(0, 0, 0, 64));
+        //Draw.AddRectFilled(WindowMin, WindowMax, Helpers.Color(0, 0, 0, 64));
 
         Vector2 cursor = WindowMin;
-        var header = $"{data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(data.Dps, 2).ToString()}";
-        ImGui.GetWindowDrawList().AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(header).X / 2, 0), Helpers.Color(255, 255, 255, 255), header);
+        var header = $"{data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(data.Dps, 2)}";
+        Draw.AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(header).X / 2, 0), Helpers.Color(255, 255, 255, 255), header);
 
         cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 
@@ -73,11 +62,11 @@ public class MoguOverlay : IMeterwayOverlay
             if (p.Damage.Total == 0) continue;
 
             Widget.JobIcon(p.Job, cursor, ImGui.GetFontSize());
-            var damageinfo = $"{Helpers.HumanizeNumber(p.Dps, 2).ToString()} {p.DamagePercent.ToString()}%"; //{p.TotalDamage.ToString()}
+            var damageinfo = $"{Helpers.HumanizeNumber(p.Dps, 2)} {p.DamagePercent}%"; //{p.TotalDamage.ToString()}
 
-            ImGui.GetWindowDrawList().AddText(cursor + new Vector2(ImGui.GetFontSize(), 0), Helpers.Color(255, 255, 255, 255), $"{p.Name}");
+            Draw.AddText(cursor + new Vector2(ImGui.GetFontSize(), 0), Helpers.Color(255, 255, 255, 255), $"{p.Name}");
 
-            ImGui.GetWindowDrawList().AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) - Widget.CalcTextSize(damageinfo).X, 0), Helpers.Color(255, 255, 255, 255), damageinfo);
+            Draw.AddText(cursor + new Vector2(WindowMax.X - WindowMin.X - Widget.CalcTextSize(damageinfo).X, 0), Helpers.Color(255, 255, 255, 255), damageinfo);
             cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
         }
     }
@@ -93,7 +82,7 @@ public class MoguOverlay : IMeterwayOverlay
         vMin.Y += ImGui.GetWindowPos().Y;
         vMax.X += ImGui.GetWindowPos().X;
         vMax.Y += ImGui.GetWindowPos().Y;
-        this.WindowMin = vMin;
-        this.WindowMax = vMax;
+        WindowMin = vMin;
+        WindowMax = vMax;
     }
 }

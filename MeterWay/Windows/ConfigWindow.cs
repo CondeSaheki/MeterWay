@@ -54,11 +54,11 @@ public class ConfigWindow : Window, IDisposable
         if (!tab) return;
 
         //Overlay
-        var OverlayValue = ConfigurationManager.Instance.Configuration.Overlay;
+        var OverlayValue = ConfigurationManager.Inst.Configuration.Overlay;
         if (ImGui.Checkbox("Show Overlay", ref OverlayValue))
         {
-            ConfigurationManager.Instance.Configuration.Overlay = OverlayValue;
-            ConfigurationManager.Instance.Configuration.Save();
+            ConfigurationManager.Inst.Configuration.Overlay = OverlayValue;
+            ConfigurationManager.Inst.Configuration.Save();
             if (OverlayValue)
             {
                 InterfaceManager.Inst.WindowSystem.AddWindow(OverlayWindow);
@@ -70,45 +70,45 @@ public class ConfigWindow : Window, IDisposable
         }
 
         // OverlayClickThrough
-        var OverlayClickThroughValue = ConfigurationManager.Instance.Configuration.OverlayClickThrough;
+        var OverlayClickThroughValue = ConfigurationManager.Inst.Configuration.OverlayClickThrough;
         if (ImGui.Checkbox("Click through", ref OverlayClickThroughValue))
         {
-            ConfigurationManager.Instance.Configuration.OverlayClickThrough = OverlayClickThroughValue;
-            ConfigurationManager.Instance.Configuration.Save();
+            ConfigurationManager.Inst.Configuration.OverlayClickThrough = OverlayClickThroughValue;
+            ConfigurationManager.Inst.Configuration.Save();
             OverlayWindow.Flags = OverlayWindow.Gerateflags();
 
         }
 
         // OverlayBackground
-        var OverlayBackgroundValue = ConfigurationManager.Instance.Configuration.OverlayBackground;
+        var OverlayBackgroundValue = ConfigurationManager.Inst.Configuration.OverlayBackground;
         if (ImGui.Checkbox("Background", ref OverlayBackgroundValue))
         {
-            ConfigurationManager.Instance.Configuration.OverlayBackground = OverlayBackgroundValue;
-            ConfigurationManager.Instance.Configuration.Save();
+            ConfigurationManager.Inst.Configuration.OverlayBackground = OverlayBackgroundValue;
+            ConfigurationManager.Inst.Configuration.Save();
             OverlayWindow.Flags = OverlayWindow.Gerateflags();
         }
 
         if (OverlayBackgroundValue)
         {
             // OverlayBackgroundColor
-            var OverlayBackgroundColorValue = ConfigurationManager.Instance.Configuration.OverlayBackgroundColor;
+            var OverlayBackgroundColorValue = ConfigurationManager.Inst.Configuration.OverlayBackgroundColor;
             ImGui.Text("background color: ");
             ImGui.SameLine();
 
             if (ImGui.ColorEdit4("background color", ref OverlayBackgroundColorValue,
                 ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
             {
-                ConfigurationManager.Instance.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
-                ConfigurationManager.Instance.Configuration.Save();
+                ConfigurationManager.Inst.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
+                ConfigurationManager.Inst.Configuration.Save();
             }
         }
-        var OverlayFontScaleValue = ConfigurationManager.Instance.Configuration.OverlayFontScale;
+        var OverlayFontScaleValue = ConfigurationManager.Inst.Configuration.OverlayFontScale;
         ImGui.Text("Font scale: ");
         ImGui.SameLine();
         if (ImGui.SliderFloat("##FontScale", ref OverlayFontScaleValue, 1f, 5.0f, "%.1f", ImGuiSliderFlags.None))
         {
-            ConfigurationManager.Instance.Configuration.OverlayFontScale = OverlayFontScaleValue;
-            ConfigurationManager.Instance.Configuration.Save();
+            ConfigurationManager.Inst.Configuration.OverlayFontScale = OverlayFontScaleValue;
+            ConfigurationManager.Inst.Configuration.Save();
 
             OverlayWindow.updatefont();
         }
@@ -120,13 +120,13 @@ public class ConfigWindow : Window, IDisposable
         if (!tab) return;
 
         ImGui.Text("select overlay type");
-        var OverlayTypeValue = ConfigurationManager.Instance.Configuration.OverlayType;
+        var OverlayTypeValue = ConfigurationManager.Inst.Configuration.OverlayType;
         if (ImGui.InputInt("Overlay Type", ref OverlayTypeValue))
         {
             if (OverlayTypeValue == 1 || OverlayTypeValue == 0 || OverlayTypeValue == 2)
             {
-                ConfigurationManager.Instance.Configuration.OverlayType = OverlayTypeValue;
-                ConfigurationManager.Instance.Configuration.Save();
+                ConfigurationManager.Inst.Configuration.OverlayType = OverlayTypeValue;
+                ConfigurationManager.Inst.Configuration.Save();
             }
         }
     }

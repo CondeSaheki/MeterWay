@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using MeterWay.Utils;
 
 namespace MeterWay.LogParser;
 
@@ -91,7 +90,7 @@ public static class ActionEffectFlag
 
     private static bool Compare(int data, EffectEntry flag) => (data & Masker((int)flag)) == (int)flag;
 
-    public static bool IsNothing(int data) => data == (int)EffectEntry.Nothing;
+    public static bool IsNothing(int data) => data == (int)EffectEntry.Nothing; // especial case
     public static bool IsMiss(int data) => Compare(data, EffectEntry.Miss);
     public static bool IsFullResist(int data) => Compare(data, EffectEntry.FullResist);
     public static bool IsDamage(int data) => Compare(data, EffectEntry.Damage);
