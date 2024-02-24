@@ -45,6 +45,7 @@ public class DebugWindow : Window, IDisposable
         
         var encounterinfo = $"Name: {data.Name} Active: {(data.Active ? "true" : "false")} Finished {(data.Finished ? "true" : "false")} Duration:{data.Duration}";
         draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), encounterinfo);
+        cursor.Y += textheight;
         encounterinfo = $"Dps {data.Dps}";
         draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), encounterinfo);
         cursor.Y += textheight;

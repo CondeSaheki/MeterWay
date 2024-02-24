@@ -84,22 +84,13 @@ public class EncounterManager : IDisposable
         return encounters.Last();
     }
 
-    private static bool IsInCombat() // TODO change this to Delegate / Hook
+    private static bool IsInCombat()
     {
-        var partyList = InterfaceManager.Inst.PartyList;
-        if (partyList.Length == 0)
-        {
-            return InterfaceManager.Inst.Condition[ConditionFlag.InCombat];
-        }
-        foreach (var player in partyList)
+        if(InterfaceManager.Inst.Condition[ConditionFlag.InCombat]) return true;
+        foreach (var player in InterfaceManager.Inst.PartyList)
         {
             if (player.GameObject == null) continue;
-
-            var character = (Character)player.GameObject;
-            if ((character.StatusFlags & StatusFlags.InCombat) == StatusFlags.InCombat)
-            {
-                return true;
-            }
+            if ((((Character)player.GameObject).StatusFlags & StatusFlags.InCombat) == 0) return true;
         }
         return false;
     }
