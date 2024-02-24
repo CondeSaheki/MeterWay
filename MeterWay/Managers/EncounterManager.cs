@@ -22,7 +22,7 @@ public class EncounterManager : IDisposable
 
     public static EncounterManager Inst { get; private set; } = null!;
 
-    private static Encounter LastEncounter => LastEncounter;
+    private static Encounter LastEncounter => Inst.encounters.Last();
 
     // constructor
     public EncounterManager()

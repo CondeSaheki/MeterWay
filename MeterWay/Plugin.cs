@@ -7,6 +7,7 @@ using MeterWay.Windows;
 using MeterWay.IINACT;
 using MeterWay.Managers;
 using MeterWay.Overlays;
+using MeterWay.Utils;
 
 namespace MeterWay;
 
@@ -20,11 +21,15 @@ public sealed class Plugin : IDalamudPlugin
     public MainWindow MainWindow { get; init; }
     public OverlayWindow OverlayWindow { get; init; }
 
+    #if DEBUG
+    public DebugWindow DebugWindow { get; init; }
+    #endif
+
     // meterway stuff
     public IpcClient IpcClient { get; init; }
-    public EncounterManager EncounterManager { get; init; }
+    
     private Commands Commands { get; init; }
-
+    private readonly EncounterManager encounterManager;
     private readonly InterfaceManager pluginManager;
     private readonly ConfigurationManager configurationManager;
 
@@ -41,12 +46,12 @@ public sealed class Plugin : IDalamudPlugin
         [RequiredVersion("1.0")] ITextureProvider textureProvider
         )
     {
-        pluginManager = new InterfaceManager(WindowSystem, pluginInterface, commandManager, pluginLog, chatGui, clientState, condition, 
+        pluginManager = new InterfaceManager(WindowSystem, pluginInterface, commandManager, pluginLog, chatGui, clientState, condition,
             partyList, datamanager, textureProvider, dutyState);
-            
+
         configurationManager = new ConfigurationManager();
 
-        EncounterManager = new EncounterManager();
+        encounterManager = new EncounterManager();
         IpcClient = new IpcClient();
         IpcClient.receivers.Add(EncounterManager.Receiver);
 
@@ -57,13 +62,19 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
         if (ConfigurationManager.Inst.Configuration.Overlay) WindowSystem.AddWindow(OverlayWindow);
+        
+        #if DEBUG
+        Helpers.Log("<<<--- This is a Debug build <<<---");
+        DebugWindow = new DebugWindow();
+        WindowSystem.AddWindow(DebugWindow);
+        #endif
 
         // register overlays here
-        OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay(), new DebugOverlay()];
+        OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay()];
 
         // TODO make only Active Overlay subscribed
         foreach (var overlay in OverlayWindow.Overlays) EncounterManager.Inst.Clients.Add(overlay.DataProcess);
-        
+
         Commands = new Commands(this);
 
         InterfaceManager.Inst.PluginInterface.UiBuilder.Draw += DrawUI;
@@ -72,12 +83,17 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
-        EncounterManager.Dispose();
+        encounterManager.Dispose();
         WindowSystem.RemoveAllWindows();
         IpcClient.Dispose();
         ConfigWindow.Dispose();
         OverlayWindow.Dispose();
         MainWindow.Dispose();
+
+        #if DEBUG
+        DebugWindow.Dispose();
+        #endif
+
         Commands.Dispose();
     }
 
@@ -86,7 +102,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.Draw();
     }
 
-    public void DrawConfigUI()
+    private void DrawConfigUI()
     {
         ConfigWindow.IsOpen = true;
     }

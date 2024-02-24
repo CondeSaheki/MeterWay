@@ -152,6 +152,7 @@ public static class LoglineParser
         logLineData.LogLineTypefn = (List<string> data) => { return new DoTHoT(data); };
 
         if (false) return; // todo ignore parsing
+        
         logLineData.Parse();
         var parsed = (DoTHoT)logLineData.Value!;
 

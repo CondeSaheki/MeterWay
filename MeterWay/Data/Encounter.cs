@@ -31,14 +31,14 @@ public class Encounter
     public HealingData Healing { get; set; }
     public HealingData HealingTaken { get; set; }
 
-    //calculated
+    // Calculated
     public float DamagePercent { get; set; } = 0;
     public float HealsPercent { get; set; } = 0;
     public float CritPercent { get; set; } = 0;
     public float DirecHitPercent { get; set; } = 0;
     public float DirectCritHitPercent { get; set; } = 0;
     public float Crithealspercent { get; set; } = 0;
-    
+
     public float Dps { get; set; } = 0;
     public float Hps { get; set; } = 0;
 
@@ -53,7 +53,7 @@ public class Encounter
         DamageTaken = new DamageData();
         Healing = new HealingData();
         HealingTaken = new HealingData();
-        
+
         DamagePercent = 0;
         HealsPercent = 0;
         CritPercent = 0;
@@ -67,13 +67,13 @@ public class Encounter
     public void Start()
     {
         InterfaceManager.Inst.PluginLog.Info("Encounter started.");
-        if (this.Begin == null) this.Begin = DateTime.Now; // Active = true
+        if (Begin == null) Begin = DateTime.Now; // Active = true
     }
 
     public void Stop()
     {
         InterfaceManager.Inst.PluginLog.Info("Encounter ended.");
-        if (this.End == null) this.End = DateTime.Now; // finished = true
+        if (End == null) End = DateTime.Now; // finished = true
     }
 
     public void Calculate()
@@ -90,7 +90,7 @@ public class Encounter
         DirectCritHitPercent = Damage.Count.Hit != 0 ? (Damage.Count.CritDh * 100 / Damage.Count.Hit) : 0;
         Crithealspercent = Healing.Count.Hit != 0 ? (Healing.Count.Crit * 100 / Healing.Count.Hit) : 0;
 
-        foreach (var player in this.Party.Players.Values)
+        foreach (var player in Party.Players.Values)
         {
             player.Calculate();
         }
@@ -106,25 +106,25 @@ public class Encounter
     {
         bool changed = false;
         var tmpName = GetName();
-        if(Name != tmpName)
+        if (Name != tmpName)
         {
             changed = true;
             Name = tmpName;
         }
-        if (Party.HasChanged()) 
+        if (Party.HasChanged())
         {
             changed = true;
             Party.Update();
         }
         else
         {
-            foreach(Player player in Party.Players.Values)
+            foreach (Player player in Party.Players.Values)
             {
-                if(player.Update()) changed = true;
+                if (player.Update()) changed = true;
             }
         }
-        
-        if(changed) Id = Helpers.CreateId();
+
+        if (changed) Id = Helpers.CreateId();
         return changed;
     }
 

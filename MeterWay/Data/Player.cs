@@ -54,18 +54,18 @@ public class Player(Character character, Encounter encounter)
 
     public bool Update()
     {
-        if(!IsActive) return false;
-        
-        var player = InterfaceManager.Inst.PartyList.First(x => x.ObjectId == Id);
+        if (!IsActive) return false;
+
+        var player = GetPlayer();
         if (player == null) return false;
 
         var tmpName = player.Name.ToString();
-        var tmpWorld = player.World.Id;
+        var tmpWorld = player.HomeWorld.Id;
         var tmpJob = player.ClassJob.Id;
         if (Name != tmpName || World != tmpWorld || Job != tmpJob)
         {
             Name = player.Name.ToString();
-            World = player.World.Id;
+            World = player.HomeWorld.Id;
             Job = player.ClassJob.Id;
             Id = Helpers.CreateId();
 
@@ -74,4 +74,22 @@ public class Player(Character character, Encounter encounter)
         }
         return false;
     }
+
+    private PlayerCharacter? GetPlayer()
+    {
+        var partyList = InterfaceManager.Inst.PartyList;
+        if (partyList.Length == 0)
+        {
+            var you = InterfaceManager.Inst.ClientState.LocalPlayer;
+            if (you == null || you.ObjectId != Id) return null;
+            return you;
+        }
+        else
+        {
+            var obj = InterfaceManager.Inst.PartyList.First(x => x.ObjectId == Id).GameObject;
+            if (obj == null) return null;
+            return (PlayerCharacter)obj;
+        }
+    }
+
 }

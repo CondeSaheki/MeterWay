@@ -2,12 +2,15 @@ using System.Collections.Generic;
 using System;
 using MeterWay.Managers;
 using Dalamud.Game.Command;
+using MeterWay.Windows;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 
 namespace MeterWay;
 
 public class Commands : IDisposable
 {
-    private const string CommandName = "/meterway";
+    private static readonly string CommandName = "/meterway";
     private readonly Plugin Plugin;
 
     public Commands(Plugin plugin)
@@ -19,9 +22,14 @@ public class Commands : IDisposable
         InterfaceManager.Inst.CommandManager.AddHandler(CommandName, new CommandInfo((string command, string arg) =>
         {
             if (args.TryGetValue(arg, out Action? value)) value.Invoke();
+            else
+            {
+                var text = $"The argument \'{arg}\' does not exist! consult \'{CommandName} help\'.";
+                InterfaceManager.Inst.ChatGui.Print(new SeString(new UIForegroundPayload(539), new TextPayload(text), new UIForegroundPayload(0)));
+            }
         })
         {
-            HelpMessage = $"Display MeterWay main window.\nAditional help with the command \'{CommandName} help\'."
+            HelpMessage = $"Display {Plugin.Name} main window.\nAditional help with the command \'{CommandName} help\'."
         });
 
         // add command arg
@@ -67,26 +75,30 @@ public class Commands : IDisposable
             InterfaceManager.Inst.ChatGui.Print(help.Remove(help.Length - 1));
         });
 
+#if DEBUG
 
-        #if true // debug
+        args.Add("_debug", () =>
+        {
+            Plugin.DebugWindow.IsOpen = true;
+        });
 
-        help += AddArg("_clear", "", () =>
+        args.Add("_clear", () =>
         {
             EncounterManager.Inst.encounters.Clear();
             EncounterManager.Inst.encounters.Add(new Data.Encounter());
         });
 
-        help += AddArg("_Stop", "", () =>
+        args.Add("_Stop", () =>
         {
             EncounterManager.Stop();
         });
 
-        help += AddArg("_start", "", () =>
+        args.Add("_start", () =>
         {
             EncounterManager.Start();
         });
 
-        #endif
+#endif
     }
 
     public void Dispose()
