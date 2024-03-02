@@ -6,16 +6,16 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility.Raii;
 
 using MeterWay.Managers;
-using MeterWay.IINACT;
+using MeterWay.Ipc;
 
 namespace MeterWay.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
-    private readonly IpcClient iinactIpcClient;
+    private readonly IINACTClient iinactIpcClient;
     private readonly OverlayWindow OverlayWindow;
 
-    public ConfigWindow(IpcClient iinactIpcClient, OverlayWindow OverlayWindow) : base(
+    public ConfigWindow(IINACTClient iinactIpcClient, OverlayWindow OverlayWindow) : base(
         "MeterWay Configurations",
         ImGuiWindowFlags.NoCollapse |
         ImGuiWindowFlags.NoScrollbar |

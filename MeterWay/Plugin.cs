@@ -4,7 +4,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 
 using MeterWay.Windows;
-using MeterWay.IINACT;
+using MeterWay.Ipc;
 using MeterWay.Managers;
 using MeterWay.Overlays;
 using MeterWay.Utils;
@@ -26,7 +26,7 @@ public sealed class Plugin : IDalamudPlugin
     #endif
 
     // meterway stuff
-    public IpcClient IpcClient { get; init; }
+    public IINACTClient IpcClient { get; init; }
     
     private Commands Commands { get; init; }
     private readonly EncounterManager encounterManager;
@@ -52,8 +52,10 @@ public sealed class Plugin : IDalamudPlugin
         configurationManager = new ConfigurationManager();
 
         encounterManager = new EncounterManager();
-        IpcClient = new IpcClient();
-        IpcClient.receivers.Add(EncounterManager.Receiver);
+        IpcClient = new IINACTClient();
+        IpcClient.Connect();
+        IpcClient.Subscribe([IINACTClient.SubscriptionType.LogLine]);
+        IpcClient.Receivers.Add(EncounterManager.Receiver);
 
         MainWindow = new MainWindow();
         OverlayWindow = new OverlayWindow();

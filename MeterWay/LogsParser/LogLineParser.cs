@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
-using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+
 using MeterWay.Managers;
 using MeterWay.Data;
 using MeterWay.Utils;
@@ -10,22 +12,25 @@ namespace MeterWay.LogParser;
 
 public static class LoglineParser
 {
-    // we are only getting the messages needed
-    private static readonly Dictionary<LogLineType, Action<LogLineData>> Handlers = new()
+    private static Action<LogLineData>? HandleLogLine(LogLineType logLineType)
     {
-        { LogLineType.ActionEffect, MsgActionEffect },
-        { LogLineType.AOEActionEffect, MsgAOEActionEffect },
-        { LogLineType.StartsCasting, MsgStartsCasting },
-        { LogLineType.DoTHoT, MsgDoTHoT },
-        { LogLineType.PartyList, MsgPartyList },
-        { LogLineType.AddCombatant, MsgAddCombatant },
-        { LogLineType.PlayerStats, MsgPlayerStats },
-        { LogLineType.StatusApply, MsgStatusApply },
-        { LogLineType.StatusRemove, MsgStatusRemove },
-        { LogLineType.Death, MsgDeath }
-    };
+        return logLineType switch
+        {
+            LogLineType.ActionEffect => MsgActionEffect,
+            LogLineType.AOEActionEffect => MsgAOEActionEffect,
+            LogLineType.StartsCasting => MsgStartsCasting,
+            LogLineType.DoTHoT => MsgDoTHoT,
+            LogLineType.PartyList => MsgPartyList,
+            LogLineType.AddCombatant => MsgAddCombatant,
+            LogLineType.PlayerStats => MsgPlayerStats,
+            LogLineType.StatusApply => MsgStatusApply,
+            LogLineType.StatusRemove => MsgStatusRemove,
+            LogLineType.Death => MsgDeath,
+            _ => null
+        };
+    }
 
-    public static void Parse(JObject json)
+    public static void Parse(ref readonly JObject json)
     {
         string? rawValue = json.GetValue("rawLine")?.ToObject<string>();
         if (rawValue == null) return;
@@ -36,25 +41,25 @@ public static class LoglineParser
         LogLineType messageType = item0.ToObject<LogLineType>();
         DateTime messageDateTime = DateTime.Parse(item1.ToString());
 
-        if (Handlers.ContainsKey(messageType))
+        var handler = HandleLogLine(messageType);
+        if (handler == null) return;
+
+        LogLineData commonData = new(messageType, messageDateTime, rawValue);
+        try
         {
-            LogLineData commonData = new(messageType, messageDateTime, rawValue);
-            try
-            {
-                Handlers[messageType].Invoke(commonData);
-            }
-            catch (Exception ex)
-            {
-                InterfaceManager.Inst.PluginLog.Warning($"Failed to parse LogLine {messageType} - {((uint)messageType).ToString()} ->\n {rawValue} \n Error -> \n {ex.ToString()}");
-            }
-            if (commonData.Parsed) EncounterManager.UpdateClients();
+            handler.Invoke(commonData);
         }
+        catch (Exception ex)
+        {
+            InterfaceManager.Inst.PluginLog.Warning($"Failed to parse LogLine {messageType} - {((uint)messageType).ToString()} ->\n {rawValue} \n Error -> \n {ex}");
+        }
+        if (commonData.Parsed) EncounterManager.UpdateClients();
     }
 
     private static void MsgActionEffect(LogLineData logLineData)
     {
         logLineData.LogLineTypefn = (List<string> data) => { return new ActionEffect(data); };
-        
+
         if (false) return; // todo ignore parsing
 
         logLineData.Parse();
@@ -152,7 +157,7 @@ public static class LoglineParser
         logLineData.LogLineTypefn = (List<string> data) => { return new DoTHoT(data); };
 
         if (false) return; // todo ignore parsing
-        
+
         logLineData.Parse();
         var parsed = (DoTHoT)logLineData.Value!;
 

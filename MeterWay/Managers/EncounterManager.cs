@@ -95,7 +95,7 @@ public class EncounterManager : IDisposable
         return false;
     }
 
-    public static void Receiver(JObject json)
+    public static void Receiver(ref readonly JObject json)
     {
         var combatState = IsInCombat();
 
@@ -111,7 +111,7 @@ public class EncounterManager : IDisposable
             Inst.lastCombatState = false;
         }
 
-        LoglineParser.Parse(json); // parse data
+        LoglineParser.Parse(in json); // parse data
     }
 
     public static void UpdateClients()
