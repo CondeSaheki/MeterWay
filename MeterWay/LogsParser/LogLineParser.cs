@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 
 using MeterWay.Managers;
@@ -12,9 +11,14 @@ namespace MeterWay.LogParser;
 
 public static class LoglineParser
 {
-    private static Action<LogLineData>? HandleLogLine(LogLineType logLineType)
+    public static void Parse(ref readonly JObject json)
     {
-        return logLineType switch
+        string? rawLine = json.GetValue("rawLine")?.ToObject<string>();
+        if (rawLine == null) return;
+
+        var line = new LogLineData(rawLine);
+
+        Action<LogLineData> handler = line.MsgType switch
         {
             LogLineType.ActionEffect => MsgActionEffect,
             LogLineType.AOEActionEffect => MsgAOEActionEffect,
@@ -26,40 +30,15 @@ public static class LoglineParser
             LogLineType.StatusApply => MsgStatusApply,
             LogLineType.StatusRemove => MsgStatusRemove,
             LogLineType.Death => MsgDeath,
-            _ => null
+            _ => (LogLineData) => { }
         };
-    }
-
-    public static void Parse(ref readonly JObject json)
-    {
-        string? rawValue = json.GetValue("rawLine")?.ToObject<string>();
-        if (rawValue == null) return;
-
-        JToken? item0 = json.GetValue("line")?[0], item1 = json.GetValue("line")?[1];
-        if (item0 == null || item1 == null) return;
-
-        LogLineType messageType = item0.ToObject<LogLineType>();
-        DateTime messageDateTime = DateTime.Parse(item1.ToString());
-
-        var handler = HandleLogLine(messageType);
-        if (handler == null) return;
-
-        LogLineData commonData = new(messageType, messageDateTime, rawValue);
-        try
-        {
-            handler.Invoke(commonData);
-        }
-        catch (Exception ex)
-        {
-            InterfaceManager.Inst.PluginLog.Warning($"Failed to parse LogLine {messageType} - {((uint)messageType).ToString()} ->\n {rawValue} \n Error -> \n {ex}");
-        }
-        if (commonData.Parsed) EncounterManager.UpdateClients();
+        handler.Invoke(line);
+        
+        if (line.Parsed) EncounterManager.UpdateClients();
     }
 
     private static void MsgActionEffect(LogLineData logLineData)
     {
-        logLineData.LogLineTypefn = (List<string> data) => { return new ActionEffect(data); };
-
         if (false) return; // todo ignore parsing
 
         logLineData.Parse();
@@ -139,8 +118,6 @@ public static class LoglineParser
 
     private static void MsgStartsCasting(LogLineData logLineData)
     {
-        logLineData.LogLineTypefn = (List<string> data) => { return new StartsCasting(data); };
-
         if (true) return; // todo
 
         logLineData.Parse();
@@ -153,8 +130,6 @@ public static class LoglineParser
     {
         // dots are calculated even if the player is deactivated, pet actions should probably do the same #for analyzing the data later
         // or add a flag to the damaged saying it was ignored idk
-
-        logLineData.LogLineTypefn = (List<string> data) => { return new DoTHoT(data); };
 
         if (false) return; // todo ignore parsing
 
@@ -214,8 +189,6 @@ public static class LoglineParser
     // this will be used to make sure summoners have their pets damage accounted
     private static void MsgAddCombatant(LogLineData logLineData)
     {
-        logLineData.LogLineTypefn = (List<string> data) => { return new AddCombatant(data); };
-
         if (true) return; // todo
         logLineData.Parse();
         var parsed = (AddCombatant)logLineData.Value!;
@@ -237,8 +210,6 @@ public static class LoglineParser
 
     private static void MsgPlayerStats(LogLineData logLineData)
     {
-        logLineData.LogLineTypefn = (List<string> data) => { return new PlayerStats(data); };
-
         if (true) return; // todo
         logLineData.Parse();
         var parsed = (PlayerStats)logLineData.Value!;
@@ -256,8 +227,6 @@ public static class LoglineParser
 
     private static void MsgStatusApply(LogLineData logLineData)
     {
-        logLineData.LogLineTypefn = (List<string> data) => { return new StatusApply(data); };
-
         if (true) return; // todo
         logLineData.Parse();
         var parsed = (StatusApply)logLineData.Value!;
@@ -275,8 +244,6 @@ public static class LoglineParser
 
     private static void MsgStatusRemove(LogLineData logLineData)
     {
-        logLineData.LogLineTypefn = (List<string> data) => { return new StatusRemove(data); };
-
         if (true) return; // todo
         logLineData.Parse();
         var parsed = (StatusRemove)logLineData.Value!;
@@ -294,8 +261,6 @@ public static class LoglineParser
 
     private static void MsgDeath(LogLineData logLineData)
     {
-        logLineData.LogLineTypefn = (List<string> data) => { return new Death(data); };
-
         if (true) return; // todo
         logLineData.Parse();
         var parsed = (Death)logLineData.Value!;

@@ -74,4 +74,20 @@ public static class Helpers
     {
         InterfaceManager.Inst.PluginLog.Info(message);
     }
+
+    public static List<ReadOnlyMemory<char>> SplitStringAsMemory(string input, char delimiter)
+    {
+        List<ReadOnlyMemory<char>> result = [];
+        int startIndex = 0;
+        for (int index = 0; index != input.Length; ++index)
+        {
+            if (input[index] == delimiter)
+            {
+                result.Add(input.AsMemory(startIndex, index));
+                startIndex = index + 1;
+            }
+        }
+        if (input.Length != startIndex) result.Add(input.AsMemory(startIndex, input.Length));
+        return result;
+    }
 }

@@ -7,3 +7,10 @@ public interface IMeterwayOverlay
     public void Dispose();
     public void DataProcess();
 }
+
+
+public interface IMeterwayOverlayConfig
+{
+    public void Open();
+    public void Close();
+}

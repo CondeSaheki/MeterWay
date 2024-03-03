@@ -103,10 +103,7 @@ public class IINACTClient : IIpcClient, IDisposable
 
     public void Disconnect()
     {
-        if (!connectionStatus)
-        {
-            return;
-        }
+        if (!connectionStatus) return;
 
         try
         {

@@ -40,6 +40,7 @@ public enum LogLineType : uint
     PacketDump = 252, // 0x000000FC
     Version = 253, // 0x000000FD
     Error = 254, // 0x000000FE
+    None = 999, // used in LogsParser 
 }
 
 public static class ActionEffectFlag

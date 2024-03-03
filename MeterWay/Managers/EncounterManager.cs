@@ -55,7 +55,7 @@ public class EncounterManager : IDisposable
         if (LastEncounter.Finished) Inst.encounters.Add(new Encounter());
 
         LastEncounter.Update();
-        LastEncounter.RawActions.RemoveAll(r => r.DateTime < LastEncounter.Begin - TimeSpan.FromSeconds(30));
+        LastEncounter.RawActions.RemoveAll(r => r.TimePoint < LastEncounter.Begin - TimeSpan.FromSeconds(30));
         LastEncounter.Start();
         return true;
     }
