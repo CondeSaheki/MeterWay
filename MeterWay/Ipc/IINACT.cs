@@ -81,17 +81,16 @@ public class IINACTClient : IIpcClient, IDisposable
             return;
         }
 
-        if (!connectionStatus)
-        {
-            InterfaceManager.Inst.ChatGui.Print("Meterway is not connected to IINACT.");
-            return;
-        }
+        if (!connectionStatus) return;
 
-        static JObject CreateMessage(SubscriptionType type) => JObject.Parse(@$"{{""call"": ""subscribe"", ""events"": [ {type} ] }}");
+        static JObject CreateMessage(SubscriptionType type) => JObject.Parse(@$"{{""call"": ""subscribe"", ""events"": [ ""{type}"" ] }}");
 
         try
         {
-            foreach (var sub in Subscriptions) InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<JObject, bool>(IINACTSubscribe).InvokeAction(CreateMessage(sub));
+            foreach (var sub in Subscriptions)
+            {
+                InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<JObject, bool>(IINACTSubscribe).InvokeAction(CreateMessage(sub));
+            }
         }
         catch (Exception ex)
         {
