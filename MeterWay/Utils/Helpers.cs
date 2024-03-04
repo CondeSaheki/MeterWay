@@ -83,11 +83,29 @@ public static class Helpers
         {
             if (input[index] == delimiter)
             {
-                result.Add(input.AsMemory(startIndex, index));
+                result.Add(input.AsMemory(startIndex, index - startIndex));
                 startIndex = index + 1;
             }
         }
-        if (input.Length != startIndex) result.Add(input.AsMemory(startIndex, input.Length));
+        if (input.Length != startIndex) result.Add(input.AsMemory(startIndex, input.Length - startIndex));
+        return result;
+    }
+
+    public static List<ReadOnlyMemory<char>> SplitStringAsMemory(string input, char delimiter, int splits)
+    {
+        List<ReadOnlyMemory<char>> result = [];
+        int startIndex = 0;
+        int splitsCount = 0;
+        for (int index = 0; index != input.Length && splitsCount != splits; ++index)
+        {
+            if (input[index] == delimiter)
+            {
+                result.Add(input.AsMemory(startIndex, index - startIndex));
+                startIndex = index + 1;
+                ++splitsCount;
+            }
+        }
+        if (input.Length != startIndex && splitsCount != splits) result.Add(input.AsMemory(startIndex, input.Length - startIndex));
         return result;
     }
 
@@ -96,5 +114,4 @@ public static class Helpers
         if (data[x].IsEmpty || data[y].IsEmpty || data[z].IsEmpty || data[h].IsEmpty) return null;
         return new Vector4(float.Parse(data[x].Span), float.Parse(data[y].Span), float.Parse(data[z].Span), float.Parse(data[h].Span));
     }
-
 }

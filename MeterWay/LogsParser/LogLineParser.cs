@@ -20,7 +20,7 @@ public class LogLineData
 
     public LogLineData(string rawLine)
     {
-        var data = Helpers.SplitStringAsMemory(rawLine, '|'); // TODO make the split only happen n times
+        var data = Helpers.SplitStringAsMemory(rawLine, '|', 2);
 
         Parsed = false;
 
