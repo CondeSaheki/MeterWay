@@ -96,11 +96,7 @@ public class Encounter
         }
     }
 
-    public void Parse()
-    {
-        foreach (var action in RawActions) action.Parse();
-        // TODO 
-    }
+    public void Parse() { foreach (var action in RawActions) LoglineParser.Parse(action, this); }
 
     public bool Update()
     {

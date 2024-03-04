@@ -90,4 +90,11 @@ public static class Helpers
         if (input.Length != startIndex) result.Add(input.AsMemory(startIndex, input.Length));
         return result;
     }
+
+    public static Vector4? Vec4Parse(List<ReadOnlyMemory<char>> data, int x, int y, int z, int h)
+    {
+        if (data[x].IsEmpty || data[y].IsEmpty || data[z].IsEmpty || data[h].IsEmpty) return null;
+        return new Vector4(float.Parse(data[x].Span), float.Parse(data[y].Span), float.Parse(data[z].Span), float.Parse(data[h].Span));
+    }
+
 }

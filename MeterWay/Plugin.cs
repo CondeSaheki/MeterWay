@@ -75,7 +75,7 @@ public sealed class Plugin : IDalamudPlugin
         OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay()];
 
         // TODO make only Active Overlay subscribed
-        foreach (var overlay in OverlayWindow.Overlays) EncounterManager.Inst.Clients.Add(overlay.DataProcess);
+        foreach (var overlay in OverlayWindow.Overlays) EncounterManager.Clients.Add(overlay.DataProcess);
 
         Commands = new Commands(this);
 

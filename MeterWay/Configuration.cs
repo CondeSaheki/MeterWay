@@ -11,7 +11,7 @@ namespace MeterWay
         public int Version { get; set; } = 0;
 
         // General
-
+        
         // public int Interaction { get; set; } = 1;
         // public bool SaveCombats { get; set; } = true;
         // public int Combats { get; set; } = 5;
@@ -27,7 +27,9 @@ namespace MeterWay
         public float OverlayFontSize { get; set; } = 15f;
         public float OverlayFontScale { get; set; } = 1f;
         public int OverlayType { get; set; } = 0;
-
+        public bool OverlayRealtimeUpdate { get; set; } = false;
+        public TimeSpan OverlayIntervalUpdate { get; set; } = TimeSpan.FromSeconds(1);
+        
         // Aparence
 
 

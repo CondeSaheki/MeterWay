@@ -4,6 +4,7 @@ using ImGuiNET;
 using MeterWay.Managers;
 
 namespace MeterWay.Utils.Draw;
+
 public static class Widget
 {
     public enum TextAnchor

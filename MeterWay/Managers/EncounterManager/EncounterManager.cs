@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using MeterWay.Data;
-using MeterWay.LogParser;
 using MeterWay.Utils;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Objects.Enums;
@@ -16,13 +15,14 @@ public class EncounterManager : IDisposable
 {
     // data
     public readonly List<Encounter> encounters;
-    public readonly List<Action> Clients;
-
     private bool lastCombatState;
 
     public static EncounterManager Inst { get; private set; } = null!;
 
-    private static Encounter LastEncounter => Inst.encounters.Last();
+    public static Encounter LastEncounter => Inst.encounters.Last();
+    
+    public Notifier ClientsNotifier { get; init; }
+    public static List<Action> Clients => Inst.ClientsNotifier.Clients;
 
     // constructor
     public EncounterManager()
@@ -30,17 +30,17 @@ public class EncounterManager : IDisposable
         encounters = [];
         encounters.Add(new Encounter());
         lastCombatState = false;
-        Clients = [];
 
         InterfaceManager.Inst.DutyState.DutyStarted += OnDutyStart;
 
+        ClientsNotifier = new Notifier(TimeSpan.FromSeconds(1));
         Inst = this;
     }
 
     private static void OnDutyStart<ArgType>(object? sender, ArgType Args)
     {
         Helpers.Log("EncounterManager OnDutyStart Event Trigerred!");
-        if(!Stop()) Reset();
+        if (!Stop()) Reset();
         LastEncounter.Update();
     }
 
@@ -57,15 +57,23 @@ public class EncounterManager : IDisposable
         LastEncounter.Update();
         LastEncounter.RawActions.RemoveAll(r => r.TimePoint < LastEncounter.Begin - TimeSpan.FromSeconds(30));
         LastEncounter.Start();
+        Inst.ClientsNotifier.StartTimer();
         return true;
+    }
+
+    public static void Start(Encounter encounter)
+    {
+        if (encounter.Finished) return;
+        if (LastEncounter.Id == encounter.Id) Start(); // gamer
     }
 
     public static bool Stop()
     {
-        if(LastEncounter.Finished) return false;
+        if (LastEncounter.Finished) return false;
         LastEncounter.Stop();
         LastEncounter.Update();
         Inst.encounters.Add(new Encounter());
+        Inst.ClientsNotifier.StopTimer();
         return true;
     }
 
@@ -86,7 +94,7 @@ public class EncounterManager : IDisposable
 
     private static bool IsInCombat()
     {
-        if(InterfaceManager.Inst.Condition[ConditionFlag.InCombat]) return true;
+        if (InterfaceManager.Inst.Condition[ConditionFlag.InCombat]) return true;
         foreach (var player in InterfaceManager.Inst.PartyList)
         {
             if (player.GameObject == null) continue;
@@ -111,12 +119,6 @@ public class EncounterManager : IDisposable
             Inst.lastCombatState = false;
         }
 
-        LoglineParser.Parse(in json); // parse data
-    }
-
-    public static void UpdateClients()
-    {
-        if (Inst.CurrentEncounter().Finished) return;
-        foreach (var client in Inst.Clients) client.Invoke();
+        LoglineParser.Parse(in json, LastEncounter); // parse data
     }
 }

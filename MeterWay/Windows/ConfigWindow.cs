@@ -55,6 +55,12 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("Overlay");
         if (!tab) return;
 
+        if(EncounterManager.LastEncounter.Active)
+        {
+            ImGui.Text("You can not change overlay configs when in combat");
+            return;
+        }
+
         ImGui.Text("Overlay");
 
         ImGui.PushItemWidth(160);
@@ -93,6 +99,22 @@ public class ConfigWindow : Window, IDisposable
             ConfigurationManager.Inst.Configuration.Save();
             OverlayWindow.Flags = OverlayWindow.GetFlags();
         }
+
+        var OverlayRealtimeUpdateValue = ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate;
+        if (ImGui.Checkbox("Realtime Update", ref OverlayRealtimeUpdateValue))
+        {
+            ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate = OverlayRealtimeUpdateValue;
+            ConfigurationManager.Inst.Configuration.Save();
+        }
+        
+        ImGui.PushItemWidth(90);
+        var OverlayIntervalUpdateValue = (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.Milliseconds;
+        if (ImGui.DragFloat("Scale", ref OverlayIntervalUpdateValue, 0.01f, 1f, 5f))
+        {
+            ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromSeconds(OverlayIntervalUpdateValue);
+            ConfigurationManager.Inst.Configuration.Save();
+        }
+        ImGui.PopItemWidth();
 
         ImGui.Spacing();
         ImGui.Separator();
