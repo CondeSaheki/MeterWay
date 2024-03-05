@@ -108,10 +108,10 @@ public class ConfigWindow : Window, IDisposable
         }
         
         ImGui.PushItemWidth(90);
-        var OverlayIntervalUpdateValue = (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.Milliseconds;
-        if (ImGui.DragFloat("Scale", ref OverlayIntervalUpdateValue, 0.01f, 1f, 5f))
+        var OverlayIntervalUpdateValue = (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.TotalMilliseconds / 1000;
+        if (ImGui.DragFloat("Interval Update Seconds", ref OverlayIntervalUpdateValue, 0.01f, 0.01f, 60f))
         {
-            ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromSeconds(OverlayIntervalUpdateValue);
+            ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromMilliseconds(OverlayIntervalUpdateValue * 1000);
             ConfigurationManager.Inst.Configuration.Save();
         }
         ImGui.PopItemWidth();

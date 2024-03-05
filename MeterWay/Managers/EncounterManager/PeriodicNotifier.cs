@@ -22,7 +22,7 @@ public class Notifier
     public void ChangeNotificationInterval(TimeSpan interval)
     {
         if (TimerNotificationInterval == interval) return;
-        TimerNotification?.Change(0, interval.Milliseconds);
+        TimerNotification?.Change(0, (int)interval.TotalMilliseconds);
         TimerNotificationInterval = interval;
     }
 
@@ -46,7 +46,7 @@ public class Notifier
     public void StartTimer()
     {
         if (TimerActive) return;
-        TimerNotification = new Timer(NotifyAll, null, 0, TimerNotificationInterval.Milliseconds);
+        TimerNotification = new Timer(NotifyAll, null, 0, (int)TimerNotificationInterval.TotalMilliseconds);
         TimerActive = true;
     }
 
