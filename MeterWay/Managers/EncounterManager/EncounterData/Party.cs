@@ -53,7 +53,7 @@ public class EncounterParty
     public void Update() // vREALVERDADEIROULTIMATE
     {
         if (Encounter.Finished) return;
-        
+
         var partyList = InterfaceManager.Inst.PartyList;
 
         // keep only you

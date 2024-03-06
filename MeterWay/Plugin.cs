@@ -7,7 +7,6 @@ using MeterWay.Windows;
 using MeterWay.Ipc;
 using MeterWay.Managers;
 using MeterWay.Overlays;
-using MeterWay.Utils;
 
 namespace MeterWay;
 
@@ -22,7 +21,7 @@ public sealed class Plugin : IDalamudPlugin
     public OverlayWindow OverlayWindow { get; init; }
 
     #if DEBUG
-    public DebugWindow DebugWindow { get; init; }
+        public DebugWindow DebugWindow { get; init; }
     #endif
 
     // meterway stuff
@@ -58,24 +57,25 @@ public sealed class Plugin : IDalamudPlugin
         IpcClient.Receivers.Add(EncounterManager.Receiver);
 
         MainWindow = new MainWindow();
-        OverlayWindow = new OverlayWindow();
+        
+        // register your overlays here
+        OverlayWindow = new OverlayWindow(
+            [
+                typeof(LazerOverlay), 
+                typeof(MoguOverlay)
+            ]
+        );
+
         ConfigWindow = new ConfigWindow(IpcClient, OverlayWindow);
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
-        if (ConfigurationManager.Inst.Configuration.Overlay) WindowSystem.AddWindow(OverlayWindow);
-        
+        if (ConfigurationManager.Inst.Configuration.OverlayEnabled) WindowSystem.AddWindow(OverlayWindow);
+
         #if DEBUG
-        Helpers.Log("<<<--- This is a Debug build <<<---");
-        DebugWindow = new DebugWindow();
-        WindowSystem.AddWindow(DebugWindow);
+            DebugWindow = new DebugWindow();
+            WindowSystem.AddWindow(DebugWindow);
         #endif
-
-        // register overlays here
-        OverlayWindow.Overlays = [new LazerOverlay(), new MoguOverlay()];
-
-        // TODO make only Active Overlay subscribed
-        foreach (var overlay in OverlayWindow.Overlays) EncounterManager.Clients.Add(overlay.DataProcess);
 
         Commands = new Commands(this);
 
@@ -85,18 +85,18 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
-        encounterManager.Dispose();
+        Commands.Dispose();
         WindowSystem.RemoveAllWindows();
-        IpcClient.Dispose();
         ConfigWindow.Dispose();
         OverlayWindow.Dispose();
         MainWindow.Dispose();
-
+        
         #if DEBUG
-        DebugWindow.Dispose();
+            DebugWindow.Dispose();
         #endif
-
-        Commands.Dispose();
+        
+        encounterManager.Dispose();
+        IpcClient.Dispose();
     }
 
     private void DrawUI()

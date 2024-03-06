@@ -20,9 +20,9 @@ public class EncounterManager : IDisposable
     public static EncounterManager Inst { get; private set; } = null!;
 
     public static Encounter LastEncounter => Inst.encounters.Last();
-    
+
     public Notifier ClientsNotifier { get; init; }
-    public static List<Action> Clients => Inst.ClientsNotifier.Clients;
+    public static List<KeyValuePair<uint, Action>> Clients => Inst.ClientsNotifier.Clients;
 
     // constructor
     public EncounterManager()

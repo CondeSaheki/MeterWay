@@ -1,12 +1,10 @@
 #if DEBUG
 
 using System;
-using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
-using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Utils;
 
@@ -39,42 +37,72 @@ public class DebugWindow : Window, IDisposable
         Vector2 cursor = WindowMin;
 
         IndexArrows();
-        cursor.Y += 50;
-        var data = EncounterManager.Inst.encounters[indexEncounter];
-        if(data.Active) data.Calculate();
-        
-        var encounterinfo = $"Name: {data.Name} Active: {(data.Active ? "true" : "false")} Finished {(data.Finished ? "true" : "false")} Duration:{data.Duration}";
-        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), encounterinfo);
-        cursor.Y += textheight;
-        encounterinfo = $"Dps {data.Dps}";
-        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), encounterinfo);
-        cursor.Y += textheight;
+        cursor.Y += 25;
 
+        var data = EncounterManager.Inst.encounters[indexEncounter];
+        if (data.Active) data.Calculate();
+
+        // encounter
+
+        string text = $"Encounter:";
+        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+        cursor.Y += textheight * 2;
+
+        text = $"Name={data.Name} Active={(data.Active ? "true" : "false")} Finished={(data.Finished ? "true" : "false")} Duration={data.Duration}";
+        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+        cursor.Y += textheight * 2;
+
+        text = $"DamageDealt:\n{data.DamageDealt}";
+        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+        cursor.Y += textheight * 2;
+
+        text = $"DamageReceived:\n{data.DamageReceived}";
+        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+        cursor.Y += textheight * 2;
+
+        text = $"HealingDealt:\n{data.HealDealt}";
+        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+        cursor.Y += textheight * 2;
+
+        text = $"HealingReceived:\n{data.HealReceived}";
+        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+        cursor.Y += textheight * 2;
+
+        text = $"> All other Calculated data should be here <";
+        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+        cursor.Y += textheight * 2;
+
+        text = $"Players:";
+        draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+        cursor.Y += textheight * 2;
+        // players
         foreach (var p in data.Players)
         {
             var player = p.Value;
-            string text = $"{player.Name}: ";
 
+            text = $"Name={player.Name} World={player.World} Job={player.Job} Id={player.Id} IsActive={(player.IsActive ? "true" : "false")}";
             draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
-            cursor.Y += textheight;
-            text = $"damage: {player.Damage.Total} Crt: {player.Damage.TotalCrit} Dps: {player.Dps} d%: {player.DamagePercent}% Crt%: {player.CritPercent}";
-            draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
-            cursor.Y += textheight;
+            cursor.Y += textheight * 2;
 
-            text = $"Heal:{player.Healing.Total} healCrt {player.Healing.TotalCrit} hps: {player.Hps} h%: {player.HealsPercent}% healCrt%: {player.Crithealspercent}";
+            text = $"DamageDealt:\n{player.DamageDealt}";
             draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
-            cursor.Y += textheight;
+            cursor.Y += textheight * 2;
 
-            text = $"Crits: {player.Damage.Count.Crit} DHits: {player.Damage.Count.Dh}% DCrits: {player.Damage.Count.CritDh} HealCrits: {player.Healing.Count.Crit}";
+            text = $"DamageReceived:\n{player.DamageReceived}";
             draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
-            cursor.Y += textheight;
+            cursor.Y += textheight * 2;
 
-            text = $"TakenDmg: {player.DamageTaken.Total} times: {player.DamageTaken.Count.Hit + player.DamageTaken.Count.Crit} TakenHeal: {player.HealingTaken.Total} times: {player.HealingTaken.Count.Hit + player.HealingTaken.Count.Crit}";
+            text = $"HealingDealt:\n{player.HealDealt}";
             draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
-            cursor.Y += textheight;
+            cursor.Y += textheight * 2;
 
-            cursor.Y += textheight;
-            ImGui.Separator();
+            text = $"HealingReceived:\n{player.HealReceived}";
+            draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+            cursor.Y += textheight * 2;
+
+            text = $"> All other Calculated data should be here <";
+            draw.AddText(cursor, Helpers.Color(255, 255, 255, 255), text);
+            cursor.Y += textheight * 2;
         }
     }
 
@@ -96,18 +124,18 @@ public class DebugWindow : Window, IDisposable
     private static void IndexArrows()
     {
         var size = EncounterManager.Inst.encounters.Count - 1;
-        if(size < indexEncounter) indexEncounter = size;
+        if (size < indexEncounter) indexEncounter = size;
 
         float spacing = ImGui.GetStyle().ItemInnerSpacing.X;
         ImGui.PushButtonRepeat(true);
         if (ImGui.ArrowButton("##left", ImGuiDir.Left))
         {
-            if(indexEncounter != 0) indexEncounter--;
+            if (indexEncounter != 0) indexEncounter--;
         }
         ImGui.SameLine(0.0f, spacing);
         if (ImGui.ArrowButton("##right", ImGuiDir.Right))
         {
-            if(size != indexEncounter) indexEncounter++;
+            if (size != indexEncounter) indexEncounter++;
         }
         ImGui.PopButtonRepeat();
         ImGui.SameLine();

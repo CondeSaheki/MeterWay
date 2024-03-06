@@ -52,7 +52,7 @@ public static class ActionEffectFlag
         MagicMelee = 0x30000,
         Ranged = 0x20000,
     }
-    
+
     public enum EffectEntry
     {
         Nothing = 0,

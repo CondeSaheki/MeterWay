@@ -1,13 +1,13 @@
 namespace MeterWay.Overlays;
 
-public interface IMeterwayOverlay
+public abstract class IMeterwayOverlay
 {
-    public string Name { get; }
-    public void Draw();
-    public void Dispose();
-    public void DataProcess();
+    public static string Name() => string.Empty;
+    public virtual string _Name() => Name();
+    public abstract void Draw();
+    public abstract void Dispose();
+    public abstract void DataProcess();
 }
-
 
 public interface IMeterwayOverlayConfig
 {

@@ -87,10 +87,7 @@ public class IINACTClient : IIpcClient, IDisposable
 
         try
         {
-            foreach (var sub in Subscriptions)
-            {
-                InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<JObject, bool>(IINACTSubscribe).InvokeAction(CreateMessage(sub));
-            }
+            foreach (var sub in Subscriptions) InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<JObject, bool>(IINACTSubscribe).InvokeAction(CreateMessage(sub));
         }
         catch (Exception ex)
         {

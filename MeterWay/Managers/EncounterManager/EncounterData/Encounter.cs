@@ -25,11 +25,11 @@ public class Encounter
     public EncounterParty Party;
     public Dictionary<uint, Player> Players => Party.Players;
 
-    public DamageData Damage { get; set; }
-    public DamageData DamageTaken { get; set; }
+    public Damage DamageDealt { get; set; }
+    public Damage DamageReceived { get; set; }
 
-    public HealingData Healing { get; set; }
-    public HealingData HealingTaken { get; set; }
+    public Heal HealDealt { get; set; }
+    public Heal HealReceived { get; set; }
 
     // Calculated
     public float DamagePercent { get; set; } = 0;
@@ -49,10 +49,10 @@ public class Encounter
         Party = new EncounterParty(this);
         RawActions = [];
 
-        Damage = new DamageData();
-        DamageTaken = new DamageData();
-        Healing = new HealingData();
-        HealingTaken = new HealingData();
+        DamageDealt = new Damage();
+        DamageReceived = new Damage();
+        HealDealt = new Heal();
+        HealReceived = new Heal();
 
         DamagePercent = 0;
         HealsPercent = 0;
@@ -79,16 +79,16 @@ public class Encounter
     public void Calculate()
     {
         var seconds = Duration.TotalSeconds <= 1 ? 1 : Duration.TotalSeconds; // overflow protection
-        Dps = (float)(Damage.Total / seconds);
-        Hps = (float)(Healing.Total / seconds);
+        Dps = (float)(DamageDealt.Total / seconds);
+        Hps = (float)(HealDealt.Total / seconds);
 
-        DamagePercent = Damage.Total != 0 ? (Damage.Total * 100 / Damage.Total) : 0;
-        HealsPercent = Healing.Total != 0 ? (Healing.Total * 100 / Healing.Total) : 0;
+        DamagePercent = DamageDealt.Total != 0 ? (DamageDealt.Total * 100 / DamageDealt.Total) : 0;
+        HealsPercent = HealDealt.Total != 0 ? (HealDealt.Total * 100 / HealDealt.Total) : 0;
 
-        CritPercent = Damage.Count.Hit != 0 ? (Damage.Count.Crit * 100 / Damage.Count.Hit) : 0;
-        DirecHitPercent = Damage.Count.Hit != 0 ? (Damage.Count.Dh * 100 / Damage.Count.Hit) : 0;
-        DirectCritHitPercent = Damage.Count.Hit != 0 ? (Damage.Count.CritDh * 100 / Damage.Count.Hit) : 0;
-        Crithealspercent = Healing.Count.Hit != 0 ? (Healing.Count.Crit * 100 / Healing.Count.Hit) : 0;
+        CritPercent = DamageDealt.Count.Total != 0 ? (DamageDealt.Count.Critical * 100 / DamageDealt.Count.Total) : 0;
+        DirecHitPercent = DamageDealt.Count.Total != 0 ? (DamageDealt.Count.Direct * 100 / DamageDealt.Count.Total) : 0;
+        DirectCritHitPercent = DamageDealt.Count.Total != 0 ? (DamageDealt.Count.CriticalDirect * 100 / DamageDealt.Count.Total) : 0;
+        Crithealspercent = HealDealt.Count.Total != 0 ? (HealDealt.Count.Critical * 100 / HealDealt.Count.Total) : 0;
 
         foreach (var player in Party.Players.Values)
         {

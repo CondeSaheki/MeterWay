@@ -1,6 +1,7 @@
 using System.Linq;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
+
 using MeterWay.Managers;
 using MeterWay.Utils;
 
@@ -17,11 +18,11 @@ public class Player(Character character, Encounter encounter)
     public uint? World { get; set; } = (character as PlayerCharacter)?.HomeWorld.Id;
     public uint Job { get; set; } = character.ClassJob.Id;
 
-    public DamageData Damage { get; set; } = new DamageData();
-    public DamageData DamageTaken { get; set; } = new DamageData();
+    public Damage DamageDealt { get; set; } = new Damage();
+    public Damage DamageReceived { get; set; } = new Damage();
 
-    public HealingData Healing { get; set; } = new HealingData();
-    public HealingData HealingTaken { get; set; } = new HealingData();
+    public Heal HealDealt { get; set; } = new Heal();
+    public Heal HealReceived { get; set; } = new Heal();
 
     // calculated
     public float DamagePercent { get; set; } = 0;
@@ -38,18 +39,18 @@ public class Player(Character character, Encounter encounter)
     {
         var seconds = Encounter.Duration.TotalSeconds <= 1 ? 1 : Encounter.Duration.TotalSeconds;
 
-        Dps = (float)(Damage.Total / seconds);
-        Hps = (float)(Healing.Total / seconds);
+        Dps = (float)(DamageDealt.Total / seconds);
+        Hps = (float)(HealDealt.Total / seconds);
 
         static float Protected(uint first, uint second) => second != 0 ? (first * 100 / second) : 0;
 
-        DamagePercent = Protected(Damage.Total, Encounter.Damage.Total);
-        HealsPercent = Protected(Healing.Total, Encounter.Healing.Total);
+        DamagePercent = Protected(DamageDealt.Total, Encounter.DamageDealt.Total);
+        HealsPercent = Protected(HealDealt.Total, Encounter.HealDealt.Total);
 
-        CritPercent = Protected(Damage.Count.Crit, Encounter.Damage.Count.Hit);
-        DirecHitPercent = Protected(Damage.Count.Dh, Encounter.Damage.Count.Hit);
-        DirectCritHitPercent = Protected(Damage.Count.CritDh, Encounter.Damage.Count.Hit);
-        Crithealspercent = Protected(Healing.Count.Crit, Encounter.Healing.Count.Hit);
+        CritPercent = Protected(DamageDealt.Count.Critical, Encounter.DamageDealt.Count.Total);
+        DirecHitPercent = Protected(DamageDealt.Count.Direct, Encounter.DamageDealt.Count.Total);
+        DirectCritHitPercent = Protected(DamageDealt.Count.CriticalDirect, Encounter.DamageDealt.Count.Total);
+        Crithealspercent = Protected(HealDealt.Count.Critical, Encounter.HealDealt.Count.Total);
     }
 
     public bool Update()

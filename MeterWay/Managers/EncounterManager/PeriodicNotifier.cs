@@ -6,7 +6,7 @@ namespace MeterWay.Managers;
 
 public class Notifier
 {
-    public List<Action> Clients { get; private init; }
+    public List<KeyValuePair<uint, Action>> Clients { get; private init; }
 
     private bool TimerActive { get; set; }
     private Timer? TimerNotification { get; set; }
@@ -39,8 +39,7 @@ public class Notifier
 
     private void NotifyAll(object? state)
     {
-
-        foreach (var client in Clients) client.Invoke();
+        foreach (var client in Clients) client.Value.Invoke();
     }
 
     public void StartTimer()

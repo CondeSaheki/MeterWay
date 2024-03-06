@@ -1,17 +1,19 @@
 using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
+using System.Linq;
+
+using MeterWay.Utils.Draw;
 using MeterWay.Utils;
 using MeterWay.Managers;
 using MeterWay.Data;
-using System.Linq;
-using MeterWay.Utils.Draw;
 
 namespace MeterWay.Overlays;
 
 public class LazerOverlay : IMeterwayOverlay
 {
-    public string Name => "LazerOverlay";
+    public new static string Name => "Lazer";
+    public static string Name2 = "Lazer";
 
     private Encounter combat;
 
@@ -45,55 +47,49 @@ public class LazerOverlay : IMeterwayOverlay
         sortCache = [];
     }
 
-    public void DataProcess()
+    public override void DataProcess()
     {
         var currentEncounter = EncounterManager.Inst.CurrentEncounter();
-        var oldListId = this.combat.Party.Id;
-        var oldCombatId = this.combat.Id;
+        var oldListId = combat.Party.Id;
+        var oldCombatId = combat.Id;
 
-        this.combat = currentEncounter;
-
+        combat = currentEncounter;
 
         if (currentEncounter.Id != oldCombatId)
         {
-            this.targetInfo = new Dictionary<uint, LerpPlayerData>();
-            this.lerpedInfo = new Dictionary<uint, LerpPlayerData>();
+            targetInfo = [];
+            lerpedInfo = [];
 
-            this.sortCache = Helpers.CreateDictionarySortCache(this.combat.Players, (x) => { return true; });
+            sortCache = Helpers.CreateDictionarySortCache(combat.Players, (x) => { return true; });
         }
-
 
         if (oldListId != currentEncounter.Party.Id)
         {
-            this.sortCache = Helpers.CreateDictionarySortCache(this.combat.Players, (x) => { return true; });
+            sortCache = Helpers.CreateDictionarySortCache(combat.Players, (x) => { return true; });
         }
 
-        sortCache.Sort((uint first, uint second) => { return this.combat.Players[second].Damage.Total.CompareTo(this.combat.Players[first].Damage.Total); });
+        sortCache.Sort((uint first, uint second) => { return combat.Players[second].DamageDealt.Total.CompareTo(combat.Players[first].DamageDealt.Total); });
     }
 
-    private List<uint> localSortCache()
-    {
-        return this.sortCache.ToList();
-    }
+    private List<uint> LocalSortCache() => sortCache.ToList();
 
-    public void Draw()
+    public override void Draw()
     {
-        var sortCache = localSortCache();
+        var sortCache = LocalSortCache();
         UpdateWindowSize();
-        if(!combat.Finished && combat.Active)combat.Calculate(); // this will ignore last frame data ??
+        if (!combat.Finished && combat.Active) combat.Calculate(); // this will ignore last frame data ??
 
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Inst.Configuration.OverlayBackgroundColor));
 
         ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * ConfigurationManager.Inst.Configuration.OverlayFontScale), Helpers.Color(26, 26, 39, 190));
 
-
-        if (this.combat.Begin == null)
+        if (combat.Begin == null)
         {
             Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center, dropShadow: true);
             return;
         }
 
-        Widget.Text($"{this.combat.Name} - ({(!this.combat.Active ? "Completed in " : "")}{this.combat.Duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
+        Widget.Text($"{combat.Name} - ({(!combat.Active ? "Completed in " : "")}{combat.Duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
 
         foreach (var id in sortCache)
         {
@@ -104,8 +100,7 @@ public class LazerOverlay : IMeterwayOverlay
         }
     }
 
-    public void Dispose() { }
-
+    public override void Dispose() { }
 
     private void UpdateWindowSize()
     {
@@ -116,13 +111,13 @@ public class LazerOverlay : IMeterwayOverlay
         vMin.Y += ImGui.GetWindowPos().Y;
         vMax.X += ImGui.GetWindowPos().X;
         vMax.Y += ImGui.GetWindowPos().Y;
-        this.WindowMin = vMin;
-        this.WindowMax = vMax;
+        WindowMin = vMin;
+        WindowMax = vMax;
     }
 
     private void GenerateCombatLerping(Player player)
     {
-        double topPlayerDamagePercentage = this.combat.Players[sortCache.First()].DamagePercent;
+        double topPlayerDamagePercentage = combat.Players[sortCache.First()].DamagePercent;
         if (topPlayerDamagePercentage == 0)
         {
             topPlayerDamagePercentage = 1; // Failsafe to avoid division by zero
@@ -132,7 +127,7 @@ public class LazerOverlay : IMeterwayOverlay
         {
             DPS = player.Dps,
             PctBar = player.DamagePercent / topPlayerDamagePercentage * 100,
-            TotalDMG = player.Damage.Total,
+            TotalDMG = player.DamageDealt.Total,
             Position = sortCache.IndexOf(player.Id) + 1
         };
 
@@ -140,7 +135,7 @@ public class LazerOverlay : IMeterwayOverlay
         {
             DPS = player.Dps,
             PctBar = player.DamagePercent / topPlayerDamagePercentage * 100,
-            TotalDMG = player.Damage.Total,
+            TotalDMG = player.DamageDealt.Total,
             Position = sortCache.IndexOf(player.Id) + 1
         };
     }
@@ -162,12 +157,12 @@ public class LazerOverlay : IMeterwayOverlay
             lerpedInfo[player.Id].Position = Helpers.Lerp(lerpedInfo[player.Id].Position, targetInfo[player.Id].Position, t);
         }
 
-        if (targetInfo[player.Id].TotalDMG <= player.Damage.Total)
+        if (targetInfo[player.Id].TotalDMG <= player.DamageDealt.Total)
         {
-            double topPlayerTotalDamage = this.combat.Players[sortCache.First()].Damage.Total == 0 ? 1 : this.combat.Players[sortCache.First()].Damage.Total;
+            double topPlayerTotalDamage = combat.Players[sortCache.First()].DamageDealt.Total == 0 ? 1 : combat.Players[sortCache.First()].DamageDealt.Total;
             targetInfo[player.Id].DPS = player.Dps;
-            targetInfo[player.Id].PctBar = (player.Damage.Total / topPlayerTotalDamage) * 100;
-            targetInfo[player.Id].TotalDMG = player.Damage.Total;
+            targetInfo[player.Id].PctBar = (player.DamageDealt.Total / topPlayerTotalDamage) * 100;
+            targetInfo[player.Id].TotalDMG = player.DamageDealt.Total;
             targetInfo[player.Id].Position = sortCache.IndexOf(player.Id) + 1;
             transitionTimer = 0.0f;
         }

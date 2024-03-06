@@ -19,7 +19,8 @@ public class ConfigWindow : Window, IDisposable
         "MeterWay Configurations",
         ImGuiWindowFlags.NoCollapse |
         ImGuiWindowFlags.NoScrollbar |
-        ImGuiWindowFlags.NoScrollWithMouse) // ImGuiWindowFlags.NoResize | 
+        ImGuiWindowFlags.NoResize | 
+        ImGuiWindowFlags.NoScrollWithMouse)
     {
         Size = new Vector2(400, 300);
         SizeCondition = ImGuiCond.Always;
@@ -55,7 +56,7 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("Overlay");
         if (!tab) return;
 
-        if(EncounterManager.LastEncounter.Active)
+        if (EncounterManager.LastEncounter.Active)
         {
             ImGui.Text("You can not change overlay configs when in combat");
             return;
@@ -63,34 +64,36 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Text("Overlay");
 
-        ImGui.PushItemWidth(160);
-        string[] items = OverlayWindow.Overlays.Select(x => x.Name).ToArray();
-        var OverlayTypeValue = ConfigurationManager.Inst.Configuration.OverlayType;
-        if (ImGui.Combo("Overlay type", ref OverlayTypeValue, items, items.Length))
-        {
-            if (OverlayTypeValue >= 0 && OverlayTypeValue <= OverlayWindow.Overlays.Count)
-            {
-                ConfigurationManager.Inst.Configuration.OverlayType = OverlayTypeValue;
-                ConfigurationManager.Inst.Configuration.Save();
+        var overlayNames = OverlayWindow.Overlays.Select(x => x.Item1).ToArray();
 
-            }
+        ImGui.PushItemWidth(160);
+        var OverlayIndexValue = OverlayWindow.OverlayIndex;
+        if (ImGui.Combo("Overlay type", ref OverlayIndexValue, overlayNames, OverlayWindow.Overlays.Length))
+        {
+            OverlayWindow.OverlayIndex = OverlayIndexValue;
+            OverlayWindow.ActivateOverlay();
+            ConfigurationManager.Inst.Configuration.OverlayName = OverlayWindow.Overlays[OverlayIndexValue].Item1;
+            ConfigurationManager.Inst.Configuration.Save();
         }
         ImGui.PopItemWidth();
 
-        var OverlayValue = ConfigurationManager.Inst.Configuration.Overlay;
-        if (ImGui.Checkbox("Enable", ref OverlayValue))
+        var OverlayEnabledValue = ConfigurationManager.Inst.Configuration.OverlayEnabled;
+        if (ImGui.Checkbox("Enable", ref OverlayEnabledValue))
         {
-            ConfigurationManager.Inst.Configuration.Overlay = OverlayValue;
+            ConfigurationManager.Inst.Configuration.OverlayEnabled = OverlayEnabledValue;
             ConfigurationManager.Inst.Configuration.Save();
-            if (OverlayValue)
+            if (OverlayEnabledValue)
             {
                 InterfaceManager.Inst.WindowSystem.AddWindow(OverlayWindow);
+                OverlayWindow.ActivateOverlay();
             }
             else
             {
                 InterfaceManager.Inst.WindowSystem.RemoveWindow(OverlayWindow);
+                OverlayWindow.InactivateOverlay();
             }
         }
+        if (OverlayEnabledValue == false) return;
 
         var OverlayClickThroughValue = ConfigurationManager.Inst.Configuration.OverlayClickThrough;
         if (ImGui.Checkbox("Click through", ref OverlayClickThroughValue))
@@ -100,27 +103,43 @@ public class ConfigWindow : Window, IDisposable
             OverlayWindow.Flags = OverlayWindow.GetFlags();
         }
 
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Text("Update frequency");
+
         var OverlayRealtimeUpdateValue = ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate;
-        if (ImGui.Checkbox("Realtime Update", ref OverlayRealtimeUpdateValue))
+        if (ImGui.Checkbox("Realtime", ref OverlayRealtimeUpdateValue))
         {
             ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate = OverlayRealtimeUpdateValue;
             ConfigurationManager.Inst.Configuration.Save();
         }
-        
-        ImGui.PushItemWidth(90);
-        var OverlayIntervalUpdateValue = (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.TotalMilliseconds / 1000;
-        if (ImGui.DragFloat("Interval Update Seconds", ref OverlayIntervalUpdateValue, 0.01f, 0.01f, 60f))
+
+        if (OverlayRealtimeUpdateValue == false)
         {
-            ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromMilliseconds(OverlayIntervalUpdateValue * 1000);
-            ConfigurationManager.Inst.Configuration.Save();
+            ImGui.PushItemWidth(50);
+            var OverlayIntervalUpdateValue2 = 1000 / (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.TotalMilliseconds;
+            if (ImGui.DragFloat("Update per Second", ref OverlayIntervalUpdateValue2, 0.001f, 0.01f, 60f))
+            {
+                ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromMilliseconds(1000 / OverlayIntervalUpdateValue2);
+                ConfigurationManager.Inst.Configuration.Save();
+            }
+            ImGui.SameLine();
+            ImGui.Text(" | ");
+            ImGui.SameLine();
+            var OverlayIntervalUpdateValue = (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.TotalMilliseconds / 1000;
+            if (ImGui.DragFloat("Update Interval", ref OverlayIntervalUpdateValue, 0.001f, 0.01f, 60f))
+            {
+                ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromMilliseconds(OverlayIntervalUpdateValue * 1000);
+                ConfigurationManager.Inst.Configuration.Save();
+            }
+            ImGui.PopItemWidth();
         }
-        ImGui.PopItemWidth();
 
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Text("Font configs");
 
-        ImGui.PushItemWidth(90);
+        ImGui.PushItemWidth(50);
         var OverlayFontScaleValue = ConfigurationManager.Inst.Configuration.OverlayFontScale;
         if (ImGui.DragFloat("Scale", ref OverlayFontScaleValue, 0.01f, 1f, 5f))
         {
@@ -171,7 +190,7 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Spacing();
         ImGui.Separator();
-        
+
         {
             if (ImGui.Button(status ? "Restart" : "Start"))
             {
