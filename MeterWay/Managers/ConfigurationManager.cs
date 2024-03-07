@@ -8,8 +8,8 @@ public class ConfigurationManager
 
     public ConfigurationManager()
     {
-        Configuration = InterfaceManager.Inst.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        Configuration.Initialize(InterfaceManager.Inst.PluginInterface);
+        Configuration = Dalamud.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        Configuration.Initialize(Dalamud.PluginInterface);
 
         Inst = this;
     }

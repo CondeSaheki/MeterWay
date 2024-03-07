@@ -6,8 +6,6 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Ipc;
 
-using MeterWay.Managers;
-
 namespace MeterWay.Ipc;
 
 public delegate void ReadOnlyJObject(ref readonly JObject json);
@@ -39,7 +37,7 @@ public class IINACTClient : IIpcClient, IDisposable
         Receivers = [];
         connectionStatus = false;
 
-        subscriptionReceiver = InterfaceManager.Inst.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);
+        subscriptionReceiver = Dalamud.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);
         subscriptionReceiver.RegisterFunc(Receiver);
     }
 
@@ -53,23 +51,23 @@ public class IINACTClient : IIpcClient, IDisposable
     {
         if (connectionStatus)
         {
-            InterfaceManager.Inst.ChatGui.Print("Meterway is already connected to IINACT.");
+            Dalamud.Chat.Print("Meterway is already connected to IINACT.");
             return;
         }
 
         try
         {
-            InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<string, bool>(IINACTCreateSubscriber).InvokeFunc(MeterwaySubscriptionReceiver);
+            Dalamud.PluginInterface.GetIpcSubscriber<string, bool>(IINACTCreateSubscriber).InvokeFunc(MeterwaySubscriptionReceiver);
             connectionStatus = true;
 
-            InterfaceManager.Inst.PluginLog.Info("Meterway is connected to IINACT.");
-            InterfaceManager.Inst.ChatGui.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is connected to IINACT."), new UIForegroundPayload(0)));
+            Dalamud.Log.Info("Meterway is connected to IINACT.");
+            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is connected to IINACT."), new UIForegroundPayload(0)));
         }
         catch (Exception ex)
         {
-            InterfaceManager.Inst.PluginLog.Info("Meterway was unable to connected to IINACT.");
-            InterfaceManager.Inst.ChatGui.Print(new SeString(new UIForegroundPayload(540), new TextPayload("Meterway was unable to connected to IINACT."), new UIForegroundPayload(0)));
-            InterfaceManager.Inst.PluginLog.Error(ex.ToString());
+            Dalamud.Log.Info("Meterway was unable to connected to IINACT.");
+            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(540), new TextPayload("Meterway was unable to connected to IINACT."), new UIForegroundPayload(0)));
+            Dalamud.Log.Error(ex.ToString());
         }
     }
 
@@ -77,7 +75,7 @@ public class IINACTClient : IIpcClient, IDisposable
     {
         if (!Subscriptions.Any(x => true))
         {
-            InterfaceManager.Inst.PluginLog.Info("trying to Subscribe with no subscription types");
+            Dalamud.Log.Info("trying to Subscribe with no subscription types");
             return;
         }
 
@@ -87,12 +85,12 @@ public class IINACTClient : IIpcClient, IDisposable
 
         try
         {
-            foreach (var sub in Subscriptions) InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<JObject, bool>(IINACTSubscribe).InvokeAction(CreateMessage(sub));
+            foreach (var sub in Subscriptions) Dalamud.PluginInterface.GetIpcSubscriber<JObject, bool>(IINACTSubscribe).InvokeAction(CreateMessage(sub));
         }
         catch (Exception ex)
         {
-            InterfaceManager.Inst.PluginLog.Info("Meterway was unable to subscribe to IINACT.");
-            InterfaceManager.Inst.PluginLog.Error(ex.ToString());
+            Dalamud.Log.Info("Meterway was unable to subscribe to IINACT.");
+            Dalamud.Log.Error(ex.ToString());
             Disconnect();
         }
     }
@@ -103,14 +101,14 @@ public class IINACTClient : IIpcClient, IDisposable
 
         try
         {
-            connectionStatus = !InterfaceManager.Inst.PluginInterface.GetIpcSubscriber<string, bool>(IINACTUnubscribe).InvokeFunc(MeterwaySubscriptionReceiver);
+            connectionStatus = !Dalamud.PluginInterface.GetIpcSubscriber<string, bool>(IINACTUnubscribe).InvokeFunc(MeterwaySubscriptionReceiver);
             connectionStatus = false;
-            InterfaceManager.Inst.PluginLog.Info("Meterway disconnected.");
-            InterfaceManager.Inst.ChatGui.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway disconnected."), new UIForegroundPayload(0)));
+            Dalamud.Log.Info("Meterway disconnected.");
+            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway disconnected."), new UIForegroundPayload(0)));
         }
         catch (Exception ex)
         {
-            InterfaceManager.Inst.PluginLog.Warning("Meterway error while disconnecting: " + ex.ToString());
+            Dalamud.Log.Warning("Meterway error while disconnecting: " + ex.ToString());
             connectionStatus = false;
         }
     }

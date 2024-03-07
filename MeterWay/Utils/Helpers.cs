@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
-using MeterWay.Managers;
 
 namespace MeterWay.Utils;
 
@@ -66,10 +65,10 @@ public static class Helpers
         return sorted;
     }
 
-    public static void Log(string message)
-    {
-        InterfaceManager.Inst.PluginLog.Info(message);
-    }
+    // public static void Log(string message)
+    // {
+    //     InterfaceManager.Inst.PluginLog.Info(message);
+    // }
 
     public static List<ReadOnlyMemory<char>> SplitStringAsMemory(string input, char delimiter)
     {

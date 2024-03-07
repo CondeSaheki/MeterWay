@@ -10,7 +10,7 @@ using MeterWay.Data;
 
 namespace MeterWay.Overlays;
 
-public class LazerOverlay : IMeterwayOverlay
+public class LazerOverlay : MeterwayOverlay
 {
     public new static string Name => "Lazer";
     public static string Name2 = "Lazer";

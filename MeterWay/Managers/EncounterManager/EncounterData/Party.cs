@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Party;
-using MeterWay.Managers;
+
 using MeterWay.Utils;
 
 namespace MeterWay.Data;
@@ -27,7 +27,7 @@ public class EncounterParty
     private Dictionary<uint, Player> GetPlayers()
     {
         var tmpPlayers = new Dictionary<uint, Player>();
-        var partyList = InterfaceManager.Inst.PartyList;
+        var partyList = Dalamud.PartyList;
         if (partyList.Count() != 0)
         {
             foreach (var player in partyList)
@@ -40,7 +40,7 @@ public class EncounterParty
         }
         else
         {
-            var localPlayer = InterfaceManager.Inst.ClientState.LocalPlayer;
+            var localPlayer = Dalamud.ClientState.LocalPlayer;
             if (localPlayer != null)
             {
                 var character = (Character)localPlayer;
@@ -54,7 +54,7 @@ public class EncounterParty
     {
         if (Encounter.Finished) return;
 
-        var partyList = InterfaceManager.Inst.PartyList;
+        var partyList = Dalamud.PartyList;
 
         // keep only you
         if (partyList.Length == 0)
@@ -115,7 +115,7 @@ public class EncounterParty
         }
 
         Id = Helpers.CreateId();
-        Helpers.Log("Party updated");
+        Dalamud.Log.Info("Party updated");
     }
 
     private uint? GetOrRecoverPlayer(PartyMember player)
@@ -137,7 +137,7 @@ public class EncounterParty
 
     private void Disband()
     {
-        var you = InterfaceManager.Inst.ClientState.LocalPlayer;
+        var you = Dalamud.ClientState.LocalPlayer;
         if (you == null) return; // you are null
 
         foreach (var player in Players)
@@ -154,12 +154,12 @@ public class EncounterParty
         }
 
         Id = Helpers.CreateId();
-        Helpers.Log("Party updated");
+        Dalamud.Log.Info("Party updated");
     }
 
     public bool HasChanged()
     {
-        var partyList = InterfaceManager.Inst.PartyList;
+        var partyList = Dalamud.PartyList;
 
         uint activeCount = 0;
         foreach (var player in Players) if (player.Value.IsActive) ++activeCount;

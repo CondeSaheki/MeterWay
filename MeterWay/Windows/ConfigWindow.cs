@@ -6,16 +6,14 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility.Raii;
 
 using MeterWay.Managers;
-using MeterWay.Ipc;
 
 namespace MeterWay.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
-    private readonly IINACTClient iinactIpcClient;
-    private readonly OverlayWindow OverlayWindow;
+    private readonly Plugin Plugin;
 
-    public ConfigWindow(IINACTClient iinactIpcClient, OverlayWindow OverlayWindow) : base(
+    public ConfigWindow(Plugin plugin) : base(
         "MeterWay Configurations",
         ImGuiWindowFlags.NoCollapse |
         ImGuiWindowFlags.NoScrollbar |
@@ -25,8 +23,7 @@ public class ConfigWindow : Window, IDisposable
         Size = new Vector2(400, 300);
         SizeCondition = ImGuiCond.Always;
 
-        this.iinactIpcClient = iinactIpcClient;
-        this.OverlayWindow = OverlayWindow;
+        Plugin = plugin;
     }
 
     public void Dispose() { }
@@ -64,15 +61,15 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Text("Overlay");
 
-        var overlayNames = OverlayWindow.Overlays.Select(x => x.Item1).ToArray();
+        var overlayNames = Plugin.OverlayWindow.Overlays.Select(x => x.Item1).ToArray();
 
         ImGui.PushItemWidth(160);
-        var OverlayIndexValue = OverlayWindow.OverlayIndex;
-        if (ImGui.Combo("Overlay type", ref OverlayIndexValue, overlayNames, OverlayWindow.Overlays.Length))
+        var OverlayIndexValue = Plugin.OverlayWindow.OverlayIndex;
+        if (ImGui.Combo("Overlay type", ref OverlayIndexValue, overlayNames, Plugin.OverlayWindow.Overlays.Length))
         {
-            OverlayWindow.OverlayIndex = OverlayIndexValue;
-            OverlayWindow.ActivateOverlay();
-            ConfigurationManager.Inst.Configuration.OverlayName = OverlayWindow.Overlays[OverlayIndexValue].Item1;
+            Plugin.OverlayWindow.OverlayIndex = OverlayIndexValue;
+            Plugin.OverlayWindow.ActivateOverlay();
+            ConfigurationManager.Inst.Configuration.OverlayName = Plugin.OverlayWindow.Overlays[OverlayIndexValue].Item1;
             ConfigurationManager.Inst.Configuration.Save();
         }
         ImGui.PopItemWidth();
@@ -84,13 +81,13 @@ public class ConfigWindow : Window, IDisposable
             ConfigurationManager.Inst.Configuration.Save();
             if (OverlayEnabledValue)
             {
-                InterfaceManager.Inst.WindowSystem.AddWindow(OverlayWindow);
-                OverlayWindow.ActivateOverlay();
+                Plugin.OverlayWindow.IsOpen = true;
+                Plugin.OverlayWindow.ActivateOverlay();
             }
             else
             {
-                InterfaceManager.Inst.WindowSystem.RemoveWindow(OverlayWindow);
-                OverlayWindow.InactivateOverlay();
+                Plugin.OverlayWindow.IsOpen = false;
+                Plugin.OverlayWindow.InactivateOverlay();
             }
         }
         if (OverlayEnabledValue == false) return;
@@ -100,7 +97,7 @@ public class ConfigWindow : Window, IDisposable
         {
             ConfigurationManager.Inst.Configuration.OverlayClickThrough = OverlayClickThroughValue;
             ConfigurationManager.Inst.Configuration.Save();
-            OverlayWindow.Flags = OverlayWindow.GetFlags();
+            Plugin.OverlayWindow.Flags = OverlayWindow.GetFlags();
         }
 
         ImGui.Spacing();
@@ -165,7 +162,7 @@ public class ConfigWindow : Window, IDisposable
         {
             ConfigurationManager.Inst.Configuration.OverlayBackground = OverlayBackgroundValue;
             ConfigurationManager.Inst.Configuration.Save();
-            OverlayWindow.Flags = OverlayWindow.GetFlags();
+            Plugin.OverlayWindow.Flags = OverlayWindow.GetFlags();
         }
 
         var OverlayBackgroundColorValue = ConfigurationManager.Inst.Configuration.OverlayBackgroundColor;
@@ -182,7 +179,7 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("IINACT");
         if (!tab) return;
 
-        var status = iinactIpcClient.Status();
+        var status = Plugin.IinactIpcClient.Status();
 
         ImGui.Text($"State: ");
         ImGui.SameLine();
@@ -196,11 +193,11 @@ public class ConfigWindow : Window, IDisposable
             {
                 if (status)
                 {
-                    iinactIpcClient.Reconnect();
+                    Plugin.IinactIpcClient.Reconnect();
                 }
                 else
                 {
-                    iinactIpcClient.Connect();
+                    Plugin.IinactIpcClient.Connect();
                 }
             }
 
@@ -209,7 +206,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.SameLine();
             if (ImGui.Button("Stop"))
             {
-                iinactIpcClient.Disconnect();
+                Plugin.IinactIpcClient.Disconnect();
             }
             if (!status) ImGui.EndDisabled();
         }

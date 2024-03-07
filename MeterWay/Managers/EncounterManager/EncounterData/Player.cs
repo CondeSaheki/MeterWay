@@ -2,7 +2,6 @@ using System.Linq;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 
-using MeterWay.Managers;
 using MeterWay.Utils;
 
 namespace MeterWay.Data;
@@ -70,7 +69,7 @@ public class Player(Character character, Encounter encounter)
             Job = player.ClassJob.Id;
             Id = Helpers.CreateId();
 
-            Helpers.Log("Player Updated");
+            Dalamud.Log.Info("Player Updated");
             return true;
         }
         return false;
@@ -78,16 +77,16 @@ public class Player(Character character, Encounter encounter)
 
     private PlayerCharacter? GetPlayer()
     {
-        var partyList = InterfaceManager.Inst.PartyList;
+        var partyList = Dalamud.PartyList;
         if (partyList.Length == 0)
         {
-            var you = InterfaceManager.Inst.ClientState.LocalPlayer;
+            var you = Dalamud.ClientState.LocalPlayer;
             if (you == null || you.ObjectId != Id) return null;
             return you;
         }
         else
         {
-            var obj = InterfaceManager.Inst.PartyList.First(x => x.ObjectId == Id).GameObject;
+            var obj = Dalamud.PartyList.First(x => x.ObjectId == Id).GameObject;
             if (obj == null) return null;
             return (PlayerCharacter)obj;
         }

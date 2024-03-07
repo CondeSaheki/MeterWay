@@ -16,7 +16,7 @@ public class Commands : IDisposable
     public Commands(Plugin plugin)
     {
         Plugin = plugin;
-        InterfaceManager.Inst.CommandManager.AddHandler(CommandName, new CommandInfo((string command, string arg) => { OnCommand(arg); })
+        Dalamud.Commands.AddHandler(CommandName, new CommandInfo((string command, string arg) => { OnCommand(arg); })
         {
             HelpMessage = $"Display {Plugin.Name} main window.\nAditional help with the command \'{CommandName} help\'."
         });
@@ -47,15 +47,15 @@ public class Commands : IDisposable
         {
             "" when args.Count == 1 => () => { Plugin.MainWindow.IsOpen = true; },
             "config" when args.Count == 1 => () => { Plugin.ConfigWindow.IsOpen = true; },
-            "connect" when args.Count == 1 => Plugin.IpcClient.Connect,
-            "disconnect" when args.Count == 1 => Plugin.IpcClient.Disconnect,
-            "reconnect" when args.Count == 1 => Plugin.IpcClient.Reconnect,
+            "connect" when args.Count == 1 => Plugin.IinactIpcClient.Connect,
+            "disconnect" when args.Count == 1 => Plugin.IinactIpcClient.Disconnect,
+            "reconnect" when args.Count == 1 => Plugin.IinactIpcClient.Reconnect,
             "status" when args.Count == 1 => () =>
             {
-                var msg = $"MeterWay is {(Plugin.IpcClient.Status() ? "connected" : "disconnected")} to IINACT.";
-                InterfaceManager.Inst.ChatGui.Print(msg);
+                var msg = $"MeterWay is {(Plugin.IinactIpcClient.Status() ? "connected" : "disconnected")} to IINACT.";
+                Dalamud.Chat.Print(msg);
             },
-            "help" when args.Count == 1 => () => { InterfaceManager.Inst.ChatGui.Print(HelpMessage()); },
+            "help" when args.Count == 1 => () => { Dalamud.Chat.Print(HelpMessage()); },
 
             #if DEBUG
 
@@ -73,7 +73,7 @@ public class Commands : IDisposable
             _ => () =>
             {
                 var text = $"Invalid command \'{args}\' consult \'{CommandName} help\'.";
-                InterfaceManager.Inst.ChatGui.Print(new SeString(new UIForegroundPayload(539), new TextPayload(text), new UIForegroundPayload(0)));
+                Dalamud.Chat.Print(new SeString(new UIForegroundPayload(539), new TextPayload(text), new UIForegroundPayload(0)));
             }
         };
         handler();
@@ -82,6 +82,6 @@ public class Commands : IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        InterfaceManager.Inst.CommandManager.RemoveHandler(CommandName);
+        Dalamud.Commands.RemoveHandler(CommandName);
     }
 }

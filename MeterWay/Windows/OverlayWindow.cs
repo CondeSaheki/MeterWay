@@ -16,7 +16,7 @@ public class OverlayWindow : Window, IDisposable
     public (string, Type)[] Overlays { get; init; }
     public int OverlayIndex { get; set; }
 
-    private IMeterwayOverlay? Overlay { get; set; }
+    private MeterwayOverlay? Overlay { get; set; }
     private uint? OverlayClientId { get; set; }
 
     private static readonly ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
@@ -33,7 +33,7 @@ public class OverlayWindow : Window, IDisposable
         Flags = GetFlags();
 
         #if DEBUG
-            ValidadeOverlays<IMeterwayOverlay>(overlays);
+            ValidadeOverlays<MeterwayOverlay>(overlays);
         #endif
 
         Overlays = overlays.Select(type => ((string)type.GetProperty("Name")?.GetValue(null)!, type)).ToArray();
@@ -42,7 +42,7 @@ public class OverlayWindow : Window, IDisposable
         if (index == -1)
         {
             index = 0;
-            InterfaceManager.Inst.PluginLog.Warning($"Reseting overlay type to default, Overlay with the name {ConfigurationManager.Inst.Configuration.OverlayName} was not found!");
+            Dalamud.Log.Warning($"Reseting overlay type to default, Overlay with the name {ConfigurationManager.Inst.Configuration.OverlayName} was not found!");
             ConfigurationManager.Inst.Configuration.OverlayName = Overlays[0].Item1;
             ConfigurationManager.Inst.Configuration.Save();
         }
@@ -68,7 +68,7 @@ public class OverlayWindow : Window, IDisposable
     {
         UnSubscribeOverlay();
         Overlay?.Dispose();
-        Overlay = (IMeterwayOverlay?)Activator.CreateInstance(Overlays[OverlayIndex].Item2);
+        Overlay = (MeterwayOverlay?)Activator.CreateInstance(Overlays[OverlayIndex].Item2);
         SubscribeOverlay();
     }
 

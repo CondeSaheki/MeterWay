@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
-using MeterWay.Managers;
+
 using MeterWay.Utils;
 
 namespace MeterWay.LogParser;
@@ -54,7 +54,7 @@ public class LogLineData
             }
             catch (Exception ex)
             {
-                InterfaceManager.Inst.PluginLog.Warning($"Failed to parse LogLine {MsgType} - {((uint)MsgType).ToString()} ->\n {RawLine} \n Error -> \n {ex}");
+                Dalamud.Log.Warning($"Failed to parse LogLine {MsgType} - {((uint)MsgType).ToString()} ->\n {RawLine} \n Error -> \n {ex}");
             }
         }
     }

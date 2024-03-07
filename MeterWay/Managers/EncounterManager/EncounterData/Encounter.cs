@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Lumina.Excel.GeneratedSheets;
 
-using MeterWay.Managers;
 using MeterWay.Utils;
 using MeterWay.LogParser;
 
@@ -66,13 +65,13 @@ public class Encounter
 
     public void Start()
     {
-        InterfaceManager.Inst.PluginLog.Info("Encounter started.");
+        Dalamud.Log.Info("Encounter started.");
         if (Begin == null) Begin = DateTime.Now; // Active = true
     }
 
     public void Stop()
     {
-        InterfaceManager.Inst.PluginLog.Info("Encounter ended.");
+        Dalamud.Log.Info("Encounter ended.");
         if (End == null) End = DateTime.Now; // finished = true
     }
 
@@ -126,7 +125,7 @@ public class Encounter
 
     private static string GetName()
     {
-        var locationRow = InterfaceManager.Inst.DataManager.GetExcelSheet<TerritoryType>()?.GetRow(InterfaceManager.Inst.ClientState.TerritoryType);
+        var locationRow = Dalamud.GameData.GetExcelSheet<TerritoryType>()?.GetRow(Dalamud.ClientState.TerritoryType);
         var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();
         var placeName = locationRow?.PlaceName.Value?.Name?.ToString();
 

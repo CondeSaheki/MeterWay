@@ -11,10 +11,9 @@ using MeterWay.Utils.Draw;
 
 namespace MeterWay.Overlays;
 
-public class MoguOverlay : IMeterwayOverlay
+public class MoguOverlay : MeterwayOverlay
 {
     public new static string Name => "Mogu";
-    public static string Name2 = "Mogu";
 
     private Encounter data;
     private Vector2 WindowMin { get; set; }

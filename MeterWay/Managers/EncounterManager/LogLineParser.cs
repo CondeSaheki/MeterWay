@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 using MeterWay.Managers;
-using MeterWay.Utils;
 using MeterWay.LogParser;
 
 namespace MeterWay.Data;
@@ -123,7 +122,7 @@ public static class LoglineParser
             // TODO Pets
             if (ActionFromPet)
             {
-                Helpers.Log("Detected Action From Pet");
+                Dalamud.Log.Info("Detected Action From Pet");
             }
 
             break;
@@ -141,7 +140,7 @@ public static class LoglineParser
         logLineData.Parse();
         var parsed = (StartsCasting)logLineData.Value!;
 
-        Helpers.Log("MsgStartsCasting not implemented");
+        Dalamud.Log.Info("MsgStartsCasting not implemented");
     }
 
     private static void MsgDoTHoT(LogLineData logLineData, Encounter encounter)
@@ -190,9 +189,8 @@ public static class LoglineParser
         // TODO Pets
         if (ActionFromPet)
         {
-            Helpers.Log("Detected Action From Pet");
+            Dalamud.Log.Info("Detected Action From Pet");
         }
-
     }
 
     private static void MsgPartyList(LogLineData logLineData, Encounter encounter)
@@ -217,9 +215,9 @@ public static class LoglineParser
 
         if (parsed.IsPet)
         {
-            Helpers.Log("Detected Action From Pet");
+            Dalamud.Log.Info("Detected Action From Pet");
         }
-        Helpers.Log("MsgAddCombatant not implemented");
+        Dalamud.Log.Info("MsgAddCombatant not implemented");
     }
 
     private static void MsgPlayerStats(LogLineData logLineData, Encounter encounter)
@@ -233,7 +231,7 @@ public static class LoglineParser
         // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
-        Helpers.Log("MsgPlayerStats not implemented");
+        Dalamud.Log.Info("MsgPlayerStats not implemented");
     }
 
     private static void MsgStatusApply(LogLineData logLineData, Encounter encounter)
@@ -247,7 +245,7 @@ public static class LoglineParser
         // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
-        Helpers.Log("MsgStatusApply not implemented");
+        Dalamud.Log.Info("MsgStatusApply not implemented");
     }
 
     private static void MsgStatusRemove(LogLineData logLineData, Encounter encounter)
@@ -261,7 +259,7 @@ public static class LoglineParser
         // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
-        Helpers.Log("MsgStatusRemove not implemented");
+        Dalamud.Log.Info("MsgStatusRemove not implemented");
     }
 
     private static void MsgDeath(LogLineData logLineData, Encounter encounter)
@@ -275,6 +273,6 @@ public static class LoglineParser
         // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
-        Helpers.Log("MsgDeath not implemented");
+        Dalamud.Log.Info("MsgDeath not implemented");
     }
 }

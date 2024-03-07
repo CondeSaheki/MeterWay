@@ -27,10 +27,10 @@ public static class Widget
                 if (fullLine)
                 {
                     position.X = windowMax.X / 2 + position.X / 2;
-                    position.X -= (size.X * scale) / 2;
+                    position.X -= size.X * scale / 2;
                     break;
                 }
-                position.X -= (size.X * scale) / 2;
+                position.X -= size.X * scale / 2;
                 break;
         }
 

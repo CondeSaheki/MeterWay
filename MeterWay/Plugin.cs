@@ -1,7 +1,5 @@
-﻿using Dalamud.IoC;
-using Dalamud.Plugin;
+﻿using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
 
 using MeterWay.Windows;
 using MeterWay.Ipc;
@@ -13,99 +11,72 @@ namespace MeterWay;
 public sealed class Plugin : IDalamudPlugin
 {
     public static string Name => "MeterWay";
-    private readonly WindowSystem WindowSystem = new(Name);
-
-    // windows
-    public ConfigWindow ConfigWindow { get; init; }
-    public MainWindow MainWindow { get; init; }
-    public OverlayWindow OverlayWindow { get; init; }
-
+    
+    public OverlayWindow OverlayWindow { get; private init; }
+    public ConfigWindow ConfigWindow { get; private init; }
+    public MainWindow MainWindow { get; } = new();
+    
     #if DEBUG
-        public DebugWindow DebugWindow { get; init; }
+        public DebugWindow DebugWindow { get; } = new();
     #endif
 
-    // meterway stuff
-    public IINACTClient IpcClient { get; init; }
-    
+    public IINACTClient IinactIpcClient { get; private init; }
+
     private Commands Commands { get; init; }
-    private readonly EncounterManager encounterManager;
-    private readonly InterfaceManager pluginManager;
-    private readonly ConfigurationManager configurationManager;
-
-    public Plugin(
-        [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface,
-        [RequiredVersion("1.0")] ICommandManager commandManager,
-        [RequiredVersion("1.0")] IPluginLog pluginLog,
-        [RequiredVersion("1.0")] IChatGui chatGui,
-        [RequiredVersion("1.0")] IClientState clientState,
-        [RequiredVersion("1.0")] ICondition condition,
-        [RequiredVersion("1.0")] IPartyList partyList,
-        [RequiredVersion("1.0")] IDataManager datamanager,
-        [RequiredVersion("1.0")] IDutyState dutyState,
-        [RequiredVersion("1.0")] ITextureProvider textureProvider
-        )
+    private readonly WindowSystem WindowSystem = new(Name);
+    private readonly EncounterManager encounterManager = new();
+    private readonly ConfigurationManager configurationManager = new();
+    
+    public Plugin(DalamudPluginInterface pluginInterface)
     {
-        pluginManager = new InterfaceManager(WindowSystem, pluginInterface, commandManager, pluginLog, chatGui, clientState, condition,
-            partyList, datamanager, textureProvider, dutyState);
+        try
+        {
+            Dalamud.Initialize(pluginInterface);
 
-        configurationManager = new ConfigurationManager();
+            IinactIpcClient = new IINACTClient();
+            IinactIpcClient.Connect();
+            IinactIpcClient.Subscribe([IINACTClient.SubscriptionType.LogLine]);
+            IinactIpcClient.Receivers.Add(EncounterManager.Receiver);
 
-        encounterManager = new EncounterManager();
-        IpcClient = new IINACTClient();
-        IpcClient.Connect();
-        IpcClient.Subscribe([IINACTClient.SubscriptionType.LogLine]);
-        IpcClient.Receivers.Add(EncounterManager.Receiver);
-
-        MainWindow = new MainWindow();
-        
-        // register your overlays here
-        OverlayWindow = new OverlayWindow(
-            [
-                typeof(LazerOverlay), 
-                typeof(MoguOverlay)
-            ]
-        );
-
-        ConfigWindow = new ConfigWindow(IpcClient, OverlayWindow);
-
-        WindowSystem.AddWindow(ConfigWindow);
-        WindowSystem.AddWindow(MainWindow);
-        if (ConfigurationManager.Inst.Configuration.OverlayEnabled) WindowSystem.AddWindow(OverlayWindow);
-
-        #if DEBUG
-            DebugWindow = new DebugWindow();
+            // register your overlays here
+            OverlayWindow = new OverlayWindow(
+                [
+                    typeof(LazerOverlay),
+                    typeof(MoguOverlay)
+                ]
+            );
+            ConfigWindow = new(this);
+            
+            WindowSystem.AddWindow(OverlayWindow);
+            WindowSystem.AddWindow(ConfigWindow);
+            WindowSystem.AddWindow(MainWindow);
             WindowSystem.AddWindow(DebugWindow);
-        #endif
 
-        Commands = new Commands(this);
+            Commands = new Commands(this);
 
-        InterfaceManager.Inst.PluginInterface.UiBuilder.Draw += DrawUI;
-        InterfaceManager.Inst.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            Dalamud.PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
+            Dalamud.PluginInterface.UiBuilder.OpenConfigUi += ConfigWindow.Toggle;
+        }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
 
     public void Dispose()
     {
-        Commands.Dispose();
-        WindowSystem.RemoveAllWindows();
-        ConfigWindow.Dispose();
-        OverlayWindow.Dispose();
-        MainWindow.Dispose();
+        if (ConfigWindow != null) Dalamud.PluginInterface.UiBuilder.OpenConfigUi -= ConfigWindow.Toggle;
+        if (WindowSystem != null) Dalamud.PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         
-        #if DEBUG
-            DebugWindow.Dispose();
-        #endif
-        
-        encounterManager.Dispose();
-        IpcClient.Dispose();
-    }
+        Commands?.Dispose();
 
-    private void DrawUI()
-    {
-        WindowSystem.Draw();
-    }
-
-    private void DrawConfigUI()
-    {
-        ConfigWindow.IsOpen = true;
+        WindowSystem?.RemoveAllWindows();
+        ConfigWindow?.Dispose();
+        MainWindow?.Dispose();
+        OverlayWindow?.Dispose();
+   
+        IinactIpcClient?.Dispose();
+        encounterManager?.Dispose(); 
     }
 }
