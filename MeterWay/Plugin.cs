@@ -50,7 +50,9 @@ public sealed class Plugin : IDalamudPlugin
             WindowSystem.AddWindow(OverlayWindow);
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
-            WindowSystem.AddWindow(DebugWindow);
+            #if DEBUG
+                WindowSystem.AddWindow(DebugWindow);
+            #endif
 
             Commands = new Commands(this);
 
@@ -75,6 +77,10 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow?.Dispose();
         MainWindow?.Dispose();
         OverlayWindow?.Dispose();
+        
+        #if DEBUG
+            DebugWindow.Dispose();
+        #endif
    
         IinactIpcClient?.Dispose();
         encounterManager?.Dispose(); 
