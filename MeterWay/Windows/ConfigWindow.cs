@@ -33,12 +33,12 @@ public class ConfigWindow : Window, IDisposable
         using var bar = ImRaii.TabBar("Settings Tabs");
         if (!bar) return;
 
-        DrawGeneralTab();
+        //DrawGeneralTab();
         DrawOverlayTab();
         DrawOverlayConfigTab();
-        DrawAppearenceTab();
+        //DrawAppearenceTab();
         DrawIINACTTab();
-        DrawAboutTab();
+        //DrawAboutTab();
     }
 
     private void DrawGeneralTab()
