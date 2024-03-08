@@ -47,7 +47,7 @@ public class Overlay : MeterWayOverlay, IDisposable
         Window = overlayWindow;
         Window.Flags = OverlayWindow.defaultflags; // temporary
 
-        Config = Load<Configuration>();
+        Config = File.Load<Configuration>(Name);
 
         WindowMin = new Vector2();
         WindowMax = new Vector2();

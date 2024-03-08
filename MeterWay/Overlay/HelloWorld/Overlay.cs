@@ -20,7 +20,7 @@ public class Overlay : MeterWayOverlay, IDisposable
 
     public Overlay(OverlayWindow overlayWindow)
     {
-        Config = Load<Configuration>();
+        Config = File.Load<Configuration>(Name);
         Window = overlayWindow;
 
         Window.Flags = ImGuiWindowFlags.None; // you can change the window properties if you want
@@ -47,7 +47,7 @@ public class Overlay : MeterWayOverlay, IDisposable
         if (ImGui.Checkbox("\'Enabled\' Configuration", ref enabledValue))
         {
             Config.Enabled = enabledValue;
-            Save(Config);
+            File.Save(Name, Config);
         }
     }
 

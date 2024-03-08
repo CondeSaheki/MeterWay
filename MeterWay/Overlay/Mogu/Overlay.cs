@@ -28,7 +28,7 @@ public class Overlay : MeterWayOverlay, IDisposable
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
-        Config = Load<Configuration>();
+        Config = File.Load<Configuration>(Name);
         data = new();
         Window.Flags = OverlayWindow.defaultflags; // temporary
 

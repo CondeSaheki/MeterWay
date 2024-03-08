@@ -1,29 +1,24 @@
+
 using System;
 using System.IO;
 using Newtonsoft.Json;
 
 namespace MeterWay.Overlay;
 
-public abstract class MeterWayOverlay
+static class File
 {
-    public static string Name() => string.Empty;
-    public abstract void Draw();
-    public abstract void Dispose();
-    public abstract void DataProcess();
-    public virtual void DrawConfigurationTab() { }
-    public virtual bool HasConfigurationTab => false;
-
-    public static Configuration Load<Configuration>() where Configuration : MeterWayOverlayConfiguration, new()
+    public static Configuration Load<Configuration>(string fileName) where Configuration : MeterWayOverlayConfiguration, new()
     {
         Configuration config;
-        var file = GetFile(Name() + ".json");
+        var file = GetFile($"{fileName}.json");
         if (file != null && file.Exists)
         {
             try
             {
-                var fileContent = File.ReadAllText(file.FullName);
+                Dalamud.Log.Info($"Reading: {file.FullName}");
+                var fileContent = System.IO.File.ReadAllText(file.FullName);
                 config = JsonConvert.DeserializeObject<Configuration>(fileContent)!;
-                if (config != null) return config;     
+                if (config != null) return config;
             }
             catch (Exception ex)
             {
@@ -31,19 +26,20 @@ public abstract class MeterWayOverlay
             }
         }
         config = new();
-        Save(config);
+        Save(fileName, config);
         return config;
     }
 
-    public static void Save<Configuration>(Configuration config) where Configuration : MeterWayOverlayConfiguration, new()
+    public static void Save<Configuration>(string fileName, Configuration config) where Configuration : MeterWayOverlayConfiguration, new()
     {
-        var file = GetFile(Name() + ".json");
+        var file = GetFile($"{fileName}.json");
         if (file == null) return;
 
         try
         {
+            Dalamud.Log.Info($"Writing: {file.FullName}");
             var fileContent = JsonConvert.SerializeObject(config, Formatting.Indented);
-            File.WriteAllText(file.FullName, fileContent);
+            System.IO.File.WriteAllText(file.FullName, fileContent);
         }
         catch (Exception ex)
         {
@@ -51,7 +47,7 @@ public abstract class MeterWayOverlay
         }
     }
 
-    internal static FileInfo? GetFile(string fileName)
+    private static FileInfo? GetFile(string fileName)
     {
         var Path = new DirectoryInfo(Dalamud.PluginInterface.GetPluginConfigDirectory());
 
@@ -70,5 +66,3 @@ public abstract class MeterWayOverlay
         return new FileInfo(System.IO.Path.Combine(Path.FullName, fileName));
     }
 }
-
-public class MeterWayOverlayConfiguration : Attribute { }

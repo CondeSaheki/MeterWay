@@ -1,8 +1,9 @@
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
+using MeterWay.Overlay;
 using MeterWay.Windows;
 
-namespace Lazer;
+namespace Mogu;
 
 static class ConfigurationTab
 {
@@ -27,9 +28,16 @@ static class ConfigurationTab
         if (ImGui.Checkbox("Click Through", ref clickThroughValue))
         {
             obj.Config.ClickThrough = clickThroughValue;
-            Overlay.Save(obj.Config);
+            File.Save(obj._Name(), obj.Config);
             if (clickThroughValue) obj.Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
             else obj.Window.Flags = OverlayWindow.defaultflags;
+        }
+
+        var frameCalcValue = obj.Config.FrameCalc;
+        if (ImGui.Checkbox("Calculate per frame", ref frameCalcValue))
+        {
+            obj.Config.FrameCalc = frameCalcValue;
+            File.Save(obj._Name(), obj.Config);
         }
     }
 
@@ -40,12 +48,22 @@ static class ConfigurationTab
 
         ImGui.Spacing();
 
-        var OverlayBackgroundColorValue = obj.Config.BackgroundColor;
-        if (ImGui.ColorEdit4("Background Color", ref OverlayBackgroundColorValue,
-            ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
+        var BackgroundValue = obj.Config.Background;
+        if (ImGui.Checkbox("Background", ref BackgroundValue))
         {
-            obj.Config.BackgroundColor = OverlayBackgroundColorValue;
-            Overlay.Save(obj.Config);
+            obj.Config.Background = BackgroundValue;
+            File.Save(obj._Name(), obj.Config);
+        }
+
+        if (obj.Config.Background)
+        {
+            var OverlayBackgroundColorValue = obj.Config.BackgroundColor;
+            if (ImGui.ColorEdit4("Background Color", ref OverlayBackgroundColorValue,
+                ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
+            {
+                obj.Config.BackgroundColor = OverlayBackgroundColorValue;
+                File.Save(obj._Name(), obj.Config);
+            }
         }
     }
 
@@ -55,14 +73,15 @@ static class ConfigurationTab
         if (!tab) return;
 
         ImGui.Spacing();
-
         ImGui.Text("WIP");
+
+        // ImGui.PushItemWidth(50);
         // ImGui.PushItemWidth(50);
         // var fontScaleValue = obj.Config.FontScale;
         // if (ImGui.DragFloat("Font Scale", ref fontScaleValue, 0.01f, 1f, 5f))
         // {
         //     obj.Config.FontScale = fontScaleValue;
-        //     Overlay.Save(obj.Config);
+        //     File.Save<Configuration>(obj.Name,obj.Config);
         // }
         // ImGui.PopItemWidth();
     }
