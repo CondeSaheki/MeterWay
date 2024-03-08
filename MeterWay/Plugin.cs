@@ -13,7 +13,7 @@ public sealed class Plugin : IDalamudPlugin
     
     public OverlayWindow OverlayWindow { get; private init; }
     public ConfigWindow ConfigWindow { get; private init; }
-    public MainWindow MainWindow { get; } = new();
+    public MainWindow MainWindow { get; private init; }
     
     #if DEBUG
         public DebugWindow DebugWindow { get; } = new();
@@ -23,14 +23,17 @@ public sealed class Plugin : IDalamudPlugin
 
     private Commands Commands { get; init; }
     private readonly WindowSystem WindowSystem = new(Name);
-    private readonly EncounterManager encounterManager = new();
-    private readonly ConfigurationManager configurationManager = new();
+    private readonly EncounterManager encounterManager;
+    private readonly ConfigurationManager configurationManager;
     
     public Plugin(DalamudPluginInterface pluginInterface)
     {
         try
         {
             Dalamud.Initialize(pluginInterface);
+
+            encounterManager = new();
+            configurationManager = new();
 
             IinactIpcClient = new IINACTClient();
             IinactIpcClient.Connect();
@@ -40,11 +43,13 @@ public sealed class Plugin : IDalamudPlugin
             // register your overlays here
             OverlayWindow = new(
                 [
+                    // typeof(HelloWorld.Overlay),
                     typeof(Lazer.Overlay),
                     typeof(Mogu.Overlay)
                 ]
             );
             ConfigWindow = new(this);
+            MainWindow = new();
             
             WindowSystem.AddWindow(OverlayWindow);
             WindowSystem.AddWindow(ConfigWindow);
