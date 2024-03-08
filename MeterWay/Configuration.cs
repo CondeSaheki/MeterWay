@@ -1,54 +1,37 @@
 ﻿using Dalamud.Configuration;
-using Dalamud.Plugin;
 using System;
 using System.Numerics;
 
-namespace MeterWay
+namespace MeterWay;
+
+[Serializable]
+public class Configuration : IPluginConfiguration
 {
-    [Serializable]
-    public class Configuration : IPluginConfiguration
+    public int Version { get; set; } = 0;
+
+    //overlay
+    public bool OverlayEnabled { get; set; } = true;
+    public string OverlayName { get; set; } = string.Empty;
+
+    public bool OverlayClickThrough { get; set; } = false;
+
+    public bool OverlayBackground { get; set; } = true;
+    public Vector4 OverlayBackgroundColor { get; set; } = new Vector4(0f, 0f, 0f, 0.25f);
+
+    public string OverlayFontPath { get; set; } = "Inter-Bold.ttf";
+    public float OverlayFontSize { get; set; } = 15f;
+    public float OverlayFontScale { get; set; } = 1f;
+
+    public bool OverlayRealtimeUpdate { get; set; } = false;
+    public TimeSpan OverlayIntervalUpdate { get; set; } = TimeSpan.FromSeconds(1);
+
+    public void Save() => Dalamud.PluginInterface.SavePluginConfig(this);
+
+    public static Configuration Load()
     {
-        public int Version { get; set; } = 0;
-
-        // General
-
-        // public int Interaction { get; set; } = 1;
-        // public bool SaveCombats { get; set; } = true;
-        // public int Combats { get; set; } = 5;
-        // public bool CombatClose { get; set; } = true;
-        // public bool PvP { get; set; } = true;
-
-        //overlay
-        public bool OverlayEnabled { get; set; } = true;
-        public string OverlayName { get; set; } = string.Empty;
-
-        public bool OverlayClickThrough { get; set; } = false;
-
-        public bool OverlayBackground { get; set; } = true;
-        public Vector4 OverlayBackgroundColor { get; set; } = new Vector4(0f, 0f, 0f, 0.25f);
-
-        public string OverlayFontPath { get; set; } = "Inter-Bold.ttf";
-        public float OverlayFontSize { get; set; } = 15f;
-        public float OverlayFontScale { get; set; } = 1f;
-
-        public bool OverlayRealtimeUpdate { get; set; } = false;
-        public TimeSpan OverlayIntervalUpdate { get; set; } = TimeSpan.FromSeconds(1);
-
-        // Aparence
-
-
-        // the below exist just to make saving less cumbersome
-        [NonSerialized]
-        private DalamudPluginInterface? pluginInterface;
-
-        public void Initialize(DalamudPluginInterface pluginInterface)
-        {
-            this.pluginInterface = pluginInterface;
-        }
-
-        public void Save()
-        {
-            this.pluginInterface!.SavePluginConfig(this);
-        }
+        if (Dalamud.PluginInterface.GetPluginConfig() is Configuration config) return config;
+        config = new Configuration();
+        config.Save();
+        return config;
     }
 }

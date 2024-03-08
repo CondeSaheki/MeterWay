@@ -13,10 +13,10 @@ namespace MeterWay.Windows;
 
 public class OverlayWindow : Window, IDisposable
 {
-    public (string, Type)[] Overlays { get; init; }
-    public int OverlayIndex { get; set; }
+    public (string, Type)[] Overlays { get; private init; }
 
-    private MeterwayOverlay? Overlay { get; set; }
+    public int OverlayIndex { get; set; }
+    public MeterWayOverlay? Overlay { get; private set; }
     private uint? OverlayClientId { get; set; }
 
     private static readonly ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
@@ -33,7 +33,7 @@ public class OverlayWindow : Window, IDisposable
         Flags = GetFlags();
 
         #if DEBUG
-            ValidadeOverlays<MeterwayOverlay>(overlays);
+            ValidadeOverlays<MeterWayOverlay>(overlays);
         #endif
 
         Overlays = overlays.Select(type => ((string)type.GetProperty("Name")?.GetValue(null)!, type)).ToArray();
@@ -64,11 +64,16 @@ public class OverlayWindow : Window, IDisposable
         Overlay?.Dispose();
     }
 
+    public static ImGuiWindowFlags GetFlags()
+    {
+        return defaultflags | (ConfigurationManager.Inst.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None);
+    }
+
     public void ActivateOverlay()
     {
         UnSubscribeOverlay();
         Overlay?.Dispose();
-        Overlay = (MeterwayOverlay?)Activator.CreateInstance(Overlays[OverlayIndex].Item2);
+        Overlay = (MeterWayOverlay?)Activator.CreateInstance(Overlays[OverlayIndex].Item2, [this]);
         SubscribeOverlay();
     }
 
@@ -92,12 +97,7 @@ public class OverlayWindow : Window, IDisposable
     {
         if (Overlay == null) return;
         OverlayClientId = Helpers.CreateId();
-        EncounterManager.Clients.Add(new KeyValuePair<uint, Action>((uint)OverlayClientId, Overlay.DataProcess)); // register client
-    }
-
-    public static ImGuiWindowFlags GetFlags()
-    {
-        return defaultflags | (ConfigurationManager.Inst.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None);
+        EncounterManager.Clients.Add(new KeyValuePair<uint, Action>((uint)OverlayClientId, Overlay.DataProcess));
     }
 
     private static void ValidadeOverlays<TInterface>(IEnumerable<Type> types) where TInterface : class

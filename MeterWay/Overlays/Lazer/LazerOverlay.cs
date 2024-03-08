@@ -7,13 +7,16 @@ using MeterWay.Utils.Draw;
 using MeterWay.Utils;
 using MeterWay.Managers;
 using MeterWay.Data;
+using MeterWay.Windows;
 
-namespace MeterWay.Overlays;
+using MeterWay.Overlays;
 
-public class LazerOverlay : MeterwayOverlay
+namespace Lazer;
+
+public class Overlay : MeterWayOverlay
 {
     public new static string Name => "Lazer";
-    public static string Name2 = "Lazer";
+    private OverlayWindow Window {get; init; }
 
     private Encounter combat;
 
@@ -35,8 +38,9 @@ public class LazerOverlay : MeterwayOverlay
     private Dictionary<uint, LerpPlayerData> lerpedInfo;
     private Dictionary<uint, LerpPlayerData> targetInfo;
 
-    public LazerOverlay()
+    public Overlay(OverlayWindow overlayWindow)
     {
+        Window = overlayWindow;
         WindowMin = new Vector2();
         WindowMax = new Vector2();
 
@@ -99,7 +103,9 @@ public class LazerOverlay : MeterwayOverlay
             DrawPlayerLine(lerpedInfo[player.Id], player);
         }
     }
-
+    
+    public override void DrawConfiguration() { }
+    
     public override void Dispose() { }
 
     private void UpdateWindowSize()

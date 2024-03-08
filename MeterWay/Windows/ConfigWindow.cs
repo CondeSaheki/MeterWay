@@ -35,6 +35,7 @@ public class ConfigWindow : Window, IDisposable
 
         DrawGeneralTab();
         DrawOverlayTab();
+        DrawOverlayConfigTab();
         DrawAppearenceTab();
         DrawIINACTTab();
         DrawAboutTab();
@@ -144,6 +145,15 @@ public class ConfigWindow : Window, IDisposable
             ConfigurationManager.Inst.Configuration.Save();
         }
         ImGui.PopItemWidth();
+    }
+
+    private void DrawOverlayConfigTab()
+    {
+        if(Plugin.OverlayWindow.Overlay == null) return;
+
+        using var tab = ImRaii.TabItem("Overlay Configurations");
+        if (!tab) return;
+        Plugin.OverlayWindow.Overlay.DrawConfiguration();
     }
 
     private void DrawAppearenceTab()

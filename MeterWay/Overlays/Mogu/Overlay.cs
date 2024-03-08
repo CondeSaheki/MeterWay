@@ -8,20 +8,24 @@ using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Utils.Draw;
+using MeterWay.Overlays;
+using MeterWay.Windows;
 
-namespace MeterWay.Overlays;
+namespace Mogu;
 
-public class MoguOverlay : MeterwayOverlay
+public class Overlay : MeterWayOverlay
 {
     public new static string Name => "Mogu";
-
+    private OverlayWindow Window {get; init; }
+    
     private Encounter data;
     private Vector2 WindowMin { get; set; }
     private Vector2 WindowMax { get; set; }
     private List<uint> SortCache;
 
-    public MoguOverlay()
+    public Overlay(OverlayWindow overlayWindow)
     {
+        Window = overlayWindow;
         data = new Encounter();
         WindowMin = new Vector2();
         WindowMax = new Vector2();
@@ -66,6 +70,8 @@ public class MoguOverlay : MeterwayOverlay
             cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
         }
     }
+
+    public override void DrawConfiguration() { }
 
     public override void Dispose() { }
 

@@ -4,7 +4,6 @@ using Dalamud.Interface.Windowing;
 using MeterWay.Windows;
 using MeterWay.Ipc;
 using MeterWay.Managers;
-using MeterWay.Overlays;
 
 namespace MeterWay;
 
@@ -39,10 +38,10 @@ public sealed class Plugin : IDalamudPlugin
             IinactIpcClient.Receivers.Add(EncounterManager.Receiver);
 
             // register your overlays here
-            OverlayWindow = new OverlayWindow(
+            OverlayWindow = new(
                 [
-                    typeof(LazerOverlay),
-                    typeof(MoguOverlay)
+                    typeof(Lazer.Overlay),
+                    typeof(Mogu.Overlay)
                 ]
             );
             ConfigWindow = new(this);
@@ -54,7 +53,7 @@ public sealed class Plugin : IDalamudPlugin
                 WindowSystem.AddWindow(DebugWindow);
             #endif
 
-            Commands = new Commands(this);
+            Commands = new(this);
 
             Dalamud.PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
             Dalamud.PluginInterface.UiBuilder.OpenConfigUi += ConfigWindow.Toggle;

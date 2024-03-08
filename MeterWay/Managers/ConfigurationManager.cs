@@ -1,3 +1,4 @@
+//namespace MeterWay.Configuration;
 namespace MeterWay.Managers;
 
 public class ConfigurationManager
@@ -8,9 +9,7 @@ public class ConfigurationManager
 
     public ConfigurationManager()
     {
-        Configuration = Dalamud.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        Configuration.Initialize(Dalamud.PluginInterface);
-
+        Configuration = Configuration.Load();
         Inst = this;
     }
 }
