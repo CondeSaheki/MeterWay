@@ -17,7 +17,7 @@ public class ConfigWindow : Window, IDisposable
         "MeterWay Configurations",
         ImGuiWindowFlags.NoCollapse |
         ImGuiWindowFlags.NoScrollbar |
-        ImGuiWindowFlags.NoResize | 
+        ImGuiWindowFlags.NoResize |
         ImGuiWindowFlags.NoScrollWithMouse)
     {
         Size = new Vector2(400, 300);
@@ -54,6 +54,8 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("Overlay");
         if (!tab) return;
 
+        ImGui.Spacing();
+
         if (EncounterManager.LastEncounter.Active)
         {
             ImGui.Text("You can not change overlay configs when in combat");
@@ -61,20 +63,7 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Text("Overlay");
-
-        var overlayNames = Plugin.OverlayWindow.Overlays.Select(x => x.Item1).ToArray();
-
-        ImGui.PushItemWidth(160);
-        var OverlayIndexValue = Plugin.OverlayWindow.OverlayIndex;
-        if (ImGui.Combo("Overlay type", ref OverlayIndexValue, overlayNames, Plugin.OverlayWindow.Overlays.Length))
-        {
-            Plugin.OverlayWindow.OverlayIndex = OverlayIndexValue;
-            Plugin.OverlayWindow.ActivateOverlay();
-            ConfigurationManager.Inst.Configuration.OverlayName = Plugin.OverlayWindow.Overlays[OverlayIndexValue].Item1;
-            ConfigurationManager.Inst.Configuration.Save();
-        }
-        ImGui.PopItemWidth();
-
+        ImGui.Spacing();
         var OverlayEnabledValue = ConfigurationManager.Inst.Configuration.OverlayEnabled;
         if (ImGui.Checkbox("Enable", ref OverlayEnabledValue))
         {
@@ -91,19 +80,27 @@ public class ConfigWindow : Window, IDisposable
                 Plugin.OverlayWindow.InactivateOverlay();
             }
         }
-        if (OverlayEnabledValue == false) return;
-
-        var OverlayClickThroughValue = ConfigurationManager.Inst.Configuration.OverlayClickThrough;
-        if (ImGui.Checkbox("Click through", ref OverlayClickThroughValue))
+        ImGui.SameLine();
+        var overlayNames = Plugin.OverlayWindow.Overlays.Select(x => x.Item1).ToArray();
+        var OverlayIndexValue = Plugin.OverlayWindow.OverlayIndex;
+        ImGui.PushItemWidth(160);
+        if (ImGui.Combo("Overlay type", ref OverlayIndexValue, overlayNames, Plugin.OverlayWindow.Overlays.Length))
         {
-            ConfigurationManager.Inst.Configuration.OverlayClickThrough = OverlayClickThroughValue;
+            Plugin.OverlayWindow.OverlayIndex = OverlayIndexValue;
+            Plugin.OverlayWindow.ActivateOverlay();
+            ConfigurationManager.Inst.Configuration.OverlayName = Plugin.OverlayWindow.Overlays[OverlayIndexValue].Item1;
             ConfigurationManager.Inst.Configuration.Save();
-            Plugin.OverlayWindow.Flags = OverlayWindow.GetFlags();
         }
+        ImGui.PopItemWidth();
+
+
+        if (OverlayEnabledValue == false) return;
 
         ImGui.Spacing();
         ImGui.Separator();
+        ImGui.Spacing();
         ImGui.Text("Update frequency");
+        ImGui.Spacing();
 
         var OverlayRealtimeUpdateValue = ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate;
         if (ImGui.Checkbox("Realtime", ref OverlayRealtimeUpdateValue))
@@ -132,28 +129,16 @@ public class ConfigWindow : Window, IDisposable
             }
             ImGui.PopItemWidth();
         }
-
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Text("Font configs");
-
-        ImGui.PushItemWidth(50);
-        var OverlayFontScaleValue = ConfigurationManager.Inst.Configuration.OverlayFontScale;
-        if (ImGui.DragFloat("Scale", ref OverlayFontScaleValue, 0.01f, 1f, 5f))
-        {
-            ConfigurationManager.Inst.Configuration.OverlayFontScale = OverlayFontScaleValue;
-            ConfigurationManager.Inst.Configuration.Save();
-        }
-        ImGui.PopItemWidth();
     }
 
     private void DrawOverlayConfigTab()
     {
-        if(Plugin.OverlayWindow.Overlay == null) return;
+        if (Plugin.OverlayWindow.Overlay == null || Plugin.OverlayWindow.Overlay.HasConfigurationTab == false) return;
 
-        using var tab = ImRaii.TabItem("Overlay Configurations");
+        using var tab = ImRaii.TabItem("Overlay Config");
         if (!tab) return;
-        Plugin.OverlayWindow.Overlay.DrawConfiguration();
+
+        Plugin.OverlayWindow.Overlay.DrawConfigurationTab();
     }
 
     private void DrawAppearenceTab()
@@ -167,21 +152,6 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Separator();
         ImGui.Text("Background");
 
-        var OverlayBackgroundValue = ConfigurationManager.Inst.Configuration.OverlayBackground;
-        if (ImGui.Checkbox("Enable", ref OverlayBackgroundValue))
-        {
-            ConfigurationManager.Inst.Configuration.OverlayBackground = OverlayBackgroundValue;
-            ConfigurationManager.Inst.Configuration.Save();
-            Plugin.OverlayWindow.Flags = OverlayWindow.GetFlags();
-        }
-
-        var OverlayBackgroundColorValue = ConfigurationManager.Inst.Configuration.OverlayBackgroundColor;
-        if (ImGui.ColorEdit4("Color", ref OverlayBackgroundColorValue,
-            ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
-        {
-            ConfigurationManager.Inst.Configuration.OverlayBackgroundColor = OverlayBackgroundColorValue;
-            ConfigurationManager.Inst.Configuration.Save();
-        }
     }
 
     private void DrawIINACTTab()

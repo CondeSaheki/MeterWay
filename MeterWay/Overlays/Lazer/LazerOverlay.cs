@@ -9,14 +9,18 @@ using MeterWay.Managers;
 using MeterWay.Data;
 using MeterWay.Windows;
 
-using MeterWay.Overlays;
+using MeterWay.Overlay;
+using System;
 
 namespace Lazer;
 
-public class Overlay : MeterWayOverlay
+public class Overlay : MeterWayOverlay, IDisposable
 {
     public new static string Name => "Lazer";
-    private OverlayWindow Window {get; init; }
+    public override bool HasConfigurationTab => true;
+
+    public OverlayWindow Window { get; private init; }
+    public Configuration Config { get; }
 
     private Encounter combat;
 
@@ -41,6 +45,10 @@ public class Overlay : MeterWayOverlay
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
+        Window.Flags = OverlayWindow.defaultflags; // temporary
+
+        Config = Load<Configuration>();
+
         WindowMin = new Vector2();
         WindowMax = new Vector2();
 
@@ -83,9 +91,11 @@ public class Overlay : MeterWayOverlay
         UpdateWindowSize();
         if (!combat.Finished && combat.Active) combat.Calculate(); // this will ignore last frame data ??
 
-        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(ConfigurationManager.Inst.Configuration.OverlayBackgroundColor));
+        ImGui.SetWindowFontScale(Config.FontScale);
 
-        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * ConfigurationManager.Inst.Configuration.OverlayFontScale), Helpers.Color(26, 26, 39, 190));
+        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(Config.BackgroundColor));
+
+        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * Config.FontScale), Helpers.Color(26, 26, 39, 190));
 
         if (combat.Begin == null)
         {
@@ -103,10 +113,52 @@ public class Overlay : MeterWayOverlay
             DrawPlayerLine(lerpedInfo[player.Id], player);
         }
     }
-    
-    public override void DrawConfiguration() { }
-    
+
     public override void Dispose() { }
+
+    public override void DrawConfigurationTab()
+    {
+        ConfigurationTab.Draw(this);
+        // ImGui.Spacing();
+        // ImGui.Text("General");
+        // ImGui.Spacing();
+
+        // var clickThroughValue = Config.ClickThrough;
+        // if (ImGui.Checkbox("Click Through", ref clickThroughValue))
+        // {
+        //     Config.ClickThrough = clickThroughValue;
+        //     Save(Config);
+        //     if (clickThroughValue) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
+        //     else Window.Flags = OverlayWindow.defaultflags;
+        // }
+
+        // ImGui.Spacing();
+        // ImGui.Separator();
+        // ImGui.Spacing();
+        // ImGui.Text("Appearance");
+
+        // var OverlayBackgroundColorValue = Config.BackgroundColor;
+        // if (ImGui.ColorEdit4("Background Color", ref OverlayBackgroundColorValue,
+        //     ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
+        // {
+        //     Config.BackgroundColor = OverlayBackgroundColorValue;
+        //     Save(Config);
+        // }
+
+        // ImGui.Spacing();
+        // ImGui.Separator();
+        // ImGui.Spacing();
+        // ImGui.Text("Fonts");
+
+        // ImGui.PushItemWidth(50);
+        // var fontScaleValue = Config.FontScale;
+        // if (ImGui.DragFloat("Font Scale", ref fontScaleValue, 0.01f, 1f, 5f))
+        // {
+        //     Config.FontScale = fontScaleValue;
+        //     Save(Config);
+        // }
+        // ImGui.PopItemWidth();
+    }
 
     private void UpdateWindowSize()
     {
@@ -189,9 +241,9 @@ public class Overlay : MeterWayOverlay
         Widget.DrawProgressBar(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), player.Name == "YOU" ? Helpers.Color(128, 170, 128, 255) : Helpers.Color(128, 128, 170, 255), (float)data.PctBar / 100.0f);
         Widget.DrawBorder(new Vector2(windowMin.X, rowPosition), new Vector2(WindowMax.X, rowPosition + lineHeight), Helpers.Color(26, 26, 26, 222));
 
-        Widget.Text(Job.GetName(player.Job), new Vector2(windowMin.X + 8f, textRowPosition), Helpers.Color(144, 144, 144, 190), WindowMin, WindowMax, false, Widget.TextAnchor.Left, false, scale: 0.8f);
-        Widget.Text(player.Name, new Vector2(windowMin.X + (Widget.CalcTextSize(Job.GetName(player.Job)).X * 0.8f) + 16f, textRowPosition), Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, false, Widget.TextAnchor.Left, false);
-        Widget.Text(dps, new Vector2(WindowMax.X - 5, textRowPosition), Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, false, Widget.TextAnchor.Right, false);
-        Widget.Text(totalDMG, new Vector2(WindowMax.X - (Widget.CalcTextSize(dps).X * 1 / 0.8f) - 10f, textRowPosition), Helpers.Color(210, 210, 210, 255), WindowMin, WindowMax, false, Widget.TextAnchor.Right, false, scale: 0.8f);
+        Widget.Text(Job.GetName(player.Job), new Vector2(windowMin.X + 8f, textRowPosition), Helpers.Color(144, 144, 144, 190), WindowMin, WindowMax, false, Widget.TextAnchor.Left, false, scale: 0.8f, fontScale: Config.FontScale);
+        Widget.Text(player.Name, new Vector2(windowMin.X + (Widget.CalcTextSize(Job.GetName(player.Job), Config.FontScale).X * 0.8f) + 16f, textRowPosition), Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, false, Widget.TextAnchor.Left, false, fontScale: Config.FontScale);
+        Widget.Text(dps, new Vector2(WindowMax.X - 5, textRowPosition), Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, false, Widget.TextAnchor.Right, false, fontScale: Config.FontScale);
+        Widget.Text(totalDMG, new Vector2(WindowMax.X - (Widget.CalcTextSize(dps, Config.FontScale).X * 1 / 0.8f) - 10f, textRowPosition), Helpers.Color(210, 210, 210, 255), WindowMin, WindowMax, false, Widget.TextAnchor.Right, false, scale: 0.8f, fontScale: Config.FontScale);
     }
 }

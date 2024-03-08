@@ -8,16 +8,18 @@ using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Utils.Draw;
-using MeterWay.Overlays;
+using MeterWay.Overlay;
 using MeterWay.Windows;
 
 namespace Mogu;
 
-public class Overlay : MeterWayOverlay
+public class Overlay : MeterWayOverlay, IDisposable
 {
     public new static string Name => "Mogu";
-    private OverlayWindow Window {get; init; }
-    
+    public OverlayWindow Window { get; private init; }
+    public override bool HasConfigurationTab => true;
+
+    public Configuration Config { get; }
     private Encounter data;
     private Vector2 WindowMin { get; set; }
     private Vector2 WindowMax { get; set; }
@@ -26,9 +28,12 @@ public class Overlay : MeterWayOverlay
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
-        data = new Encounter();
-        WindowMin = new Vector2();
-        WindowMax = new Vector2();
+        Config = Load<Configuration>();
+        data = new();
+        Window.Flags = OverlayWindow.defaultflags; // temporary
+
+        WindowMin = new();
+        WindowMax = new();
         SortCache = [];
     }
 
@@ -39,20 +44,21 @@ public class Overlay : MeterWayOverlay
 
         if (data.Party.Id != oldPartyId) SortCache = Helpers.CreateDictionarySortCache(data.Players, (x) => { return true; });
         SortCache.Sort((uint first, uint second) => { return data.Players[second].DamageDealt.Total.CompareTo(data.Players[first].DamageDealt.Total); });
+        if (!Config.FrameCalc) data.Calculate();
     }
 
     public override void Draw()
     {
         var sortCache = SortCache.ToList();
-        if (!data.Finished && data.Active) data.Calculate(); // this will ignore last frame data ??
+        if (Config.FrameCalc && !data.Finished && data.Active) data.Calculate(); // this will ignore last frame data ??
         UpdateWindowSize();
         var Draw = ImGui.GetWindowDrawList();
 
-        //Draw.AddRectFilled(WindowMin, WindowMax, Helpers.Color(0, 0, 0, 64));
+        if (Config.Background) Draw.AddRectFilled(WindowMin, WindowMax, Helpers.Color(Config.BackgroundColor));
 
         Vector2 cursor = WindowMin;
         var header = $"{data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(data.Dps, 2)}";
-        Draw.AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(header).X / 2, 0), Helpers.Color(255, 255, 255, 255), header);
+        Draw.AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(header, 1f).X / 2, 0), Helpers.Color(255, 255, 255, 255), header);
 
         cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 
@@ -66,12 +72,12 @@ public class Overlay : MeterWayOverlay
 
             Draw.AddText(cursor + new Vector2(ImGui.GetFontSize(), 0), Helpers.Color(255, 255, 255, 255), $"{p.Name}");
 
-            Draw.AddText(cursor + new Vector2(WindowMax.X - WindowMin.X - Widget.CalcTextSize(damageinfo).X, 0), Helpers.Color(255, 255, 255, 255), damageinfo);
+            Draw.AddText(cursor + new Vector2(WindowMax.X - WindowMin.X - Widget.CalcTextSize(damageinfo, 1f).X, 0), Helpers.Color(255, 255, 255, 255), damageinfo);
             cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
         }
     }
 
-    public override void DrawConfiguration() { }
+    public override void DrawConfigurationTab() => ConfigurationTab.Draw(this);
 
     public override void Dispose() { }
 

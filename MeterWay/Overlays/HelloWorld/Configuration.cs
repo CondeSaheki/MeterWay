@@ -1,4 +1,4 @@
-using MeterWay.Overlays;
+using MeterWay.Overlay;
 using System;
 
 namespace HelloWorld;
@@ -6,10 +6,5 @@ namespace HelloWorld;
 [Serializable]
 public class Configuration : MeterWayOverlayConfiguration
 {
-    public bool Enabled { get; set; }
-
-    public Configuration()
-    {
-        Enabled = false;
-    }
+    public bool Enabled { get; set; } = false;
 }

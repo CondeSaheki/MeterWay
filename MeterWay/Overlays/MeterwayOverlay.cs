@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace MeterWay.Overlays;
+namespace MeterWay.Overlay;
 
 public abstract class MeterWayOverlay
 {
@@ -10,7 +10,8 @@ public abstract class MeterWayOverlay
     public abstract void Draw();
     public abstract void Dispose();
     public abstract void DataProcess();
-    public abstract void DrawConfiguration();
+    public virtual void DrawConfigurationTab() { }
+    public virtual bool HasConfigurationTab => false;
 
     public static Configuration Load<Configuration>() where Configuration : MeterWayOverlayConfiguration, new()
     {
@@ -26,7 +27,7 @@ public abstract class MeterWayOverlay
             }
             catch (Exception ex)
             {
-                Dalamud.Log.Info($"Error loading configuration from \'{file.FullName}\':\n{ex}");
+                Dalamud.Log.Warning($"Error loading configuration from \'{file.FullName}\':\n{ex}");
             }
         }
         config = new();

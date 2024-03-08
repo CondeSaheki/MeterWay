@@ -1,7 +1,6 @@
 
 using System.Numerics;
 using ImGuiNET;
-using MeterWay.Managers;
 
 namespace MeterWay.Utils.Draw;
 
@@ -14,10 +13,10 @@ public static class Widget
         Right
     }
 
-    public static void Text(string text, Vector2 position, uint color, Vector2 windowMin, Vector2 windowMax, bool fullLine = true, TextAnchor anchor = TextAnchor.Left, bool dropShadow = false, float scale = 1f)
+    public static void Text(string text, Vector2 position, uint color, Vector2 windowMin, Vector2 windowMax, bool fullLine = true, TextAnchor anchor = TextAnchor.Left, bool dropShadow = false, float scale = 1f, float fontScale = 1f)
     {
-        ImGui.SetWindowFontScale(scale * ConfigurationManager.Inst.Configuration.OverlayFontScale);
-        var size = CalcTextSize(text);
+        ImGui.SetWindowFontScale(scale * fontScale);
+        var size = CalcTextSize(text, fontScale);
         switch (anchor)
         {
             case TextAnchor.Right:
@@ -36,7 +35,7 @@ public static class Widget
 
         if (scale != 1)
         {
-            position.Y += 3f * scale * ConfigurationManager.Inst.Configuration.OverlayFontScale;
+            position.Y += 3f * scale * fontScale;
         }
 
         if (dropShadow)
@@ -45,7 +44,7 @@ public static class Widget
         }
 
         ImGui.GetWindowDrawList().AddText(position, color, text);
-        ImGui.SetWindowFontScale(ConfigurationManager.Inst.Configuration.OverlayFontScale);
+        ImGui.SetWindowFontScale(fontScale);
     }
 
     public static void JobIcon(uint job, Vector2 position, float scale = 1f, bool drawBorder = false)
@@ -61,7 +60,7 @@ public static class Widget
         ImGui.GetWindowDrawList().AddImage(jobIcon, position, position + size);
     }
 
-    public static Vector2 CalcTextSize(string text)
+    public static Vector2 CalcTextSize(string text, float fontScale)
     {
         float width = 0;
 
@@ -69,7 +68,7 @@ public static class Widget
         {
             width += ImGui.GetFont().GetCharAdvance(c) * ImGui.GetFont().Scale;
         }
-        return new Vector2(width * ConfigurationManager.Inst.Configuration.OverlayFontScale, ImGui.GetFontSize() * ImGui.GetFont().Scale * ConfigurationManager.Inst.Configuration.OverlayFontScale);
+        return new Vector2(width * fontScale, ImGui.GetFontSize() * ImGui.GetFont().Scale * fontScale);
     }
 
     public static void DrawProgressBar(Vector2 startPoint, Vector2 endPoint, uint color, float progress)

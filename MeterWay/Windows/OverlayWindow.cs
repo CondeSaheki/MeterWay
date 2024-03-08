@@ -5,7 +5,7 @@ using ImGuiNET;
 using System.Collections.Generic;
 using System.Linq;
 
-using MeterWay.Overlays;
+using MeterWay.Overlay;
 using MeterWay.Managers;
 using MeterWay.Utils;
 
@@ -19,7 +19,7 @@ public class OverlayWindow : Window, IDisposable
     public MeterWayOverlay? Overlay { get; private set; }
     private uint? OverlayClientId { get; set; }
 
-    private static readonly ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
+    public static readonly ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
 
     public OverlayWindow(Type[] overlays) : base("OverlayWindow")
     {
@@ -51,11 +51,7 @@ public class OverlayWindow : Window, IDisposable
         ActivateOverlay();
     }
 
-    public override void Draw()
-    {
-        ImGui.SetWindowFontScale(ConfigurationManager.Inst.Configuration.OverlayFontScale);
-        Overlay?.Draw();
-    }
+    public override void Draw() => Overlay?.Draw();
 
     public void Dispose()
     {
@@ -64,9 +60,10 @@ public class OverlayWindow : Window, IDisposable
         Overlay?.Dispose();
     }
 
+    // TODO improve way to change window atributtes
     public static ImGuiWindowFlags GetFlags()
     {
-        return defaultflags | (ConfigurationManager.Inst.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None);
+        return defaultflags; // | (ConfigurationManager.Inst.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None);
     }
 
     public void ActivateOverlay()
