@@ -6,8 +6,10 @@ using System.Numerics;
 namespace Mogu;
 
 [Serializable]
-public class Configuration : MeterWayOverlayConfiguration
+public class Configuration : IConfiguration
 {
+    public int Version { get; set; } = 0;
+
     public bool FrameCalc { get; set; } = false;
     public bool ClickThrough { get; set; } = false;
 

@@ -7,7 +7,7 @@ namespace MeterWay.Overlay;
 
 static class File
 {
-    public static Configuration Load<Configuration>(string fileName) where Configuration : MeterWayOverlayConfiguration, new()
+    public static Configuration Load<Configuration>(string fileName) where Configuration : IConfiguration, new()
     {
         Configuration config;
         var file = GetFile($"{fileName}.json");
@@ -30,7 +30,7 @@ static class File
         return config;
     }
 
-    public static void Save<Configuration>(string fileName, Configuration config) where Configuration : MeterWayOverlayConfiguration, new()
+    public static void Save<Configuration>(string fileName, Configuration config) where Configuration : IConfiguration, new()
     {
         var file = GetFile($"{fileName}.json");
         if (file == null) return;

@@ -6,52 +6,52 @@ using MeterWay.Overlay;
 
 namespace Lazer;
 
-static class ConfigurationTab
+public partial class Overlay : IOverlay, IOverlayTab
 {
-    public static void Draw(Overlay obj)
+    public  void DrawTab()
     {
         using var bar = ImRaii.TabBar("Overlay Settings Tabs");
         if (!bar) return;
 
-        DrawGeneralTab(obj);
-        DrawAppearanceTab(obj);
-        DrawFontsTab(obj);
+        DrawGeneralTab();
+        DrawAppearanceTab();
+        DrawFontsTab();
     }
 
-    public static void DrawGeneralTab(Overlay obj)
+    public  void DrawGeneralTab()
     {
         using var tab = ImRaii.TabItem("General");
         if (!tab) return;
 
         ImGui.Spacing();
 
-        var clickThroughValue = obj.Config.ClickThrough;
+        var clickThroughValue = Config.ClickThrough;
         if (ImGui.Checkbox("Click Through", ref clickThroughValue))
         {
-            obj.Config.ClickThrough = clickThroughValue;
-            File.Save(obj._Name(), obj.Config);
-            if (clickThroughValue) obj.Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
-            else obj.Window.Flags = OverlayWindow.defaultflags;
+            Config.ClickThrough = clickThroughValue;
+            File.Save(Name, Config);
+            if (clickThroughValue) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
+            else Window.Flags = OverlayWindow.defaultflags;
         }
     }
 
-    public static void DrawAppearanceTab(Overlay obj)
+    public  void DrawAppearanceTab()
     {
         using var tab = ImRaii.TabItem("Appearance");
         if (!tab) return;
 
         ImGui.Spacing();
 
-        var OverlayBackgroundColorValue = obj.Config.BackgroundColor;
+        var OverlayBackgroundColorValue = Config.BackgroundColor;
         if (ImGui.ColorEdit4("Background Color", ref OverlayBackgroundColorValue,
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
         {
-            obj.Config.BackgroundColor = OverlayBackgroundColorValue;
-            File.Save(obj._Name(), obj.Config);
+            Config.BackgroundColor = OverlayBackgroundColorValue;
+            File.Save(Name, Config);
         }
     }
 
-    public static void DrawFontsTab(Overlay obj)
+    public  void DrawFontsTab()
     {
         using var tab = ImRaii.TabItem("Fonts");
         if (!tab) return;
@@ -60,11 +60,11 @@ static class ConfigurationTab
 
         ImGui.Text("WIP");
         // ImGui.PushItemWidth(50);
-        // var fontScaleValue = obj.Config.FontScale;
+        // var fontScaleValue = Config.FontScale;
         // if (ImGui.DragFloat("Font Scale", ref fontScaleValue, 0.01f, 1f, 5f))
         // {
-        //     obj.Config.FontScale = fontScaleValue;
-        //     File.Save(obj._Name(), obj.Config);
+        //     Config.FontScale = fontScaleValue;
+        //     File.Save(Name, Config);
         // }
         // ImGui.PopItemWidth();
     }

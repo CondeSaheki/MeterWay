@@ -1,4 +1,3 @@
-using System;
 using ImGuiNET;
 
 using MeterWay.Data;
@@ -8,40 +7,37 @@ using MeterWay.Windows;
 
 namespace HelloWorld;
 
-public class Overlay : MeterWayOverlay, IDisposable
+public class Overlay : IOverlay, IOverlayTab
 {
-    public new static string Name => "HelloWorld";
-    private OverlayWindow Window { get; init; }
-    public override bool HasConfigurationTab => true;
+    public static string Name => "HelloWorld"; // required
 
-    private Configuration Config { get; }
+    private Configuration Config { get; init; }
 
-    private Encounter data = new();
+    private Encounter Data = new();
 
     public Overlay(OverlayWindow overlayWindow)
     {
         Config = File.Load<Configuration>(Name);
-        Window = overlayWindow;
-
-        Window.Flags = ImGuiWindowFlags.None; // you can change the window properties if you want
+        overlayWindow.Flags = ImGuiWindowFlags.None; // you can change the window properties if you want
     }
 
-    public override void DataProcess()
+    // this function is called wenever you need to update data
+    public void DataProcess()
     {
-        data = EncounterManager.Inst.CurrentEncounter();
+        Data = EncounterManager.Inst.CurrentEncounter();
     }
 
-    public override void Draw()
+    public void Draw()
     {
         ImGui.Text("Hello world this is a MeterWay overlay!");
         ImGui.Spacing();
-        ImGui.Text($"Encounter Name: {data.Name}");
-        ImGui.Text($"Configuration \'Enabled\': {(Config.Enabled ? "true" : "false")}");
+        ImGui.Text($"Encounter Name: {Data.Name}");
+        ImGui.Text($"\'Enabled\' Configuration: {(Config.Enabled ? "true" : "false")}");
     }
 
-    public override void DrawConfigurationTab()
+    public void DrawTab()
     {
-        ImGui.Text("Im a configuration tab!\n");
+        ImGui.Text("I'm a configuration tab!\n");
 
         var enabledValue = Config.Enabled;
         if (ImGui.Checkbox("\'Enabled\' Configuration", ref enabledValue))
@@ -51,5 +47,5 @@ public class Overlay : MeterWayOverlay, IDisposable
         }
     }
 
-    public override void Dispose() { }
+    public void Dispose() { }
 }

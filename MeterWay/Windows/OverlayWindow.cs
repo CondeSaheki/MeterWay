@@ -16,7 +16,7 @@ public class OverlayWindow : Window, IDisposable
     public (string, Type)[] Overlays { get; private init; }
 
     public int OverlayIndex { get; set; }
-    public MeterWayOverlay? Overlay { get; private set; }
+    public IOverlay? Overlay { get; private set; }
     private uint? OverlayClientId { get; set; }
 
     public static readonly ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
@@ -33,7 +33,7 @@ public class OverlayWindow : Window, IDisposable
         Flags = GetFlags();
 
         #if DEBUG
-            ValidadeOverlays<MeterWayOverlay>(overlays);
+            ValidadeOverlays<IOverlay>(overlays);
         #endif
 
         Overlays = overlays.Select(type => ((string)type.GetProperty("Name")?.GetValue(null)!, type)).ToArray();
@@ -70,14 +70,14 @@ public class OverlayWindow : Window, IDisposable
     {
         UnSubscribeOverlay();
         Overlay?.Dispose();
-        Overlay = (MeterWayOverlay?)Activator.CreateInstance(Overlays[OverlayIndex].Item2, [this]);
+        Overlay = (IOverlay?)Activator.CreateInstance(Overlays[OverlayIndex].Item2, [this]);
         SubscribeOverlay();
     }
 
     public void InactivateOverlay()
     {
         UnSubscribeOverlay();
-        if(Overlay != null) Overlay.Dispose();
+        if (Overlay != null) Overlay.Dispose();
         Overlay = null;
     }
 
@@ -99,13 +99,18 @@ public class OverlayWindow : Window, IDisposable
 
     private static void ValidadeOverlays<TInterface>(IEnumerable<Type> types) where TInterface : class
     {
-        if (!types.Any()) throw new InvalidOperationException($"Overlays can not be empty!");
-        if(types.Distinct().Count() != types.Count()) throw new Exception($"Overlays must have unique elements");
+        if (!types.Any()) throw new Exception($"Overlays can not be empty!");
+        if (types.Distinct().Count() != types.Count()) throw new Exception($"Overlays must have unique elements!");
+        List<string> values = [];
         foreach (var type in types)
         {
-            if (!typeof(TInterface).IsAssignableFrom(type)) throw new Exception($"{type.Name} does not implement {typeof(TInterface)}");
-            var propriety = type.GetProperty("Name");
-            if (propriety == null || propriety.PropertyType != typeof(string)) throw new Exception($"{type.Name} propriety \'Name\' can not be empty!");
+            if (!typeof(TInterface).IsAssignableFrom(type)) throw new Exception($"{type.Name} do not implement {typeof(TInterface)}!");
+            var propriety = type.GetProperty("Name") ?? throw new Exception($"{type.Name} do not implement propriety \'Name\'!");
+            if (propriety.PropertyType != typeof(string)) throw new Exception($"{type.Name} propriety \'Name\' must be a string!");
+            var value = (string)propriety.GetValue(null)!;
+            if (value == string.Empty) throw new Exception($"{type.Name} propriety \'Name\' can not be empty!");
+            values.Add(value);
         }
+        if (values.Distinct() != values) throw new Exception($"Overlays must have elements with unique names!");
     }
 }

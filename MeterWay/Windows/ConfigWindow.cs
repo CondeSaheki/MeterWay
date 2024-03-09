@@ -6,6 +6,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility.Raii;
 
 using MeterWay.Managers;
+using MeterWay.Overlay;
 
 namespace MeterWay.Windows;
 
@@ -133,12 +134,13 @@ public class ConfigWindow : Window, IDisposable
 
     private void DrawOverlayConfigTab()
     {
-        if (Plugin.OverlayWindow.Overlay == null || Plugin.OverlayWindow.Overlay.HasConfigurationTab == false) return;
+        if (Plugin.OverlayWindow.Overlay == null || !Plugin.OverlayWindow.Overlay.GetType().GetInterfaces().Contains(typeof(IOverlayTab))) return;
+        var overlayName = (string)Plugin.OverlayWindow.Overlay.GetType()!.GetProperty("Name")!.GetValue(null)!;
 
-        using var tab = ImRaii.TabItem("Overlay Config");
+        using var tab = ImRaii.TabItem($"{overlayName} Config");
         if (!tab) return;
 
-        Plugin.OverlayWindow.Overlay.DrawConfigurationTab();
+        ((IOverlayTab)Plugin.OverlayWindow.Overlay).DrawTab();
     }
 
     private void DrawAppearenceTab()

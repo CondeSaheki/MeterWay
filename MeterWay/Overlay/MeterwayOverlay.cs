@@ -2,15 +2,18 @@ using System;
 
 namespace MeterWay.Overlay;
 
-public abstract class MeterWayOverlay
+public interface IOverlay : IDisposable
 {
-    public static string Name => string.Empty;
-    public virtual string _Name() => Name;
-    public abstract void Draw();
-    public abstract void Dispose();
-    public abstract void DataProcess();
-    public virtual void DrawConfigurationTab() { }
-    public virtual bool HasConfigurationTab => false;
+    public void Draw();
+    public void DataProcess();
 }
 
-public class MeterWayOverlayConfiguration : Attribute { }
+public interface IOverlayTab
+{
+    public void DrawTab();
+}
+
+public interface IConfiguration
+{
+    int Version { get; set; }
+}
