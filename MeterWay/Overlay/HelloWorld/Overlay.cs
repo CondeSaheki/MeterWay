@@ -22,7 +22,7 @@ public class Overlay : IOverlay, IOverlayTab
     }
 
     // this function is called wenever you need to update data
-    public void DataProcess()
+    public void DataUpdate()
     {
         Data = EncounterManager.Inst.CurrentEncounter();
     }
