@@ -7,19 +7,11 @@ namespace MeterWay.Utils;
 
 public static class Helpers
 {
-    public static uint CreateId()
-    {
-        return (uint)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
-    }
-
-    public static double Lerp(double firstFloat, double secondFloat, double by)
-    {
-        return firstFloat + (secondFloat - firstFloat) * by;
-    }
+    public static uint CreateId() => (uint)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
 
     public static string HumanizeNumber(double number, int decimals = 1)
     {
-        string[] suffixes = { "", "k", "M", "B", "T" };
+        string[] suffixes = ["", "k", "M", "B", "T"];
         int suffixIndex = 0;
 
         while (number >= 1000 && suffixIndex < suffixes.Length - 1)
@@ -37,25 +29,10 @@ public static class Helpers
         return $"{number.ToString($"0.{new string('0', decimals)}", CultureInfo.InvariantCulture)}{suffixes[suffixIndex]}";
     }
 
-    public static uint Color(byte r, byte g, byte b, byte a)
-    {
-        uint ret = a;
-        ret <<= 8;
-        ret += b;
-        ret <<= 8;
-        ret += g;
-        ret <<= 8;
-        ret += r;
-        return ret;
-    }
-
-    public static uint Color(Vector4 color) => Color((byte)Math.Round(color.X * 255), (byte)Math.Round(color.Y * 255), (byte)Math.Round(color.Z * 255), (byte)Math.Round(color.W * 255));
-
-
     // /(type first, type second) => {return first > second;}
     public static List<Id> CreateDictionarySortCache<Id, Type>(Dictionary<Id, Type> data, Func<KeyValuePair<Id, Type>, bool> ignore) where Id : notnull
     {
-        List<Id> sorted = new List<Id>();
+        List<Id> sorted = [];
 
         foreach (KeyValuePair<Id, Type> i in data)
         {
@@ -64,11 +41,6 @@ public static class Helpers
 
         return sorted;
     }
-
-    // public static void Log(string message)
-    // {
-    //     InterfaceManager.Inst.PluginLog.Info(message);
-    // }
 
     public static List<ReadOnlyMemory<char>> SplitStringAsMemory(string input, char delimiter)
     {
