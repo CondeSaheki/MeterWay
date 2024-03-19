@@ -1,13 +1,12 @@
-using System;
 using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
+using Dalamud.Interface.ManagedFontAtlas;
 
 using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
-using MeterWay.Utils.Draw;
 using MeterWay.Overlay;
 using MeterWay.Windows;
 
@@ -20,70 +19,99 @@ public partial class Overlay : IOverlay, IOverlayTab
     private OverlayWindow Window { get; init; }
     private Configuration Config { get; init; }
 
+    private IFontAtlas FontAtlas { get; init; } = MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async);
+
+    private IFontHandle FontMogu { get; set; }
+    private (string Name, IFontHandle Font)[] Fonts { get; init; }
+    private int FontsIndex = 0;
+
     private Encounter Data = new();
-    private Vector2 WindowMin = new();
-    private Vector2 WindowMax = new();
     private List<uint> SortCache = [];
+
+    private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
 
     public Overlay(OverlayWindow overlayWindow)
     {
         Config = File.Load<Configuration>(Name);
         Window = overlayWindow;
         Window.Flags = OverlayWindow.defaultflags; // temporary
+        FontMogu = DefaultFont; // TODO load font from config
+        Fonts = [(Name, FontMogu)];
     }
 
-    public void DataProcess()
+    public void DataUpdate()
     {
         var oldPartyId = Data.Party.Id;
         Data = EncounterManager.Inst.CurrentEncounter();
 
         if (Data.Party.Id != oldPartyId) SortCache = Helpers.CreateDictionarySortCache(Data.Players, (x) => { return true; });
-        SortCache.Sort((uint first, uint second) => { return Data.Players[second].DamageDealt.Total.CompareTo(Data.Players[first].DamageDealt.Total); });
+        SortCache.Sort((uint first, uint second) => { return Data.Players[second].DamageDealt.Value.Total.CompareTo(Data.Players[first].DamageDealt.Value.Total); });
         if (!Config.FrameCalc) Data.Calculate();
     }
 
     public void Draw()
     {
-        var sortCache = SortCache.ToList();
         if (Config.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
-        UpdateWindowSize();
-        var Draw = ImGui.GetWindowDrawList();
 
-        if (Config.Background) Draw.AddRectFilled(WindowMin, WindowMax, Helpers.Color(Config.BackgroundColor));
+        var draw = ImGui.GetWindowDrawList();
+        Canvas windowCanvas = OverlayWindow.GetCanvas();
+        Canvas cursor = new(windowCanvas.Area);
 
-        Vector2 cursor = WindowMin;
-        var header = $"{Data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(Data.Dps, 2)}";
-        Draw.AddText(cursor + new Vector2((WindowMax.X - WindowMin.X) / 2 - Widget.CalcTextSize(header, 1f).X / 2, 0), Helpers.Color(255, 255, 255, 255), header);
+        FontMogu.Push();
+        float fontSize = ImGui.GetFontSize();
+        uint spacing = 5;
+        string text = "";
+        //Vector2 position = new();
 
-        cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
 
-        foreach (var id in sortCache)
+        // Background
+        if (Config.Background) draw.AddRectFilled(cursor.Min, cursor.Max, Config.BackgroundColor);
+        cursor.Padding(15);
+
+        // Header
+        if (Config.Header)
         {
-            Player p = Data.Players[id];
-            if (p.DamageDealt.Total == 0) continue;
+            if (Config.HeaderBackground)
+            {
+                draw.AddRectFilled(windowCanvas.Min, new Vector2(windowCanvas.Max.X, windowCanvas.Min.Y + fontSize), Config.HeaderBackgroundColor);
+            }
 
-            Widget.JobIcon(p.Job, cursor, ImGui.GetFontSize());
-            var damageinfo = $"{Helpers.HumanizeNumber(p.Dps, 2)} {p.DamagePercent}%"; //{p.TotalDamage.ToString()}
-
-            Draw.AddText(cursor + new Vector2(ImGui.GetFontSize(), 0), Helpers.Color(255, 255, 255, 255), $"{p.Name}");
-
-            Draw.AddText(cursor + new Vector2(WindowMax.X - WindowMin.X - Widget.CalcTextSize(damageinfo, 1f).X, 0), Helpers.Color(255, 255, 255, 255), damageinfo);
-            cursor.Y += (float)Math.Ceiling(ImGui.GetFontSize());
+            text = $"{Data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(Data.Dps, 2)}";
+            draw.AddText(cursor.Align(text), Config.MoguFontColor, text);
+            cursor.Move((0, (uint)fontSize + spacing));
         }
+
+        // Players
+        foreach (var id in SortCache.ToList())
+        {
+            Player player = Data.Players[id];
+            if (player.DamageDealt.Value.Total == 0) continue;
+
+            if (Config.Bar)
+            {
+                var progress = Data.DamageDealt.Value.Total != 0 ? player.DamageDealt.Value.Total / Data.DamageDealt.Value.Total : 1;
+                var barColor = Config.BarColorJob ? GetJobColor(player.Job) : Config.BarColor;
+                DrawProgressBar(cursor.Area, progress, barColor);
+            }
+
+            if (Config.PlayerJobIcon)
+            {
+                DrawJobIcon(cursor.Min + new Vector2(1, 1), fontSize, player.Job);
+                draw.AddText(cursor.Align(player.Name) + new Vector2(fontSize, 0), Config.MoguFontColor, player.Name);
+            }
+            else draw.AddText(cursor.Align(player.Name) + new Vector2(fontSize, 0), Config.MoguFontColor, player.Name);
+
+            var damageinfo = $"{Helpers.HumanizeNumber(player.Dps, 2)} {player.DamageDealt.Value.Percent.Neutral}%";
+            draw.AddText(cursor.Align(damageinfo), Config.MoguFontColor, damageinfo);
+            cursor.Move((0, (uint)fontSize + spacing));
+        }
+
+        FontMogu.Pop();
     }
 
-    public void Dispose() { }
-
-    private void UpdateWindowSize()
+    public void Dispose()
     {
-        Vector2 vMin = ImGui.GetWindowContentRegionMin();
-        Vector2 vMax = ImGui.GetWindowContentRegionMax();
-
-        vMin.X += ImGui.GetWindowPos().X;
-        vMin.Y += ImGui.GetWindowPos().Y;
-        vMax.X += ImGui.GetWindowPos().X;
-        vMax.Y += ImGui.GetWindowPos().Y;
-        WindowMin = vMin;
-        WindowMax = vMax;
+        FontMogu.Dispose();
+        FontAtlas.Dispose();
     }
 }
