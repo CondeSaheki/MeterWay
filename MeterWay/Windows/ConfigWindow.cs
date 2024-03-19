@@ -14,15 +14,10 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Plugin Plugin;
 
-    public ConfigWindow(Plugin plugin) : base(
-        "MeterWay Configurations",
-        ImGuiWindowFlags.NoCollapse |
-        ImGuiWindowFlags.NoScrollbar |
-        ImGuiWindowFlags.NoResize |
-        ImGuiWindowFlags.NoScrollWithMouse)
+    public ConfigWindow(Plugin plugin) : base("MeterWay Configurations", ImGuiWindowFlags.NoCollapse)
     {
-        Size = new Vector2(400, 300);
-        SizeCondition = ImGuiCond.Always;
+        //Size = new Vector2(400, 300);
+        //SizeCondition = ImGuiCond.Always;
 
         Plugin = plugin;
     }
@@ -148,12 +143,7 @@ public class ConfigWindow : Window, IDisposable
         using var tab = ImRaii.TabItem("Appearence");
         if (!tab) return;
 
-        ImGui.Text("Configs just for DEMO");
-
         ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Text("Background");
-
     }
 
     private void DrawIINACTTab()
