@@ -27,16 +27,8 @@ public class Encounter
     public Damage DamageDealt { get; set; }
     public Damage DamageReceived { get; set; }
 
-    public Heal HealDealt { get; set; }
-    public Heal HealReceived { get; set; }
-
-    // Calculated
-    public float DamagePercent { get; set; } = 0;
-    public float HealsPercent { get; set; } = 0;
-    public float CritPercent { get; set; } = 0;
-    public float DirecHitPercent { get; set; } = 0;
-    public float DirectCritHitPercent { get; set; } = 0;
-    public float Crithealspercent { get; set; } = 0;
+    public HealValue HealDealt { get; set; }
+    public HealValue HealReceived { get; set; }
 
     public float Dps { get; set; } = 0;
     public float Hps { get; set; } = 0;
@@ -50,15 +42,9 @@ public class Encounter
 
         DamageDealt = new Damage();
         DamageReceived = new Damage();
-        HealDealt = new Heal();
-        HealReceived = new Heal();
+        HealDealt = new HealValue();
+        HealReceived = new HealValue();
 
-        DamagePercent = 0;
-        HealsPercent = 0;
-        CritPercent = 0;
-        DirecHitPercent = 0;
-        DirectCritHitPercent = 0;
-        Crithealspercent = 0;
         Dps = 0;
         Hps = 0;
     }
@@ -77,22 +63,15 @@ public class Encounter
 
     public void Calculate()
     {
-        var seconds = Duration.TotalSeconds <= 1 ? 1 : Duration.TotalSeconds; // overflow protection
-        Dps = (float)(DamageDealt.Total / seconds);
-        Hps = (float)(HealDealt.Total / seconds);
-
-        DamagePercent = DamageDealt.Total != 0 ? (DamageDealt.Total * 100 / DamageDealt.Total) : 0;
-        HealsPercent = HealDealt.Total != 0 ? (HealDealt.Total * 100 / HealDealt.Total) : 0;
-
-        CritPercent = DamageDealt.Count.Total != 0 ? (DamageDealt.Count.Critical * 100 / DamageDealt.Count.Total) : 0;
-        DirecHitPercent = DamageDealt.Count.Total != 0 ? (DamageDealt.Count.Direct * 100 / DamageDealt.Count.Total) : 0;
-        DirectCritHitPercent = DamageDealt.Count.Total != 0 ? (DamageDealt.Count.CriticalDirect * 100 / DamageDealt.Count.Total) : 0;
-        Crithealspercent = HealDealt.Count.Total != 0 ? (HealDealt.Count.Critical * 100 / HealDealt.Count.Total) : 0;
-
-        foreach (var player in Party.Players.Values)
-        {
-            player.Calculate();
-        }
+        Party.Calculate();
+        DamageDealt.Calculate();
+        DamageReceived.Calculate();
+        HealDealt.Calculate();
+        HealReceived.Calculate();
+        
+        // var seconds = Duration.TotalSeconds <= 1 ? 1 : Duration.TotalSeconds; // overflow protection
+        // Dps = (float)(DamageDealt.Total / seconds);
+        // Hps = (float)(HealDealt.Total / seconds); 
     }
 
     public void Parse() { foreach (var action in RawActions) LoglineParser.Parse(action, this); }

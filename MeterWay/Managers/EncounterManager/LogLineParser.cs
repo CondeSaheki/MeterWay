@@ -84,17 +84,17 @@ public static class LoglineParser
                     EncounterManager.Start(encounter);
 
                     var actionValue = DamageHealCalc(attribute.Value);
-                    player.DamageDealt.Total += actionValue;
-                    encounter.DamageDealt.Total += actionValue;
+                    player.DamageDealt.Value.Total += actionValue;
+                    encounter.DamageDealt.Value.Total += actionValue;
                 }
                 else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
                     if (ActionEffectFlag.IsCritHeal((int)attribute.Key))
                     {
                         player.HealDealt.Count.Critical += 1;
-                        player.HealDealt.Critical += DamageHealCalc(attribute.Value);
+                        player.HealDealt.Value.Critical += DamageHealCalc(attribute.Value);
                     }
-                    player.HealDealt.Total += DamageHealCalc(attribute.Value);
+                    player.HealDealt.Value.Total += DamageHealCalc(attribute.Value);
                     player.HealDealt.Count.Total += 1;
                 }
             }
@@ -104,17 +104,17 @@ public static class LoglineParser
                 var player = encounter.Players[(uint)parsed.TargetId!];
                 if (ActionEffectFlag.IsDamage((int)attribute.Key))
                 {
-                    player.DamageReceived.Total = DamageHealCalc(attribute.Value);
+                    player.DamageReceived.Value.Total = DamageHealCalc(attribute.Value);
                     player.DamageReceived.Count.Total += 1;
                 }
                 else if (ActionEffectFlag.IsHeal((int)attribute.Key))
                 {
                     if (ActionEffectFlag.IsCritHeal((int)attribute.Key >> 16))
                     {
-                        player.HealReceived.Critical = DamageHealCalc(attribute.Value);
+                        player.HealReceived.Value.Critical = DamageHealCalc(attribute.Value);
                         player.HealReceived.Count.Critical += 1;
                     }
-                    player.HealReceived.Total = DamageHealCalc(attribute.Value);
+                    player.HealReceived.Value.Total = DamageHealCalc(attribute.Value);
                     player.HealReceived.Count.Total += 1;
                 }
             }
@@ -162,12 +162,12 @@ public static class LoglineParser
             //if (!thisEnconter.Players[parsed.SourceId].IsActive) return;
             if (!parsed.IsHeal) // IsDamage
             {
-                encounter.Players[parsed.SourceId].DamageDealt.Total += parsed.Value;
-                encounter.DamageDealt.Total += parsed.Value;
+                encounter.Players[parsed.SourceId].DamageDealt.Value.Total += parsed.Value;
+                encounter.DamageDealt.Value.Total += parsed.Value;
             }
             else
             {
-                encounter.Players[parsed.SourceId].HealDealt.Total += parsed.Value;
+                encounter.Players[parsed.SourceId].HealDealt.Value.Total += parsed.Value;
                 encounter.HealDealt.Total += parsed.Value;
             }
         }
@@ -176,12 +176,12 @@ public static class LoglineParser
         {
             if (!parsed.IsHeal) // IsDamage
             {
-                encounter.Players[parsed.TargetId].DamageReceived.Total += parsed.Value;
-                encounter.DamageReceived.Total += parsed.Value;
+                encounter.Players[parsed.TargetId].DamageReceived.Value.Total += parsed.Value;
+                encounter.DamageReceived.Value.Total += parsed.Value;
             }
             else
             {
-                encounter.Players[parsed.TargetId].HealReceived.Total += parsed.Value;
+                encounter.Players[parsed.TargetId].HealReceived.Value.Total += parsed.Value;
                 encounter.HealReceived.Total += parsed.Value;
             }
         }

@@ -24,32 +24,19 @@ public class Player(Character character, Encounter encounter)
     public Heal HealReceived { get; set; } = new Heal();
 
     // calculated
-    public float DamagePercent { get; set; } = 0;
-    public float HealsPercent { get; set; } = 0;
-    public float CritPercent { get; set; } = 0;
-    public float DirecHitPercent { get; set; } = 0;
-    public float DirectCritHitPercent { get; set; } = 0;
-    public float Crithealspercent { get; set; } = 0;
-
     public float Dps { get; set; } = 0;
     public float Hps { get; set; } = 0;
 
     public void Calculate()
     {
+        DamageDealt.Calculate();
+        DamageReceived.Calculate();
+        HealDealt.Calculate();
+        HealReceived.Calculate();
+
         var seconds = Encounter.Duration.TotalSeconds <= 1 ? 1 : Encounter.Duration.TotalSeconds;
-
-        Dps = (float)(DamageDealt.Total / seconds);
-        Hps = (float)(HealDealt.Total / seconds);
-
-        static float Protected(uint first, uint second) => second != 0 ? (first * 100 / second) : 0;
-
-        DamagePercent = Protected(DamageDealt.Total, Encounter.DamageDealt.Total);
-        HealsPercent = Protected(HealDealt.Total, Encounter.HealDealt.Total);
-
-        CritPercent = Protected(DamageDealt.Count.Critical, Encounter.DamageDealt.Count.Total);
-        DirecHitPercent = Protected(DamageDealt.Count.Direct, Encounter.DamageDealt.Count.Total);
-        DirectCritHitPercent = Protected(DamageDealt.Count.CriticalDirect, Encounter.DamageDealt.Count.Total);
-        Crithealspercent = Protected(HealDealt.Count.Critical, Encounter.HealDealt.Count.Total);
+        Dps = (float)(DamageDealt.Value.Total / seconds);
+        Hps = (float)(HealDealt.Value.Total / seconds);
     }
 
     public bool Update()
