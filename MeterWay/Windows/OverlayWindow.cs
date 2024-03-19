@@ -17,7 +17,6 @@ public class OverlayWindow : Window, IDisposable
 
     public int OverlayIndex { get; set; }
     public IOverlay? Overlay { get; private set; }
-    private uint? OverlayClientId { get; set; }
 
     public static readonly ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
 
@@ -31,7 +30,9 @@ public class OverlayWindow : Window, IDisposable
         IsOpen = true;
         RespectCloseHotkey = false;
         Flags = GetFlags();
-
+        
+        EncounterManager.Inst.ClientsNotifier.OnDataUpdate -= OnDataUpdate;
+        
         #if DEBUG
             ValidadeOverlays<IOverlay>(overlays);
         #endif
@@ -56,7 +57,7 @@ public class OverlayWindow : Window, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        UnSubscribeOverlay();
+        EncounterManager.Inst.ClientsNotifier.OnDataUpdate -= OnDataUpdate;
         Overlay?.Dispose();
     }
 
@@ -65,37 +66,42 @@ public class OverlayWindow : Window, IDisposable
     {
         return defaultflags; // | (ConfigurationManager.Inst.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None);
     }
+    
+    public static Canvas GetCanvas()
+    {
+        Vector2 Min = ImGui.GetWindowContentRegionMin();
+        Vector2 Max = ImGui.GetWindowContentRegionMax();
+
+        Min.X += ImGui.GetWindowPos().X;
+        Min.Y += ImGui.GetWindowPos().Y;
+        Max.X += ImGui.GetWindowPos().X;
+        Max.Y += ImGui.GetWindowPos().Y;
+        return new Canvas((Min, Max));
+    }
 
     public void ActivateOverlay()
     {
-        UnSubscribeOverlay();
         Overlay?.Dispose();
-        Overlay = (IOverlay?)Activator.CreateInstance(Overlays[OverlayIndex].Item2, [this]);
-        SubscribeOverlay();
+        try
+        {
+            Overlay = (IOverlay?)Activator.CreateInstance(Overlays[OverlayIndex].Item2, [this]);
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"Error creating ovelay instance:\n{ex}");
+            Overlay?.Dispose();
+            Overlay = null;
+            return;
+        }
     }
 
     public void InactivateOverlay()
     {
-        UnSubscribeOverlay();
-        if (Overlay != null) Overlay.Dispose();
+        Overlay?.Dispose();
         Overlay = null;
     }
 
-    private void UnSubscribeOverlay()
-    {
-        if (Overlay == null) return;
-        var elem = EncounterManager.Clients.FindIndex(x => x.Key.Equals(OverlayClientId));
-        if (elem == -1) throw new InvalidOperationException($"Could not unregister Overlay {Overlay}");
-        EncounterManager.Clients.RemoveAt(elem);
-        OverlayClientId = null;
-    }
-
-    private void SubscribeOverlay()
-    {
-        if (Overlay == null) return;
-        OverlayClientId = Helpers.CreateId();
-        EncounterManager.Clients.Add(new KeyValuePair<uint, Action>((uint)OverlayClientId, Overlay.DataProcess));
-    }
+    private void OnDataUpdate(object? _, EventArgs __) => Overlay?.DataUpdate();
 
     private static void ValidadeOverlays<TInterface>(IEnumerable<Type> types) where TInterface : class
     {
@@ -111,6 +117,6 @@ public class OverlayWindow : Window, IDisposable
             if (value == string.Empty) throw new Exception($"{type.Name} propriety \'Name\' can not be empty!");
             values.Add(value);
         }
-        if (values.Distinct() != values) throw new Exception($"Overlays must have elements with unique names!");
+        if (values.Distinct().Count() != values.Count) throw new Exception($"Overlays must have elements with unique names!");
     }
 }

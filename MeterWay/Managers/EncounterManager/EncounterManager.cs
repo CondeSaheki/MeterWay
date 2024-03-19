@@ -21,7 +21,7 @@ public class EncounterManager : IDisposable
     public static Encounter LastEncounter => Inst.encounters.Last();
 
     public Notifier ClientsNotifier { get; init; }
-    public static List<KeyValuePair<uint, Action>> Clients => Inst.ClientsNotifier.Clients;
+    
 
     // constructor
     public EncounterManager()
@@ -32,7 +32,7 @@ public class EncounterManager : IDisposable
 
         Dalamud.Duty.DutyStarted += OnDutyStart;
 
-        ClientsNotifier = new Notifier(TimeSpan.FromSeconds(1));
+        ClientsNotifier = new Notifier(ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate); 
         Inst = this;
     }
 

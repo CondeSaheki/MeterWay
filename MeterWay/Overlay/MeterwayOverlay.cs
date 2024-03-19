@@ -5,7 +5,7 @@ namespace MeterWay.Overlay;
 public interface IOverlay : IDisposable
 {
     public void Draw();
-    public void DataProcess();
+    public void DataUpdate();
 }
 
 public interface IOverlayTab

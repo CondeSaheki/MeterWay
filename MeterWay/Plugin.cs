@@ -32,8 +32,8 @@ public sealed class Plugin : IDalamudPlugin
         {
             Dalamud.Initialize(pluginInterface);
 
-            encounterManager = new();
             configurationManager = new();
+            encounterManager = new();
 
             IinactIpcClient = new IINACTClient();
             IinactIpcClient.Connect();
@@ -49,7 +49,7 @@ public sealed class Plugin : IDalamudPlugin
                 ]
             );
             ConfigWindow = new(this);
-            MainWindow = new();
+            MainWindow = new(this);
             
             WindowSystem.AddWindow(OverlayWindow);
             WindowSystem.AddWindow(ConfigWindow);

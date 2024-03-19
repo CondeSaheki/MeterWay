@@ -1,12 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace MeterWay.Managers;
 
 public class Notifier
 {
-    public List<KeyValuePair<uint, Action>> Clients { get; private init; }
+    public event EventHandler OnDataUpdate = delegate { };
 
     private bool TimerActive { get; set; }
     private Timer? TimerNotification { get; set; }
@@ -15,7 +14,6 @@ public class Notifier
     public Notifier(TimeSpan interval)
     {
         TimerNotificationInterval = interval;
-        Clients = [];
         TimerActive = false;
     }
 
@@ -37,10 +35,7 @@ public class Notifier
         NotifyAll(null);
     }
 
-    private void NotifyAll(object? state)
-    {
-        foreach (var client in Clients) client.Value.Invoke();
-    }
+    private void NotifyAll(object? _) => OnDataUpdate?.Invoke(this, EventArgs.Empty);
 
     public void StartTimer()
     {
