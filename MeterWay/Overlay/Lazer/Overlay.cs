@@ -2,8 +2,8 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Interface.ManagedFontAtlas;
 
-using MeterWay.Utils.Draw;
 using MeterWay.Utils;
 using MeterWay.Managers;
 using MeterWay.Data;
@@ -21,19 +21,11 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     private Encounter Combat = new();
     private List<uint> SortCache = [];
-    private Vector2 WindowMin = new();
-    private Vector2 WindowMax = new();
 
-    private class LerpPlayerData
-    {
-        public double DPS { get; set; }
-        public double PctBar { get; set; }
-        public double TotalDMG { get; set; }
-        public double Position { get; set; }
-    }
+    private IFontAtlas FontAtlas { get; init; } = MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async);
+    private IFontHandle FontLazer { get; set; }
+    private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
 
-    private double transitionDuration = 0.3f; // in seconds
-    private double transitionTimer = 0.0f;
     private Dictionary<uint, LerpPlayerData> lerpedInfo = [];
     private Dictionary<uint, LerpPlayerData> targetInfo = [];
 
@@ -42,9 +34,10 @@ public partial class Overlay : IOverlay, IOverlayTab
         Config = File.Load<Configuration>(Name);
         Window = overlayWindow;
         Window.Flags = OverlayWindow.defaultflags; // temporary
+        FontLazer = DefaultFont; // TODO load font from config
     }
 
-    public void DataProcess()
+    public void DataUpdate()
     {
         var currentEncounter = EncounterManager.Inst.CurrentEncounter();
         var oldListId = Combat.Party.Id;
@@ -65,52 +58,98 @@ public partial class Overlay : IOverlay, IOverlayTab
             SortCache = Helpers.CreateDictionarySortCache(Combat.Players, (x) => { return true; });
         }
 
-        SortCache.Sort((uint first, uint second) => { return Combat.Players[second].DamageDealt.Total.CompareTo(Combat.Players[first].DamageDealt.Total); });
+        SortCache.Sort((uint first, uint second) => { return Combat.Players[second].DamageDealt.Value.Total.CompareTo(Combat.Players[first].DamageDealt.Value.Total); });
     }
-
-    private List<uint> LocalSortCache() => SortCache.ToList();
 
     public void Draw()
     {
-        var sortCache = LocalSortCache();
-        UpdateWindowSize();
         if (!Combat.Finished && Combat.Active) Combat.Calculate(); // this will ignore last frame data ??
 
-        ImGui.SetWindowFontScale(Config.FontScale);
+        var draw = ImGui.GetWindowDrawList();
+        var sortCache = SortCache.ToList();
+        Canvas windowCanvas = OverlayWindow.GetCanvas();
+        Canvas cursor = new((windowCanvas.Min, new Vector2(windowCanvas.Max.X, windowCanvas.Max.Y + ImGui.GetFontSize() + 5)));
+        string text = string.Empty;
+        Vector2 position = new();
 
-        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, WindowMax, Helpers.Color(Config.BackgroundColor));
+        FontLazer.Push();
 
-        ImGui.GetWindowDrawList().AddRectFilled(WindowMin, new Vector2(WindowMax.X, WindowMin.Y + (ImGui.GetFont().FontSize + 5) * Config.FontScale), Helpers.Color(26, 26, 39, 190));
+        // Background
+        draw.AddRectFilled(windowCanvas.Min, windowCanvas.Max, Config.BackgroundColor);
+        draw.AddRectFilled(windowCanvas.Min, new Vector2(windowCanvas.Max.X, windowCanvas.Min.Y + (ImGui.GetFont().FontSize + 5)), Config.color1);
 
+        // Empty
         if (Combat.Begin == null)
         {
-            Widget.Text("Not in combat", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center, dropShadow: true);
+            text = "Not in combat";
+            position = windowCanvas.Align(text, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
+            DrawText(position, text, colorWhite, true);
             return;
         }
 
-        Widget.Text($"{Combat.Name} - ({(!Combat.Active ? "Completed in " : "")}{Combat.Duration.ToString(@"mm\:ss")})", WindowMin, Helpers.Color(255, 255, 255, 255), WindowMin, WindowMax, anchor: Widget.TextAnchor.Center);
+        // Header
+        text = $"{Combat.Name} - ({(!Combat.Active ? "Completed in " : "")}{Combat.Duration.ToString(@"mm\:ss")})";
+        position = cursor.Align(text, Canvas.HorizontalAlign.Center);
+        DrawText(position, text, colorWhite);
+        cursor.Move((ImGui.GetFontSize() + 5, 0));
 
+        // Players
         foreach (var id in sortCache)
         {
             Player player = Combat.Players[id];
-            player.Calculate();
             DoLerpPlayerData(player);
-            DrawPlayerLine(lerpedInfo[player.Id], player);
+
+            DrawPlayerLine(windowCanvas, player, lerpedInfo[player.Id]);
+            cursor.Move((ImGui.GetFontSize() + 5, 0));
         }
+
+        FontLazer.Pop();
     }
 
     public void Dispose() { }
 
-    private void UpdateWindowSize()
+    private void DrawPlayerLine(Canvas canvas, Player player, LerpPlayerData data)
     {
-        Vector2 vMin = ImGui.GetWindowContentRegionMin();
-        Vector2 vMax = ImGui.GetWindowContentRegionMax();
+        var draw = ImGui.GetWindowDrawList();
 
-        vMin.X += ImGui.GetWindowPos().X;
-        vMin.Y += ImGui.GetWindowPos().Y;
-        vMax.X += ImGui.GetWindowPos().X;
-        vMax.Y += ImGui.GetWindowPos().Y;
-        WindowMin = vMin;
-        WindowMax = vMax;
+        // Icon
+        if (true)
+        {
+            var max = new Vector2(canvas.Min.X + canvas.Height, canvas.Min.Y + canvas.Height);
+            draw.AddRectFilled(canvas.Min, max, Config.color6);
+            draw.AddRect(canvas.Min, max, Config.color7);
+            draw.AddImage(new Job(player.Job).Icon(), canvas.Min, max);
+            canvas.AddMin(canvas.Height, 0);
+        }
+
+        // Background
+        ImGui.GetWindowDrawList().AddRectFilled(canvas.Min, canvas.Max, Config.color1);
+
+        // Bar
+        var barColor = player.Name == "YOU" ? Config.color2 : Config.color3; // broken
+        DrawProgressBar(canvas.Min, canvas.Max, barColor, (float)data.PctBar / 100.0f);
+        draw.AddRect(canvas.Min, canvas.Max, Config.color4);
+
+        // Texts
+        string text = $"{new Job(player.Job).Id}";
+        Vector2 position = canvas.Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
+        canvas.AddMin(8f, 0);
+        DrawText(position, text, Config.color5); // scale 0.8
+        canvas.AddMin(ImGui.CalcTextSize(text).X, 0);
+
+        text = player.Name;
+        position = canvas.Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
+        canvas.AddMin(8f, 0);
+        DrawText(position, text, colorWhite);
+        canvas.AddMin(ImGui.CalcTextSize(text).X, 0);
+
+        text = $"{Helpers.HumanizeNumber(data.DPS, 1)}/s";
+        position = canvas.Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
+        DrawText(position, text, colorWhite);
+        canvas.AddMax(-ImGui.CalcTextSize(text).X, 0);
+
+        text = $"{Helpers.HumanizeNumber(data.TotalDMG, 1)}";
+        position = canvas.Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
+        DrawText(position, text, Config.color6); // scale 0.8f
     }
 }

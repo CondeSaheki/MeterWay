@@ -8,7 +8,7 @@ namespace Lazer;
 
 public partial class Overlay : IOverlay, IOverlayTab
 {
-    public  void DrawTab()
+    public void DrawTab()
     {
         using var bar = ImRaii.TabBar("Overlay Settings Tabs");
         if (!bar) return;
@@ -18,7 +18,7 @@ public partial class Overlay : IOverlay, IOverlayTab
         DrawFontsTab();
     }
 
-    public  void DrawGeneralTab()
+    private void DrawGeneralTab()
     {
         using var tab = ImRaii.TabItem("General");
         if (!tab) return;
@@ -35,23 +35,23 @@ public partial class Overlay : IOverlay, IOverlayTab
         }
     }
 
-    public  void DrawAppearanceTab()
+    private void DrawAppearanceTab()
     {
         using var tab = ImRaii.TabItem("Appearance");
         if (!tab) return;
 
         ImGui.Spacing();
 
-        var OverlayBackgroundColorValue = Config.BackgroundColor;
+        var OverlayBackgroundColorValue = ImGui.ColorConvertU32ToFloat4(Config.BackgroundColor);
         if (ImGui.ColorEdit4("Background Color", ref OverlayBackgroundColorValue,
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
         {
-            Config.BackgroundColor = OverlayBackgroundColorValue;
+            Config.BackgroundColor = ImGui.ColorConvertFloat4ToU32(OverlayBackgroundColorValue);
             File.Save(Name, Config);
         }
     }
 
-    public  void DrawFontsTab()
+    private void DrawFontsTab()
     {
         using var tab = ImRaii.TabItem("Fonts");
         if (!tab) return;
