@@ -1,12 +1,26 @@
 {
   "version": 1,
   "dependencies": {
-    "net7.0-windows7.0": {
+    "net8.0-windows7.0": {
       "DalamudPackager": {
         "type": "Direct",
         "requested": "[2.1.12, )",
         "resolved": "2.1.12",
         "contentHash": "Sc0PVxvgg4NQjcI8n10/VfUQBAS4O+Fw2pZrAqBdRMbthYGeogzu5+xmIGCGmsEZ/ukMOBuAqiNiB5qA3MRalg=="
+      },
+      "NLua": {
+        "type": "Direct",
+        "requested": "[1.7.2, )",
+        "resolved": "1.7.2",
+        "contentHash": "Eh/Nyois3Y4pObgAR8MDsiq5npSQcmEq7IkM50TfkZ8Pb+kV1HMWmaKLl6fFy6ydAzG67L3l3KQseZpBxjI6zw==",
+        "dependencies": {
+          "KeraLua": "1.4.1"
+        }
+      },
+      "KeraLua": {
+        "type": "Transitive",
+        "resolved": "1.4.1",
+        "contentHash": "SHfGjaWED+nHxMWbIqAVN90bs5xLnOOojuQaSSzZqJAKXSzcDi94ikr/7GQxM1/4ny/tKnnGHSKkOQyZ65572Q=="
       }
     }
   }

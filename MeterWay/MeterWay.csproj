@@ -3,14 +3,18 @@
   <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
 
   <PropertyGroup>
-    <Authors></Authors>
+    <Authors>CondeSaheki</Authors>
     <Company></Company>
-    <Version>0.0.0.1</Version>
+    <Version>1.0.5</Version>
     <Description>A simple dps meter.</Description>
     <Copyright></Copyright>
-    <PackageProjectUrl>git link</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/CondeSaheki/MeterWay</PackageProjectUrl>
     <PackageLicenseExpression>License</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NLua" Version="1.7.2"/>
+  </ItemGroup>
 
 </Project>

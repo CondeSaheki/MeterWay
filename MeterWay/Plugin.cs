@@ -45,7 +45,8 @@ public sealed class Plugin : IDalamudPlugin
                 [
                     // typeof(HelloWorld.Overlay),
                     typeof(Lazer.Overlay),
-                    typeof(Mogu.Overlay)
+                    typeof(Mogu.Overlay),
+                    typeof(Dynamic.Overlay)
                 ]
             );
             ConfigWindow = new(this);
@@ -87,6 +88,6 @@ public sealed class Plugin : IDalamudPlugin
         #endif
    
         IinactIpcClient?.Dispose();
-        encounterManager?.Dispose(); 
+        encounterManager?.Dispose();
     }
 }
