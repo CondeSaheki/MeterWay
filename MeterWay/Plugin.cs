@@ -38,7 +38,7 @@ public sealed class Plugin : IDalamudPlugin
             IinactIpcClient = new IINACTClient();
             IinactIpcClient.Connect();
             IinactIpcClient.Subscribe([IINACTClient.SubscriptionType.LogLine]);
-            IinactIpcClient.Receivers.Add(EncounterManager.Receiver);
+            IinactIpcClient.OnDataReceived += EncounterManager.Receiver;
 
             // register your overlays here
             OverlayWindow = new(
@@ -86,7 +86,8 @@ public sealed class Plugin : IDalamudPlugin
         #if DEBUG
             DebugWindow.Dispose();
         #endif
-   
+        
+        IinactIpcClient.OnDataReceived -= EncounterManager.Receiver;
         IinactIpcClient?.Dispose();
         encounterManager?.Dispose();
     }

@@ -8,11 +8,9 @@ using Dalamud.Plugin.Ipc;
 
 namespace MeterWay.Ipc;
 
-public delegate void ReadOnlyJObject(ref readonly JObject json);
-
 public class IINACTClient : IIpcClient, IDisposable
 {
-    public List<ReadOnlyJObject> Receivers { get; init; }
+    public event EventHandler<JObject> OnDataReceived = delegate { };
 
     private bool connectionStatus;
     private readonly ICallGateProvider<JObject, bool> subscriptionReceiver;
@@ -34,7 +32,6 @@ public class IINACTClient : IIpcClient, IDisposable
 
     public IINACTClient()
     {
-        Receivers = [];
         connectionStatus = false;
 
         subscriptionReceiver = Dalamud.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);
@@ -43,7 +40,7 @@ public class IINACTClient : IIpcClient, IDisposable
 
     private bool Receiver(JObject json)
     {
-        foreach (var fn in Receivers) fn.Invoke(ref json);
+        OnDataReceived?.Invoke(this, json);
         return true;
     }
 

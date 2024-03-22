@@ -12,16 +12,14 @@ namespace MeterWay.Managers;
 
 public class EncounterManager : IDisposable
 {
+    public static EncounterManager Inst { get; private set; } = null!;
+
     // data
     public readonly List<Encounter> encounters;
     private bool lastCombatState;
-
-    public static EncounterManager Inst { get; private set; } = null!;
-
     public static Encounter LastEncounter => Inst.encounters.Last();
 
     public Notifier ClientsNotifier { get; init; }
-    
 
     // constructor
     public EncounterManager()
@@ -32,7 +30,7 @@ public class EncounterManager : IDisposable
 
         Dalamud.Duty.DutyStarted += OnDutyStart;
 
-        ClientsNotifier = new Notifier(ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate); 
+        ClientsNotifier = new Notifier(ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate);
         Inst = this;
     }
 
@@ -102,7 +100,7 @@ public class EncounterManager : IDisposable
         return false;
     }
 
-    public static void Receiver(ref readonly JObject json)
+    public static void Receiver(object? _, JObject json)
     {
         var combatState = IsInCombat();
 
