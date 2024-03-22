@@ -30,9 +30,9 @@ public class OverlayWindow : Window, IDisposable
         IsOpen = true;
         RespectCloseHotkey = false;
         Flags = GetFlags();
-        
+
         EncounterManager.Inst.ClientsNotifier.OnDataUpdate -= OnDataUpdate;
-        
+
         #if DEBUG
             ValidadeOverlays<IOverlay>(overlays);
         #endif
@@ -52,7 +52,34 @@ public class OverlayWindow : Window, IDisposable
         ActivateOverlay();
     }
 
-    public override void Draw() => Overlay?.Draw();
+    public override void Draw()
+    {
+        if (Overlay == null) return;
+        try
+        {
+            Overlay.Draw();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"\'{Overlays[OverlayIndex].Item1}\' overlay trow an error on \'Draw\' and got inactivated:\n{ex}");
+            InactivateOverlay();
+        }
+    }
+
+    public bool HasOverlayTab => Overlay != null && Overlay.GetType().GetInterfaces().Contains(typeof(IOverlayTab));
+
+    public void DrawTab()
+    {
+        try
+        {
+            ((IOverlayTab)Overlay!).DrawTab();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"\'{Overlays[OverlayIndex].Item1}\' overlay trow an error on \'DrawTab\' and got inactivated:\n{ex}");
+            InactivateOverlay();
+        }
+    }
 
     public void Dispose()
     {
@@ -66,7 +93,7 @@ public class OverlayWindow : Window, IDisposable
     {
         return defaultflags; // | (ConfigurationManager.Inst.Configuration.OverlayClickThrough ? ImGuiWindowFlags.NoInputs : ImGuiWindowFlags.None);
     }
-    
+
     public static Canvas GetCanvas()
     {
         Vector2 Min = ImGui.GetWindowContentRegionMin();
@@ -101,7 +128,19 @@ public class OverlayWindow : Window, IDisposable
         Overlay = null;
     }
 
-    private void OnDataUpdate(object? _, EventArgs __) => Overlay?.DataUpdate();
+    private void OnDataUpdate(object? _, EventArgs __)
+    {
+        if (Overlay == null) return;
+        try
+        {
+            Overlay?.DataUpdate();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"\'{Overlays[OverlayIndex].Item1}\' overlay trow an error on \'DataUpdate\' and got inactivated:\n{ex}");
+            InactivateOverlay();
+        }
+    }
 
     private static void ValidadeOverlays<TInterface>(IEnumerable<Type> types) where TInterface : class
     {

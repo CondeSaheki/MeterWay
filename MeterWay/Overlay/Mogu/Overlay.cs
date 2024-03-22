@@ -21,7 +21,6 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     private IFontAtlas FontAtlas { get; init; } = MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async);
     private IFontHandle FontMogu { get; set; }
-    private int FontsIndex = 0;
     private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
 
     private Encounter Data = new();

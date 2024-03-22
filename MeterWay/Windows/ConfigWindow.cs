@@ -6,7 +6,6 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility.Raii;
 
 using MeterWay.Managers;
-using MeterWay.Overlay;
 
 namespace MeterWay.Windows;
 
@@ -89,7 +88,6 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.PopItemWidth();
 
-
         if (OverlayEnabledValue == false) return;
 
         ImGui.Spacing();
@@ -129,13 +127,13 @@ public class ConfigWindow : Window, IDisposable
 
     private void DrawOverlayConfigTab()
     {
-        if (Plugin.OverlayWindow.Overlay == null || !Plugin.OverlayWindow.Overlay.GetType().GetInterfaces().Contains(typeof(IOverlayTab))) return;
-        var overlayName = (string)Plugin.OverlayWindow.Overlay.GetType()!.GetProperty("Name")!.GetValue(null)!;
+        if(!Plugin.OverlayWindow.HasOverlayTab) return;
 
+        var overlayName = Plugin.OverlayWindow.Overlays[Plugin.OverlayWindow.OverlayIndex].Item1;
         using var tab = ImRaii.TabItem($"{overlayName} Config");
         if (!tab) return;
-
-        ((IOverlayTab)Plugin.OverlayWindow.Overlay).DrawTab();
+        
+        Plugin.OverlayWindow.DrawTab();
     }
 
     private void DrawAppearenceTab()
@@ -155,7 +153,7 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Text($"State: ");
         ImGui.SameLine();
-        ImGui.TextColored(status ? new Vector4(0, 255, 0, 255) : new Vector4(255, 0, 0, 255), status ? "Connected" : "Disconnected");
+        ImGui.TextColored(status ? new Vector4(0f, 1f, 0f, 1f) : new Vector4(1f, 0f, 0f, 1f), status ? "Connected" : "Disconnected");
 
         ImGui.Spacing();
         ImGui.Separator();
