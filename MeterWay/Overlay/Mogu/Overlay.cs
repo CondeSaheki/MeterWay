@@ -20,15 +20,12 @@ public partial class Overlay : IOverlay, IOverlayTab
     private Configuration Config { get; init; }
 
     private IFontAtlas FontAtlas { get; init; } = MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async);
-
     private IFontHandle FontMogu { get; set; }
-    private (string Name, IFontHandle Font)[] Fonts { get; init; }
     private int FontsIndex = 0;
+    private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
 
     private Encounter Data = new();
     private List<uint> SortCache = [];
-
-    private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
 
     public Overlay(OverlayWindow overlayWindow)
     {
@@ -36,7 +33,6 @@ public partial class Overlay : IOverlay, IOverlayTab
         Window = overlayWindow;
         Window.Flags = OverlayWindow.defaultflags; // temporary
         FontMogu = DefaultFont; // TODO load font from config
-        Fonts = [(Name, FontMogu)];
     }
 
     public void DataUpdate()
@@ -78,7 +74,7 @@ public partial class Overlay : IOverlay, IOverlayTab
 
             text = $"{Data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(Data.Dps, 2)}";
             draw.AddText(cursor.Align(text), Config.MoguFontColor, text);
-            cursor.Move((0, (uint)fontSize + spacing));
+            cursor.Move((0, fontSize + spacing));
         }
 
         // Players
@@ -103,7 +99,7 @@ public partial class Overlay : IOverlay, IOverlayTab
 
             var damageinfo = $"{Helpers.HumanizeNumber(player.Dps, 2)} {player.DamageDealt.Value.Percent.Neutral}%";
             draw.AddText(cursor.Align(damageinfo), Config.MoguFontColor, damageinfo);
-            cursor.Move((0, (uint)fontSize + spacing));
+            cursor.Move((0, fontSize + spacing));
         }
 
         FontMogu.Pop();

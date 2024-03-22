@@ -157,7 +157,7 @@ public partial class Overlay : IOverlay, IOverlayTab
 
         if (ImGui.Button("Choose"))
         {
-            SingleFontChooserDialog chooser = new(MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async)) // need a new instance
+            SingleFontChooserDialog chooser = new(MeterWay.Dalamud.PluginInterface.UiBuilder, false, null)
             {
                 Title = "Font Chooser",
                 PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",
@@ -193,20 +193,13 @@ public partial class Overlay : IOverlay, IOverlayTab
             Config.MoguFontColor = ImGui.ColorConvertFloat4ToU32(FontColorValue);
             File.Save(Name, Config);
         }
-
-        ImGui.Separator();
-        ImGui.Spacing();
-        ImGui.Text("Font Tester");
-        ImGui.Spacing();
-        var FontsNames = Fonts.Select(x => x.Name).ToArray();
-        if (ImGui.Combo("##Font Test", ref FontsIndex, FontsNames, FontsNames.Length))
-            ImGui.Spacing();
-        Fonts[FontsIndex].Font.Push();
-        string text = "abcdefghijklmnopqrstuvxyzw";
-        ImGui.InputText("##text", ref text, 200);
-        Fonts[FontsIndex].Font.Pop();
-
-        //Dictionary<string, IFontHandle?> asd;
+        // ImGui.Spacing();
+        // ImGui.Text("Font Tester");
+        // ImGui.Spacing();
+        // FontMogu.Push();
+        // string text = "abcdefghijklmnopqrstuvxyzw";
+        // ImGui.InputText("##text", ref text, 200);
+        // FontMogu.Pop();
     }
 
     private void DrawJobColorsTab()

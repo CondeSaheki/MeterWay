@@ -2,8 +2,6 @@ using System.Numerics;
 using ImGuiNET;
 using System;
 using Dalamud.Plugin.Services;
-using Dalamud.Interface.ImGuiFontChooserDialog;
-using Dalamud.Interface.ManagedFontAtlas;
 
 using MeterWay.Utils;
 using MeterWay.Overlay;
@@ -16,56 +14,6 @@ public partial class Overlay : IOverlay, IOverlayTab
     {
         ImGui.GetWindowDrawList().AddText(position + new Vector2(1, 1), shadowColor, text);
         ImGui.GetWindowDrawList().AddText(position, color, text);
-    }
-
-    private void DrawFontChanger(IFontAtlas fontAtlas, IFontHandle fontHandle, string fontname, Vector4 configcolor)
-    {
-        ImGui.Spacing();
-        ImGui.Text(fontname);
-        ImGui.Spacing();
-
-        var FontColorValue = configcolor;
-        if (ImGui.ColorEdit4("Color", ref FontColorValue,
-            ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
-        {
-            configcolor = FontColorValue;
-            File.Save(Name, Config);
-        }
-
-        if (ImGui.Button("Choose"))
-        {
-            SingleFontChooserDialog chooser = new(MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async)) // need a new instance
-            {
-                Title = "Font Chooser",
-                PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",
-                //SelectedFont = new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance } // load id from config
-                // FontFamilyExcludeFilter = x => x is DalamudDefaultFontAndFamilyId; // exclude especific fonts from being selected
-                // FontId = original.FontId;
-                // SizePx = original.SizePx;
-            };
-            chooser.ResultTask.ContinueWith(chooserTask =>
-            {
-                if (chooserTask.IsCompletedSuccessfully)
-                {
-                    fontHandle?.Dispose();
-                    fontHandle = chooserTask.Result.CreateFontHandle(fontAtlas);
-                    // TODO save config
-                }
-                MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= chooser.Draw;
-                chooser.Dispose();
-            });
-            MeterWay.Dalamud.PluginInterface.UiBuilder.Draw += chooser.Draw;
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("Default"))
-        {
-            fontHandle?.Dispose();
-            fontHandle = fontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
-        }
-        FontMogu.Push();
-        string text = "abcdefghijklmnopqrstuvxyzw";
-        ImGui.InputText("##text", ref text, 200);
-        FontMogu.Pop();
     }
 
     private static void DrawProgressBar((Vector2 Min, Vector2 Max) rectangle, float progress, uint color)
