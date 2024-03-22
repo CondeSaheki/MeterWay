@@ -15,7 +15,7 @@ public partial class Overlay : IOverlay, IOverlayTab
 
         DrawGeneralTab();
         DrawAppearanceTab();
-        DrawFontsTab();
+        //DrawFontsTab();
     }
 
     private void DrawGeneralTab()

@@ -106,7 +106,11 @@ public partial class Overlay : IOverlay, IOverlayTab
         FontLazer.Pop();
     }
 
-    public void Dispose() { }
+    public void Dispose() 
+    {
+        FontLazer.Dispose();
+        FontAtlas.Dispose();
+    }
 
     private void DrawPlayerLine(Canvas canvas, Player player, LerpPlayerData data)
     {
