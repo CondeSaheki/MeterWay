@@ -3,7 +3,7 @@
 - [Building](#Building)
   * [Prerequisites](#Prerequisites)
   * [Build](#Build)
-  * [Activating in-game](#Activatingin-game)
+  * [Add to game](#Add-to-game)
 
 
 # Meterway
@@ -24,8 +24,8 @@ MeterWay is designed to be used in conjunction with [IINACT](https://www.iinact.
 - .NET Core 8 SDK installed and configured.
 
 ### Build
-- restore packages with ```dotnet restore```
-- run ```dotnet build -c Debug``` or ```dotnet build -c Release```
+- Restore packages with ```dotnet restore```
+- Run ```dotnet build -c Debug``` or ```dotnet build -c Release```
 
-### Activating in-game
+#### Add to game
 Add the full path to the ```MeterWay.dll``` in list of Dev Plugins and then Install with Plugin Installer. You can disable, enable, or load your plugin on startup
