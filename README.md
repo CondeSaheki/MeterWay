@@ -1,5 +1,15 @@
+- [Meterway](#Meterway)
+- [Instalation](#Instalation)
+- [Building](#Building)
+  * [Prerequisites](#Prerequisites)
+  * [Build](#Build)
+  * [Activating in-game](#Activatingin-game)
+
+
 # Meterway
-A simple dalamud addon that display combatdata from [IINACT](https://www.iinact.com/).
+Dalamud-based FFXIV addon that display and help you analyze combat data. 
+
+MeterWay is designed to be used in conjunction with [IINACT](https://www.iinact.com/) and has the hability acts as a real-time log parser alowing to get and display elaborated statistics and data even during combat.
 
 ## Instalation
 1. Click the "Experimental" tab.
@@ -7,6 +17,15 @@ A simple dalamud addon that display combatdata from [IINACT](https://www.iinact.
 3. Click the + button.
 4. Click the 💾 button.
 
-## Build
-You need .NET 7 and Dalamud.
-```dotnet build```
+## Building
+### Prerequisites
+- XIVLauncher, FINAL FANTASY XIV, and Dalamud installed and the game has been run with Dalamud at least once.
+- DALAMUD_HOME environment variable must be set if you used an custom instalation paths.
+- .NET Core 8 SDK installed and configured.
+
+### Build
+- restore packages with ```dotnet restore```
+- run ```dotnet build -c Debug``` or ```dotnet build -c Release```
+
+### Activating in-game
+Add the full path to the ```MeterWay.dll``` in list of Dev Plugins and then Install with Plugin Installer. You can disable, enable, or load your plugin on startup
