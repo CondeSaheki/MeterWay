@@ -14,14 +14,12 @@ public class EncounterManager : IDisposable
 {
     public static EncounterManager Inst { get; private set; } = null!;
 
-    // data
     public readonly List<Encounter> encounters;
     private bool lastCombatState;
     public static Encounter LastEncounter => Inst.encounters.Last();
 
     public Notifier ClientsNotifier { get; init; }
 
-    // constructor
     public EncounterManager()
     {
         encounters = [];
@@ -116,6 +114,6 @@ public class EncounterManager : IDisposable
             Inst.lastCombatState = false;
         }
 
-        LoglineParser.Parse(in json, LastEncounter); // parse data
+        LoglineParser.Parse(json, LastEncounter); // parse data
     }
 }

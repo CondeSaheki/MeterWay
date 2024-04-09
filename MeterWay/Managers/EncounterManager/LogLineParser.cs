@@ -28,9 +28,9 @@ public static class LoglineParser
     }
 
     // parse encounter real time
-    public static void Parse(ref readonly JObject json, Encounter encounter)
+    public static void Parse(JObject json, Encounter encounter)
     {
-        var line = Store(in json, encounter);
+        var line = Store(json, encounter);
         if (line == null) return;
 
         var handler = HandlerLogline(line);
@@ -46,7 +46,7 @@ public static class LoglineParser
         handler.Invoke(line, encounter);
     }
 
-    public static LogLineData? Store(ref readonly JObject json, Encounter encounter)
+    public static LogLineData? Store(JObject json, Encounter encounter)
     {
         string? rawLine = json.GetValue("rawLine")?.ToObject<string>();
         if (rawLine == null) return null;

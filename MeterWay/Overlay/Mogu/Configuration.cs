@@ -4,6 +4,7 @@ using ImGuiNET;
 
 using MeterWay.Utils;
 using MeterWay.Overlay;
+using Dalamud.Interface.FontIdentifier;
 
 namespace Mogu;
 
@@ -37,6 +38,7 @@ public class Configuration : IConfiguration
 
     // fonts
     public uint MoguFontColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
+    public SingleFontSpec? MoguFontSpec { get; set; } = null;
 
     // Job colors
     public (JobIds Job, uint Color)[] JobColors { get; set; } =

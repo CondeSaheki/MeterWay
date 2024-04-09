@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MeterWay.Overlay;
 
@@ -11,6 +12,12 @@ public interface IOverlay : IDisposable
 public interface IOverlayTab
 {
     public void DrawTab();
+}
+
+public interface IOverlayCommandHandler
+{
+    public string CommandHelpMessage(string? command);
+    public Action? OnCommand(List<string> args);
 }
 
 public interface IConfiguration

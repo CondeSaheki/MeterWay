@@ -1,4 +1,4 @@
-using System.Linq;
+using Dalamud.Interface.FontIdentifier;
 using Dalamud.Interface.ImGuiFontChooserDialog;
 using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.Utility.Raii;
@@ -161,18 +161,18 @@ public partial class Overlay : IOverlay, IOverlayTab
             {
                 Title = "Font Chooser",
                 PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",
-                //SelectedFont = new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance } // load id from config
-                // FontFamilyExcludeFilter = x => x is DalamudDefaultFontAndFamilyId; // exclude especific fonts from being selected
-                // FontId = original.FontId;
-                // SizePx = original.SizePx;
+                SelectedFont = Config.MoguFontSpec ??  new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance },
             };
             chooser.ResultTask.ContinueWith(chooserTask =>
             {
+                _ = chooserTask.Exception; // not needed ?
                 if (chooserTask.IsCompletedSuccessfully)
                 {
                     FontMogu?.Dispose();
                     FontMogu = chooserTask.Result.CreateFontHandle(FontAtlas);
-                    // TODO save config
+
+                    Config.MoguFontSpec = chooser.SelectedFont;
+                    File.Save(Name, Config);
                 }
                 MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= chooser.Draw;
                 chooser.Dispose();

@@ -3,12 +3,14 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using Dalamud.Interface.ManagedFontAtlas;
+using Dalamud.Interface.FontIdentifier;
 
 using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
 using MeterWay.Windows;
+
 
 namespace Mogu;
 
@@ -31,7 +33,7 @@ public partial class Overlay : IOverlay, IOverlayTab
         Config = File.Load<Configuration>(Name);
         Window = overlayWindow;
         Window.Flags = OverlayWindow.defaultflags; // temporary
-        FontMogu = DefaultFont; // TODO load font from config
+        FontMogu = Config.MoguFontSpec != null ? Config.MoguFontSpec.CreateFontHandle(FontAtlas) : DefaultFont;
     }
 
     public void DataUpdate()

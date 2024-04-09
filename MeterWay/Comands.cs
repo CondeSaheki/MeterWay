@@ -33,6 +33,9 @@ public class Commands : IDisposable
         helpMessageBuilder("disconnect", "Diconnect from IINACT.");
         helpMessageBuilder("reconnect", "Try to reconnect to IINACT.");
         helpMessageBuilder("status", "Display the connection to IINACT status.");
+
+        helpMessageBuilder("overlay", "Run overlay command handler."); // wip
+
         helpMessageBuilder("help", "Display this help message");
 
         Message.Remove(Message.Length - 1, 1);
@@ -55,6 +58,9 @@ public class Commands : IDisposable
                 var msg = $"MeterWay is {(Plugin.IinactIpcClient.Status() ? "connected" : "disconnected")} to IINACT.";
                 Dalamud.Chat.Print(msg);
             },
+
+            "overlay" => () => { Dalamud.Log.Info($"wip => run with args: {args}"); },
+
             "help" when args.Count == 1 => () => { Dalamud.Chat.Print(HelpMessage()); },
 
             #if DEBUG

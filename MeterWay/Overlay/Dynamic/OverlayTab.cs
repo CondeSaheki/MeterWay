@@ -15,19 +15,19 @@ public partial class Overlay : IOverlay, IOverlayTab
     {
         using var bar = ImRaii.TabBar("Overlay Settings Tabs");
         if (!bar) return;
+
         DrawGeneral();
         DrawScriptTab();
     }
 
     void DrawScriptTab()
     {
-        if (Script != null)
-        {
-            using var tab = ImRaii.TabItem("Lua Script");
-            if (!tab) return;
+        if (Script == null) return;
 
-            Script?.ExecuteDrawTab();
-        }
+        using var tab = ImRaii.TabItem("Lua Script");
+        if (!tab) return;
+
+        Script.ExecuteDrawTab();
     }
 
     public void DrawGeneral()
@@ -41,25 +41,27 @@ public partial class Overlay : IOverlay, IOverlayTab
             Config.LoadInit = loadInitValue;
             File.Save(Name, Config);
         }
-
-        var scriptNames = Config.Scripts.Select(x => x.Key).ToArray();
-        int scriptIndexValue = Config.ScriptName == null ? 0 : Array.FindIndex(scriptNames, x => x == Config.ScriptName);
-        if (scriptIndexValue == -1) scriptIndexValue = 0;
-        ImGui.PushItemWidth(160);
-        if (ImGui.Combo("Lua Script", ref scriptIndexValue, scriptNames, Config.Scripts.Count))
+        if (Config.Scripts.Count != 0)
         {
-            Config.ScriptName = scriptNames[scriptIndexValue];
-            File.Save(Name, Config);
-        }
-        ImGui.PopItemWidth();
-        ImGui.SameLine();
-        if (Script != null)
-        {
-            if (ImGui.Button("Reload")) Script.Reload();
-        }
-        else
-        {
-            if (ImGui.Button("Load")) LoadScript();
+            var scriptNames = Config.Scripts.Select(x => x.Key).ToArray();
+            int scriptIndexValue = Config.ScriptName == null ? 0 : Array.FindIndex(scriptNames, x => x == Config.ScriptName);
+            if (scriptIndexValue == -1) scriptIndexValue = 0;
+            ImGui.PushItemWidth(160);
+            if (ImGui.Combo("Lua Script", ref scriptIndexValue, scriptNames, Config.Scripts.Count))
+            {
+                Config.ScriptName = scriptNames[scriptIndexValue];
+                File.Save(Name, Config);
+            }
+            ImGui.PopItemWidth();
+            ImGui.SameLine();
+            if (Script != null)
+            {
+                if (ImGui.Button("Reload")) Script.Reload();
+            }
+            else
+            {
+                if (ImGui.Button("Load")) LoadScript();
+            }
         }
         ImGui.SameLine();
         if (Script == null) ImGui.BeginDisabled();
@@ -70,25 +72,28 @@ public partial class Overlay : IOverlay, IOverlayTab
         }
         if (Script == null) ImGui.EndDisabled();
 
+
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
+
         if (ImGui.Button("Add"))
         {
             FileDialogManager fileDialogManager = new();
             fileDialogManager.OpenFileDialog("Chose Script", ".lua",
             (bool isOk, List<string> selectedFolder) =>
             {
-                if (isOk)
-                {
-                    var file = new System.IO.FileInfo(selectedFolder.First());
-                    if (file.Exists)
-                    {
-                        Config.Scripts.Add(file.Name, file.FullName);
-                        File.Save(Name, Config);
-
-                        MeterWay.Dalamud.Log.Info($"FileDialogManager completed:\n{selectedFolder}");
-                    }
-                }
-
                 MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= fileDialogManager.Draw;
+                if (!isOk) return;
+
+                var file = new System.IO.FileInfo(selectedFolder.First());
+                if (file.Exists)
+                {
+                    Config.Scripts.Add(file.Name, file.FullName);
+                    File.Save(Name, Config);
+
+                    MeterWay.Dalamud.Log.Info($"FileDialogManager completed:\n{selectedFolder}");
+                }
             }, 1, null, true);
             MeterWay.Dalamud.PluginInterface.UiBuilder.Draw += fileDialogManager.Draw;
         }

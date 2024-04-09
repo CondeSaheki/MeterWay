@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
 using ImGuiNET;
 
 using MeterWay.Data;
@@ -7,7 +10,7 @@ using MeterWay.Windows;
 
 namespace HelloWorld;
 
-public class Overlay : IOverlay, IOverlayTab
+public class Overlay : IOverlay, IOverlayTab, IOverlayCommandHandler
 {
     public static string Name => "HelloWorld"; // required
 
@@ -45,6 +48,30 @@ public class Overlay : IOverlay, IOverlayTab
             Config.Enabled = enabledValue;
             File.Save(Name, Config);
         }
+    }
+    
+    public string CommandHelpMessage(string? command)
+    {
+        StringBuilder builder = new();
+        
+        builder.Append("command");
+        builder.Append("command");
+
+        return builder.ToString();
+    }
+
+    public Action? OnCommand(List<string> args)
+    {
+        Action? handler = args[0] switch
+        {
+            "config" when args.Count == 1 => () =>
+            {
+                MeterWay.Dalamud.Chat.Print("hi");
+            },
+            "" when args.Count == 1 => null,
+            _ => null
+        };
+        return handler;
     }
 
     public void Dispose() { }

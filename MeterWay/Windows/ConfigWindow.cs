@@ -127,12 +127,12 @@ public class ConfigWindow : Window, IDisposable
 
     private void DrawOverlayConfigTab()
     {
-        if(!Plugin.OverlayWindow.HasOverlayTab) return;
+        if (!Plugin.OverlayWindow.HasOverlayTab) return;
 
         var overlayName = Plugin.OverlayWindow.Overlays[Plugin.OverlayWindow.OverlayIndex].Item1;
         using var tab = ImRaii.TabItem($"{overlayName} Config");
         if (!tab) return;
-        
+
         Plugin.OverlayWindow.DrawTab();
     }
 
@@ -158,28 +158,26 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Spacing();
         ImGui.Separator();
 
+        if (ImGui.Button(status ? "Restart" : "Start"))
         {
-            if (ImGui.Button(status ? "Restart" : "Start"))
+            if (status)
             {
-                if (status)
-                {
-                    Plugin.IinactIpcClient.Reconnect();
-                }
-                else
-                {
-                    Plugin.IinactIpcClient.Connect();
-                }
+                Plugin.IinactIpcClient.Reconnect();
             }
-
-            if (!status) ImGui.BeginDisabled();
-
-            ImGui.SameLine();
-            if (ImGui.Button("Stop"))
+            else
             {
-                Plugin.IinactIpcClient.Disconnect();
+                Plugin.IinactIpcClient.Connect();
             }
-            if (!status) ImGui.EndDisabled();
         }
+
+        if (!status) ImGui.BeginDisabled();
+
+        ImGui.SameLine();
+        if (ImGui.Button("Stop"))
+        {
+            Plugin.IinactIpcClient.Disconnect();
+        }
+        if (!status) ImGui.EndDisabled();
     }
 
     private void DrawAboutTab()
