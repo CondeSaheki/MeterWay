@@ -31,7 +31,7 @@ public class OverlayWindow : Window, IDisposable
         RespectCloseHotkey = false;
         Flags = GetFlags();
 
-        EncounterManager.Inst.ClientsNotifier.OnDataUpdate -= OnDataUpdate;
+        EncounterManager.Inst.ClientsNotifier.OnDataUpdate += OnDataUpdate;
 
         #if DEBUG
             ValidadeOverlays<IOverlay>(overlays);

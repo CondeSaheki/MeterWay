@@ -20,7 +20,7 @@ public class WebSocketClient : IDisposable
         Uri uri = new("ws://echo.websocket.org");
         Connect(uri, TimeSpan.FromSeconds(5)).Wait();
         SendMessage("").Wait();
-        ReceiveMessages();
+        // ReceiveMessages();
     }
 
     private async Task Connect(Uri uri, TimeSpan duration)
@@ -83,7 +83,7 @@ public class WebSocketClient : IDisposable
         }
         catch (Exception ex)
         {
-
+            Dalamud.Log.Error("Error Sending Message to WebSocket server.", ex);
         }
     }
 
@@ -110,7 +110,7 @@ public class WebSocketClient : IDisposable
         }
         catch (Exception ex)
         {
-
+            Dalamud.Log.Error("Error Receiveing Message to WebSocket server.", ex);
         }
     }
 

@@ -43,7 +43,7 @@ public sealed class Plugin : IDalamudPlugin
             // register your overlays here
             OverlayWindow = new(
                 [
-                    // typeof(HelloWorld.Overlay),
+                    typeof(HelloWorld.Overlay),
                     typeof(Lazer.Overlay),
                     typeof(Mogu.Overlay),
                     typeof(Dynamic.Overlay)

@@ -72,7 +72,7 @@ public partial class Overlay : IOverlay, IOverlayTab
         string text = string.Empty;
         Vector2 position = new();
 
-        FontLazer.Push();
+        //FontLazer.Push();
 
         // Background
         draw.AddRectFilled(windowCanvas.Min, windowCanvas.Max, Config.BackgroundColor);
@@ -103,7 +103,7 @@ public partial class Overlay : IOverlay, IOverlayTab
             cursor.Move((ImGui.GetFontSize() + 5, 0));
         }
 
-        FontLazer.Pop();
+        //FontLazer.Pop();
     }
 
     public void Dispose() 

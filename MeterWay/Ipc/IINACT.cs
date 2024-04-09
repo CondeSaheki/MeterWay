@@ -40,7 +40,15 @@ public class IINACTClient : IIpcClient, IDisposable
 
     private bool Receiver(JObject json)
     {
-        OnDataReceived?.Invoke(this, json);
+        try
+        {
+            OnDataReceived?.Invoke(this, json);
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"Unhandeld error when dispatching received data from iinact:\n{ex}");
+            Disconnect();
+        }
         return true;
     }
 
@@ -105,7 +113,7 @@ public class IINACTClient : IIpcClient, IDisposable
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Warning("Meterway error while disconnecting: " + ex.ToString());
+            Dalamud.Log.Warning($"Meterway error while disconnecting:\n{ex}");
             connectionStatus = false;
         }
     }

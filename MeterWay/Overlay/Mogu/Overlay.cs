@@ -11,7 +11,6 @@ using MeterWay.Managers;
 using MeterWay.Overlay;
 using MeterWay.Windows;
 
-
 namespace Mogu;
 
 public partial class Overlay : IOverlay, IOverlayTab
@@ -59,7 +58,6 @@ public partial class Overlay : IOverlay, IOverlayTab
         uint spacing = 5;
         string text = "";
         //Vector2 position = new();
-
 
         // Background
         if (Config.Background) draw.AddRectFilled(cursor.Min, cursor.Max, Config.BackgroundColor);

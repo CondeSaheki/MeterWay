@@ -13,7 +13,7 @@ public class DebugWindow : Window, IDisposable
 {
     private static int indexEncounter = 0;
 
-    public DebugWindow() : base("MeterWay DebugWindow", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+    public DebugWindow() : base("MeterWay DebugWindow")
     {
         SizeConstraints = new WindowSizeConstraints
         {
