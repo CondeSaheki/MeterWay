@@ -27,8 +27,8 @@ public class Encounter
     public Damage DamageDealt { get; set; }
     public Damage DamageReceived { get; set; }
 
-    public HealValue HealDealt { get; set; }
-    public HealValue HealReceived { get; set; }
+    public Heal HealDealt { get; set; }
+    public Heal HealReceived { get; set; }
 
     public float Dps { get; set; } = 0;
     public float Hps { get; set; } = 0;
@@ -42,8 +42,8 @@ public class Encounter
 
         DamageDealt = new Damage();
         DamageReceived = new Damage();
-        HealDealt = new HealValue();
-        HealReceived = new HealValue();
+        HealDealt = new Heal();
+        HealReceived = new Heal();
 
         Dps = 0;
         Hps = 0;

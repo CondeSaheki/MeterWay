@@ -27,7 +27,7 @@ public class OverlayWindow : Window, IDisposable
             MinimumSize = new Vector2(80, 45),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
-        IsOpen = true;
+        IsOpen = ConfigurationManager.Inst.Configuration.OverlayEnabled;
         RespectCloseHotkey = false;
         Flags = GetFlags();
 

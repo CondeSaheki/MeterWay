@@ -58,11 +58,11 @@ public partial class Overlay : IOverlay, IOverlayTab
         return Config.JobDefaultColor;
     }
 
-    public static void DrawJobIcon(Vector2 cursor, float size, uint job)
+    public static void DrawJobIcon(Canvas area, uint job)
     {
         var icon = MeterWay.Dalamud.Textures.GetIcon(job + 62000u, ITextureProvider.IconFlags.None);
         if (icon == null) return;
 
-        ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, cursor, new Vector2(cursor.X + size, cursor.Y + size));
+        ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
     }
 }

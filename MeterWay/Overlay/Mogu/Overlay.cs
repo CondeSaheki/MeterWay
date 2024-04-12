@@ -3,13 +3,16 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using Dalamud.Interface.ManagedFontAtlas;
-using Dalamud.Interface.FontIdentifier;
 
 using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
 using MeterWay.Windows;
+using Lumina.Data.Parsing;
+using Dalamud.Interface.Colors;
+using System;
+using System.Globalization;
 
 namespace Mogu;
 
@@ -50,55 +53,66 @@ public partial class Overlay : IOverlay, IOverlayTab
         if (Config.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
 
         var draw = ImGui.GetWindowDrawList();
-        Canvas windowCanvas = OverlayWindow.GetCanvas();
-        Canvas cursor = new(windowCanvas.Area);
+        // Canvas windowCanvas = OverlayWindow.GetCanvas();
+        Canvas cursor = OverlayWindow.GetCanvas(); //new(windowCanvas.Area);
 
         FontMogu.Push();
         float fontSize = ImGui.GetFontSize();
-        uint spacing = 5;
+        float spacing = 2f;
         string text = "";
-        //Vector2 position = new();
+        Vector2 position = cursor.Min;
 
         // Background
         if (Config.Background) draw.AddRectFilled(cursor.Min, cursor.Max, Config.BackgroundColor);
-        cursor.Padding(15);
+        cursor.Padding(spacing);
+        cursor.Max = new(cursor.Max.X, cursor.Min.Y + fontSize + 2 * spacing);
 
         // Header
         if (Config.Header)
         {
             if (Config.HeaderBackground)
             {
-                draw.AddRectFilled(windowCanvas.Min, new Vector2(windowCanvas.Max.X, windowCanvas.Min.Y + fontSize), Config.HeaderBackgroundColor);
+                draw.AddRectFilled(cursor.Min, cursor.Max, Config.HeaderBackgroundColor);
             }
 
             text = $"{Data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(Data.Dps, 2)}";
-            draw.AddText(cursor.Align(text), Config.MoguFontColor, text);
-            cursor.Move((0, fontSize + spacing));
+            position = cursor.Padding((spacing, 0)).Align(text, Config.HeaderAlignment, Canvas.VerticalAlign.Center);
+            draw.AddText(position, Config.MoguFontColor, text);
+            cursor.Move((0, cursor.Height + spacing));
         }
 
         // Players
-        foreach (var id in SortCache.ToList())
+        var cache = SortCache.ToList();
+        uint topDamage = 1;
+        if (cache.Count != 0) topDamage = Data.Players.GetValueOrDefault(cache.First())!.DamageDealt.Value.Total;
+        foreach (var id in cache)
         {
             Player player = Data.Players[id];
             if (player.DamageDealt.Value.Total == 0) continue;
+            float progress = (float)player.DamageDealt.Value.Total / topDamage;
 
             if (Config.Bar)
             {
-                var progress = Data.DamageDealt.Value.Total != 0 ? player.DamageDealt.Value.Total / Data.DamageDealt.Value.Total : 1;
                 var barColor = Config.BarColorJob ? GetJobColor(player.Job) : Config.BarColor;
                 DrawProgressBar(cursor.Area, progress, barColor);
             }
 
+            position = cursor.Padding((spacing, 0)).Align(player.Name, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
             if (Config.PlayerJobIcon)
             {
-                DrawJobIcon(cursor.Min + new Vector2(1, 1), fontSize, player.Job);
-                draw.AddText(cursor.Align(player.Name) + new Vector2(fontSize, 0), Config.MoguFontColor, player.Name);
-            }
-            else draw.AddText(cursor.Align(player.Name) + new Vector2(fontSize, 0), Config.MoguFontColor, player.Name);
 
-            var damageinfo = $"{Helpers.HumanizeNumber(player.Dps, 2)} {player.DamageDealt.Value.Percent.Neutral}%";
-            draw.AddText(cursor.Align(damageinfo), Config.MoguFontColor, damageinfo);
-            cursor.Move((0, fontSize + spacing));
+                Canvas iconArea = new(cursor.Area);
+                iconArea.Max = iconArea.Min + new Vector2(iconArea.Height, iconArea.Height);
+                iconArea.Padding(spacing + 1);
+                DrawJobIcon(iconArea, player.Job);
+                draw.AddText(position + new Vector2(iconArea.Width + 2 * spacing, 0), Config.MoguFontColor, player.Name);
+            }
+            else draw.AddText(position, Config.MoguFontColor, player.Name);
+
+            var damageinfo = $"{Helpers.HumanizeNumber(player.Dps, 2)} {Math.Round(progress * 100, 2).ToString(CultureInfo.InvariantCulture)}%";
+            position = cursor.Padding((spacing, 0)).Align(damageinfo, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
+            draw.AddText(position, Config.MoguFontColor, damageinfo);
+            cursor.Move((0, cursor.Height + spacing));
         }
 
         FontMogu.Pop();

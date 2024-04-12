@@ -24,81 +24,59 @@ public class DebugWindow : Window, IDisposable
 
     public override void Draw()
     {
-        var draw = ImGui.GetWindowDrawList();
-        var textheight = ImGui.GetFontSize();
-        var white = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
-        (Vector2 Min, Vector2 Max) window = GetWindow();
-        Vector2 cursor = window.Min;
-
         DrawIndexArrows();
-        cursor.Y += 25;
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
 
         var data = EncounterManager.Inst.encounters[indexEncounter];
         if (data.Active) data.Calculate();
 
+        string text = string.Empty;
         // encounter
+        if (ImGui.CollapsingHeader("Encounter"))
+        {
+            text = $"Name={data.Name} Active={(data.Active ? "true" : "false")} Finished={(data.Finished ? "true" : "false")} Duration={data.Duration}";
+            ImGui.Text(text);
+            text = $"DamageDealt:\n{data.DamageDealt}";
+            ImGui.Text(text);
+            text = $"DamageReceived:\n{data.DamageReceived}";
+            ImGui.Text(text);
+            text = $"HealingDealt:\n{data.HealDealt}";
+            ImGui.Text(text);
+            text = $"HealingReceived:\n{data.HealReceived}";
+            ImGui.Text(text);
+            text = $"> All other Calculated data should be here <";
+            ImGui.Text(text);
+        }
 
-        string text = $"Encounter:";
-        draw.AddText(cursor, white, text);
-        cursor.Y += ImGui.CalcTextSize(text).Y;
-
-        text = $"Name={data.Name} Active={(data.Active ? "true" : "false")} Finished={(data.Finished ? "true" : "false")} Duration={data.Duration}";
-        draw.AddText(cursor, white, text);
-        cursor.Y += ImGui.CalcTextSize(text).Y;
-
-        text = $"DamageDealt:\n{data.DamageDealt}";
-        draw.AddText(cursor, white, text);
-        cursor.Y += ImGui.CalcTextSize(text).Y;
-
-        text = $"DamageReceived:\n{data.DamageReceived}";
-        draw.AddText(cursor, white, text);
-        cursor.Y += ImGui.CalcTextSize(text).Y;
-
-        text = $"HealingDealt:\n{data.HealDealt}";
-        draw.AddText(cursor, white, text);
-        cursor.Y += ImGui.CalcTextSize(text).Y;
-
-        text = $"HealingReceived:\n{data.HealReceived}";
-        draw.AddText(cursor, white, text);
-        cursor.Y += ImGui.CalcTextSize(text).Y;
-
-        text = $"> All other Calculated data should be here <";
-        draw.AddText(cursor, white, text);
-        cursor.Y += ImGui.CalcTextSize(text).Y;
-        cursor.Y += textheight;
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
 
         text = $"Players:";
-        draw.AddText(cursor, white, text);
-        cursor.Y += ImGui.CalcTextSize(text).Y;
+        ImGui.Text(text);
+        ImGui.Spacing();
         // players
         foreach (var p in data.Players)
         {
             var player = p.Value;
+            if (ImGui.CollapsingHeader(player.Name))
+            {
 
-            text = $"Name={player.Name} World={player.World} Job={player.Job} Id={player.Id} IsActive={(player.IsActive ? "true" : "false")}";
-            draw.AddText(cursor, white, text);
-            cursor.Y += ImGui.CalcTextSize(text).Y;
-
-            text = $"DamageDealt:\n{player.DamageDealt}";
-            draw.AddText(cursor, white, text);
-            cursor.Y += ImGui.CalcTextSize(text).Y;
-
-            text = $"DamageReceived:\n{player.DamageReceived}";
-            draw.AddText(cursor, white, text);
-            cursor.Y += ImGui.CalcTextSize(text).Y;
-
-            text = $"HealingDealt:\n{player.HealDealt}";
-            draw.AddText(cursor, white, text);
-            cursor.Y += ImGui.CalcTextSize(text).Y;
-
-            text = $"HealingReceived:\n{player.HealReceived}";
-            draw.AddText(cursor, white, text);
-            cursor.Y += ImGui.CalcTextSize(text).Y;
-
-            text = $"> All other Calculated data should be here <";
-            draw.AddText(cursor, white, text);
-            cursor.Y += ImGui.CalcTextSize(text).Y;
-            cursor.Y += textheight;
+                text = $"Name={player.Name} World={player.World} Job={player.Job} Id={player.Id} IsActive={(player.IsActive ? "true" : "false")}";
+                ImGui.Text(text);
+                text = $"DamageDealt:\n{player.DamageDealt}";
+                ImGui.Text(text);
+                text = $"DamageReceived:\n{player.DamageReceived}";
+                ImGui.Text(text);
+                text = $"HealingDealt:\n{player.HealDealt}";
+                ImGui.Text(text);
+                text = $"HealingReceived:\n{player.HealReceived}";
+                ImGui.Text(text);
+                text = $"> All other Calculated data should be here <";
+                ImGui.Text(text);
+            }
         }
     }
 

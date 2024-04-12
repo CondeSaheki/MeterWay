@@ -67,18 +67,18 @@ public class Commands : IDisposable
 
             "_debug" when args.Count == 1 => () => { Plugin.DebugWindow.IsOpen = true; },
             "_start" when args.Count == 1 => () => { EncounterManager.Start(); },
-            "_Stop" when args.Count == 1 => () => { EncounterManager.Stop(); },
+            "_stop" when args.Count == 1 => () => { EncounterManager.Stop(); },
             "_clear" when args.Count == 1 => () =>
             {
                 EncounterManager.Inst.encounters.Clear();
                 EncounterManager.Inst.encounters.Add(new Data.Encounter());
-            },
+            },  
             
             #endif
 
             _ => () =>
             {
-                var text = $"Invalid command \'{args}\' consult \'{CommandName} help\'.";
+                var text = $"Invalid command \'{args[0]}\' consult \'{CommandName} help\'.";
                 Dalamud.Chat.Print(new SeString(new UIForegroundPayload(539), new TextPayload(text), new UIForegroundPayload(0)));
             }
         };

@@ -11,8 +11,8 @@ public class Canvas((Vector2, Vector2) area)
 
     public (Vector2 Min, Vector2 Max) Area => (Min, Max);
 
-    public float Height => Min.Y - Max.Y;
-    public float Width => Min.X - Max.X;
+    public float Height => Max.Y - Min.Y;
+    public float Width => Max.X - Min.X;
 
     public enum HorizontalAlign : int
     {
@@ -62,11 +62,10 @@ public class Canvas((Vector2, Vector2) area)
         Max -= temp;
     }
 
-    public void Padding((float Horizontal, float Vertical) padding)
+    public Canvas Padding((float Horizontal, float Vertical) padding)
     {
         var temp = new Vector2(padding.Horizontal, padding.Vertical);
-        Min += temp;
-        Max -= temp;
+        return new((Min + temp, Max - temp));
     }
 
     public void Move(Vector2 amount)

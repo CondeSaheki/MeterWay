@@ -4,6 +4,7 @@ using Dalamud.Interface.Windowing;
 using MeterWay.Windows;
 using MeterWay.Ipc;
 using MeterWay.Managers;
+using Dalamud.Interface;
 
 namespace MeterWay;
 
@@ -28,6 +29,7 @@ public sealed class Plugin : IDalamudPlugin
     
     public Plugin(DalamudPluginInterface pluginInterface)
     {
+        
         try
         {
             Dalamud.Initialize(pluginInterface);
@@ -46,7 +48,7 @@ public sealed class Plugin : IDalamudPlugin
                     typeof(HelloWorld.Overlay),
                     typeof(Lazer.Overlay),
                     typeof(Mogu.Overlay),
-                    typeof(Dynamic.Overlay)
+                    //typeof(Dynamic.Overlay)
                 ]
             );
             ConfigWindow = new(this);
@@ -60,7 +62,8 @@ public sealed class Plugin : IDalamudPlugin
             #endif
 
             Commands = new(this);
-
+            
+            Dalamud.PluginInterface.UiBuilder.OpenMainUi += MainWindow.Toggle;
             Dalamud.PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
             Dalamud.PluginInterface.UiBuilder.OpenConfigUi += ConfigWindow.Toggle;
         }
@@ -75,6 +78,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         if (ConfigWindow != null) Dalamud.PluginInterface.UiBuilder.OpenConfigUi -= ConfigWindow.Toggle;
         if (WindowSystem != null) Dalamud.PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
+        Dalamud.PluginInterface.UiBuilder.OpenMainUi -= MainWindow.Toggle;
         
         Commands?.Dispose();
 

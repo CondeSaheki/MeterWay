@@ -14,7 +14,7 @@ public class Configuration : IConfiguration
     public int Version { get; set; } = 0;
 
     // general
-    public bool FrameCalc { get; set; } = false;
+    public bool FrameCalc { get; set; } = true;
     public bool ClickThrough { get; set; } = false;
 
     // Appearance general

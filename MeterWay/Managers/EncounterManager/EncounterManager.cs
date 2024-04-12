@@ -93,14 +93,14 @@ public class EncounterManager : IDisposable
         foreach (var player in Dalamud.PartyList)
         {
             if (player.GameObject == null) continue;
-            if ((((Character)player.GameObject).StatusFlags & StatusFlags.InCombat) == 0) return true;
+            if ((((Character)player.GameObject).StatusFlags & StatusFlags.InCombat) !=  StatusFlags.None) return true;
         }
         return false;
     }
 
     public static void Receiver(object? _, JObject json)
     {
-        var combatState = IsInCombat();
+        var combatState = IsInCombat();        
 
         // Start/End Combat
         if ((combatState == true) && Inst.lastCombatState == false)
