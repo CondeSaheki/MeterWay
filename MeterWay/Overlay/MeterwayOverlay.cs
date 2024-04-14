@@ -11,7 +11,7 @@ public interface IOverlay : IDisposable
 
 public interface IOverlayTab
 {
-    public void DrawTab();
+    public void DrawConfig();
 }
 
 public interface IOverlayCommandHandler

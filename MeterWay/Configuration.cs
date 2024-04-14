@@ -1,5 +1,7 @@
 ﻿using Dalamud.Configuration;
+using MeterWay.Overlay;
 using System;
+using System.Collections.Generic;
 
 namespace MeterWay;
 
@@ -9,8 +11,7 @@ public class Configuration : IPluginConfiguration
     public int Version { get; set; } = 0;
 
     //overlay
-    public bool OverlayEnabled { get; set; } = false;
-    public string OverlayName { get; set; } = string.Empty;
+    public List<OverlayWindowSpecs> Overlays { get; set; } = [];
     public bool OverlayRealtimeUpdate { get; set; } = false;
     public TimeSpan OverlayIntervalUpdate { get; set; } = TimeSpan.FromSeconds(1);
 

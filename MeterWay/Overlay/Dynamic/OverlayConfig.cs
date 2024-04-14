@@ -11,7 +11,7 @@ namespace Dynamic;
 
 public partial class Overlay : IOverlay, IOverlayTab
 {
-    public void DrawTab()
+    public void DrawConfig()
     {
         using var bar = ImRaii.TabBar("Overlay Settings Tabs");
         if (!bar) return;

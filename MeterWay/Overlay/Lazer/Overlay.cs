@@ -7,7 +7,6 @@ using Dalamud.Interface.ManagedFontAtlas;
 using MeterWay.Utils;
 using MeterWay.Managers;
 using MeterWay.Data;
-using MeterWay.Windows;
 using MeterWay.Overlay;
 
 namespace Lazer;
@@ -108,8 +107,8 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     public void Dispose() 
     {
-        FontLazer.Dispose();
-        FontAtlas.Dispose();
+        FontLazer?.Dispose();
+        FontAtlas?.Dispose();
     }
 
     private void DrawPlayerLine(Canvas canvas, Player player, LerpPlayerData data)

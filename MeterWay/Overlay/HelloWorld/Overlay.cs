@@ -38,7 +38,7 @@ public class Overlay : IOverlay, IOverlayTab, IOverlayCommandHandler
         ImGui.Text($"\'Enabled\' Configuration: {(Config.Enabled ? "true" : "false")}");
     }
 
-    public void DrawTab()
+    public void DrawConfig()
     {
         ImGui.Text("I'm a configuration tab!\n");
 

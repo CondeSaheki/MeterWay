@@ -3,16 +3,14 @@ using System.Numerics;
 using ImGuiNET;
 using System.Collections.Generic;
 using Dalamud.Interface.ManagedFontAtlas;
+using System;
+using System.Globalization;
+using static Dalamud.Interface.Windowing.Window;
 
 using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
-using MeterWay.Windows;
-using Lumina.Data.Parsing;
-using Dalamud.Interface.Colors;
-using System;
-using System.Globalization;
 
 namespace Mogu;
 
@@ -35,6 +33,12 @@ public partial class Overlay : IOverlay, IOverlayTab
         Config = File.Load<Configuration>(Name);
         Window = overlayWindow;
         Window.Flags = OverlayWindow.defaultflags; // temporary
+        Window.SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new Vector2(320, 180),
+            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
+        };
+
         FontMogu = Config.MoguFontSpec != null ? Config.MoguFontSpec.CreateFontHandle(FontAtlas) : DefaultFont;
     }
 
@@ -90,6 +94,7 @@ public partial class Overlay : IOverlay, IOverlayTab
             Player player = Data.Players[id];
             if (player.DamageDealt.Value.Total == 0) continue;
             float progress = (float)player.DamageDealt.Value.Total / topDamage;
+            float pct = Data.DamageDealt.Value.Total != 0 ? (float)player.DamageDealt.Value.Total / Data.DamageDealt.Value.Total : 1;
 
             if (Config.Bar)
             {
@@ -109,7 +114,7 @@ public partial class Overlay : IOverlay, IOverlayTab
             }
             else draw.AddText(position, Config.MoguFontColor, player.Name);
 
-            var damageinfo = $"{Helpers.HumanizeNumber(player.Dps, 2)} {Math.Round(progress * 100, 2).ToString(CultureInfo.InvariantCulture)}%";
+            var damageinfo = $"{Helpers.HumanizeNumber(player.Dps, 2)} {Math.Round(pct * 100, 2).ToString(CultureInfo.InvariantCulture)}%";
             position = cursor.Padding((spacing, 0)).Align(damageinfo, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
             draw.AddText(position, Config.MoguFontColor, damageinfo);
             cursor.Move((0, cursor.Height + spacing));
@@ -120,7 +125,7 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     public void Dispose()
     {
-        FontMogu.Dispose();
-        FontAtlas.Dispose();
+        FontMogu?.Dispose();
+        FontAtlas?.Dispose();
     }
 }
