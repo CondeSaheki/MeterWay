@@ -17,7 +17,7 @@ public class DebugWindow : Window, IDisposable
     {
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(160, 90),
+            MinimumSize = new Vector2(640, 360),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
     }

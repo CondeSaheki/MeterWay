@@ -68,15 +68,11 @@ public class Player(Character character, Encounter encounter)
         if (partyList.Length == 0)
         {
             var you = Dalamud.ClientState.LocalPlayer;
-            if (you == null || you.ObjectId != Id) return null;
-            return you;
+            if (you?.ObjectId == Id) return you;
         }
-        else
-        {
-            var obj = Dalamud.PartyList.First(x => x.ObjectId == Id).GameObject;
-            if (obj == null) return null;
-            return (PlayerCharacter)obj;
-        }
+
+        var player = Dalamud.PartyList.FirstOrDefault(x => x?.ObjectId == Id, null)?.GameObject as PlayerCharacter;
+        return player;
     }
 
 }

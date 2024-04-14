@@ -15,7 +15,7 @@ static class File
         {
             try
             {
-                Dalamud.Log.Info($"Reading: {file.FullName}");
+                Dalamud.Log.Debug($"Reading: {file.FullName}");
                 var fileContent = System.IO.File.ReadAllText(file.FullName);
                 config = JsonConvert.DeserializeObject<Configuration>(fileContent)!;
                 if (config != null) return config;
@@ -37,7 +37,7 @@ static class File
 
         try
         {
-            Dalamud.Log.Info($"Writing: {file.FullName}");
+            Dalamud.Log.Debug($"Writing: {file.FullName}");
             var fileContent = JsonConvert.SerializeObject(config, Formatting.Indented);
             System.IO.File.WriteAllText(file.FullName, fileContent);
         }

@@ -13,7 +13,7 @@ public class IINACTClient : IIpcClient, IDisposable
     public event EventHandler<JObject> OnDataReceived = delegate { };
 
     private bool connectionStatus;
-    private readonly ICallGateProvider<JObject, bool> subscriptionReceiver;
+    private readonly ICallGateProvider<JObject, bool>? subscriptionReceiver;
     private const string MeterwaySubscriptionReceiver = "Meterway.SubscriptionReceiver";
     private const string IINACTSubscribe = "IINACT.IpcProvider." + MeterwaySubscriptionReceiver;
     private const string IINACTUnubscribe = "IINACT.Unsubscribe";
@@ -34,8 +34,17 @@ public class IINACTClient : IIpcClient, IDisposable
     {
         connectionStatus = false;
 
-        subscriptionReceiver = Dalamud.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);
-        subscriptionReceiver.RegisterFunc(Receiver);
+        try
+        {
+            subscriptionReceiver = Dalamud.PluginInterface.GetIpcProvider<JObject, bool>(MeterwaySubscriptionReceiver);
+            subscriptionReceiver.RegisterFunc(Receiver);
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Info($"Error while creating IINACTClient instance:\n{ex}");
+            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(540), new TextPayload("Meterway was unable to create an IINACT client."), new UIForegroundPayload(0)));
+            subscriptionReceiver = null;
+        }
     }
 
     private bool Receiver(JObject json)
@@ -48,6 +57,7 @@ public class IINACTClient : IIpcClient, IDisposable
         {
             Dalamud.Log.Error($"Unhandeld error when dispatching received data from iinact:\n{ex}");
             Disconnect();
+            throw;
         }
         return true;
     }
@@ -70,9 +80,8 @@ public class IINACTClient : IIpcClient, IDisposable
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Info("Meterway was unable to connected to IINACT.");
+            Dalamud.Log.Error($"Meterway was unable to connected to IINACT:\n{ex}");
             Dalamud.Chat.Print(new SeString(new UIForegroundPayload(540), new TextPayload("Meterway was unable to connected to IINACT."), new UIForegroundPayload(0)));
-            Dalamud.Log.Error(ex.ToString());
         }
     }
 
@@ -94,8 +103,7 @@ public class IINACTClient : IIpcClient, IDisposable
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Info("Meterway was unable to subscribe to IINACT.");
-            Dalamud.Log.Error(ex.ToString());
+            Dalamud.Log.Error($"Meterway was unable to subscribe to IINACT:\n{ex}");
             Disconnect();
         }
     }
@@ -128,7 +136,7 @@ public class IINACTClient : IIpcClient, IDisposable
 
     public void Dispose()
     {
-        subscriptionReceiver.UnregisterFunc();
+        subscriptionReceiver?.UnregisterFunc();
         Disconnect();
         GC.SuppressFinalize(this);
     }

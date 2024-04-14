@@ -122,6 +122,6 @@ public class WebSocketClient : IDisposable
     public void Dispose()
     {
         Cancel.Cancel();
-        Client.Dispose();
+        Client?.Dispose();
     }
 }

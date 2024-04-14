@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 using Dalamud.Interface.Windowing;
@@ -30,7 +29,7 @@ public class ConfigWindow : Window, IDisposable
 
         //DrawGeneralTab();
         DrawOverlayTab();
-        DrawOverlayConfigTab();
+        //DrawOverlayConfigTab();
         //DrawAppearenceTab();
         DrawIINACTTab();
         //DrawAboutTab();
@@ -57,38 +56,7 @@ public class ConfigWindow : Window, IDisposable
             return;
         }
 
-        ImGui.Text("Overlay");
-        ImGui.Spacing();
-        var OverlayEnabledValue = ConfigurationManager.Inst.Configuration.OverlayEnabled;
-        if (ImGui.Checkbox("Enable", ref OverlayEnabledValue))
-        {
-            ConfigurationManager.Inst.Configuration.OverlayEnabled = OverlayEnabledValue;
-            ConfigurationManager.Inst.Configuration.Save();
-            if (OverlayEnabledValue)
-            {
-                Plugin.OverlayWindow.IsOpen = true;
-                Plugin.OverlayWindow.ActivateOverlay();
-            }
-            else
-            {
-                Plugin.OverlayWindow.IsOpen = false;
-                Plugin.OverlayWindow.InactivateOverlay();
-            }
-        }
-        ImGui.SameLine();
-        var overlayNames = Plugin.OverlayWindow.Overlays.Select(x => x.Item1).ToArray();
-        var OverlayIndexValue = Plugin.OverlayWindow.OverlayIndex;
-        ImGui.PushItemWidth(160);
-        if (ImGui.Combo("Overlay type", ref OverlayIndexValue, overlayNames, Plugin.OverlayWindow.Overlays.Length))
-        {
-            Plugin.OverlayWindow.OverlayIndex = OverlayIndexValue;
-            Plugin.OverlayWindow.ActivateOverlay();
-            ConfigurationManager.Inst.Configuration.OverlayName = Plugin.OverlayWindow.Overlays[OverlayIndexValue].Item1;
-            ConfigurationManager.Inst.Configuration.Save();
-        }
-        ImGui.PopItemWidth();
-
-        if (OverlayEnabledValue == false) return;
+        Plugin.OverlayManager.Draw();
 
         ImGui.Spacing();
         ImGui.Separator();
@@ -123,17 +91,6 @@ public class ConfigWindow : Window, IDisposable
             }
             ImGui.PopItemWidth();
         }
-    }
-
-    private void DrawOverlayConfigTab()
-    {
-        if (!Plugin.OverlayWindow.HasOverlayTab) return;
-
-        var overlayName = Plugin.OverlayWindow.Overlays[Plugin.OverlayWindow.OverlayIndex].Item1;
-        using var tab = ImRaii.TabItem($"{overlayName} Config");
-        if (!tab) return;
-
-        Plugin.OverlayWindow.DrawTab();
     }
 
     private void DrawAppearenceTab()

@@ -5,6 +5,7 @@ using MeterWay.Windows;
 using MeterWay.Ipc;
 using MeterWay.Managers;
 using Dalamud.Interface;
+using MeterWay.Overlay;
 
 namespace MeterWay;
 
@@ -12,9 +13,9 @@ public sealed class Plugin : IDalamudPlugin
 {
     public static string Name => "MeterWay";
     
-    public OverlayWindow OverlayWindow { get; private init; }
     public ConfigWindow ConfigWindow { get; private init; }
     public MainWindow MainWindow { get; private init; }
+    public OverlayManager OverlayManager { get; private init; }
     
     #if DEBUG
         public DebugWindow DebugWindow { get; } = new();
@@ -43,18 +44,18 @@ public sealed class Plugin : IDalamudPlugin
             IinactIpcClient.OnDataReceived += EncounterManager.Receiver;
 
             // register your overlays here
-            OverlayWindow = new(
+            OverlayManager = new(
                 [
-                    typeof(HelloWorld.Overlay),
-                    typeof(Lazer.Overlay),
-                    typeof(Mogu.Overlay),
+                    //typeof(HelloWorld.Overlay),
+                    //typeof(Lazer.Overlay),
+                    typeof(Mogu.Overlay)
                     //typeof(Dynamic.Overlay)
                 ]
             );
+            
             ConfigWindow = new(this);
             MainWindow = new(this);
             
-            WindowSystem.AddWindow(OverlayWindow);
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
             #if DEBUG
@@ -78,20 +79,20 @@ public sealed class Plugin : IDalamudPlugin
     {
         if (ConfigWindow != null) Dalamud.PluginInterface.UiBuilder.OpenConfigUi -= ConfigWindow.Toggle;
         if (WindowSystem != null) Dalamud.PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
-        Dalamud.PluginInterface.UiBuilder.OpenMainUi -= MainWindow.Toggle;
+        if (MainWindow != null) Dalamud.PluginInterface.UiBuilder.OpenMainUi -= MainWindow.Toggle;
         
         Commands?.Dispose();
 
         WindowSystem?.RemoveAllWindows();
         ConfigWindow?.Dispose();
         MainWindow?.Dispose();
-        OverlayWindow?.Dispose();
+        OverlayManager?.Dispose();
         
         #if DEBUG
-            DebugWindow.Dispose();
+            DebugWindow?.Dispose();
         #endif
         
-        IinactIpcClient.OnDataReceived -= EncounterManager.Receiver;
+        if (encounterManager != null) IinactIpcClient.OnDataReceived -= EncounterManager.Receiver;
         IinactIpcClient?.Dispose();
         encounterManager?.Dispose();
     }

@@ -47,7 +47,7 @@ public class Notifier
     public void StopTimer()
     {
         if (!TimerActive) return;
-        TimerNotification!.Dispose();
+        TimerNotification?.Dispose();
         TimerActive = false;
         NotifyAll(null);
     }
