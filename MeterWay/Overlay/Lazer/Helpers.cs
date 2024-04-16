@@ -33,7 +33,7 @@ public partial class Overlay : IOverlay, IOverlayTab
 
         lerpedInfo[player.Id] = new LerpPlayerData
         {
-            DPS = player.Dps,
+            DPS = player.PerSecounds.DamageDealt,
             PctBar = player.DamageDealt.Value.Total / FirstPlayerDamageTotal * 100,
             TotalDMG = player.DamageDealt.Value.Total,
             Position = SortCache.IndexOf(player.Id) + 1
@@ -41,7 +41,7 @@ public partial class Overlay : IOverlay, IOverlayTab
 
         targetInfo[player.Id] = new LerpPlayerData
         {
-            DPS = player.Dps,
+            DPS = player.PerSecounds.DamageDealt,
             PctBar = player.DamageDealt.Value.Total / FirstPlayerDamageTotal * 100,
             TotalDMG = player.DamageDealt.Value.Total,
             Position = SortCache.IndexOf(player.Id) + 1
@@ -71,7 +71,7 @@ public partial class Overlay : IOverlay, IOverlayTab
         if (targetInfo[player.Id].TotalDMG <= player.DamageDealt.Value.Total)
         {
             double topPlayerTotalDamage = Combat.Players[SortCache.First()].DamageDealt.Value.Total == 0 ? 1 : Combat.Players[SortCache.First()].DamageDealt.Value.Total;
-            targetInfo[player.Id].DPS = player.Dps;
+            targetInfo[player.Id].DPS = player.PerSecounds.DamageDealt;
             targetInfo[player.Id].PctBar = player.DamageDealt.Value.Total / topPlayerTotalDamage * 100;
             targetInfo[player.Id].TotalDMG = player.DamageDealt.Value.Total;
             targetInfo[player.Id].Position = SortCache.IndexOf(player.Id) + 1;

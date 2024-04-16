@@ -79,7 +79,7 @@ public partial class Overlay : IOverlay, IOverlayTab
                 draw.AddRectFilled(cursor.Min, cursor.Max, Config.HeaderBackgroundColor);
             }
 
-            text = $"{Data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(Data.Dps, 2)}";
+            text = $"{Data.Duration.ToString(@"mm\:ss")} | {Helpers.HumanizeNumber(Data.PerSecounds.DamageDealt, 2)}";
             position = cursor.Padding((spacing, 0)).Align(text, Config.HeaderAlignment, Canvas.VerticalAlign.Center);
             draw.AddText(position, Config.MoguFontColor, text);
             cursor.Move((0, cursor.Height + spacing));
@@ -114,7 +114,7 @@ public partial class Overlay : IOverlay, IOverlayTab
             }
             else draw.AddText(position, Config.MoguFontColor, player.Name);
 
-            var damageinfo = $"{Helpers.HumanizeNumber(player.Dps, 2)} {Math.Round(pct * 100, 2).ToString(CultureInfo.InvariantCulture)}%";
+            var damageinfo = $"{Helpers.HumanizeNumber(player.PerSecounds.DamageDealt, 2)} {Math.Round(pct * 100, 2).ToString(CultureInfo.InvariantCulture)}%";
             position = cursor.Padding((spacing, 0)).Align(damageinfo, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
             draw.AddText(position, Config.MoguFontColor, damageinfo);
             cursor.Move((0, cursor.Height + spacing));

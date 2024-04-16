@@ -36,18 +36,12 @@ public class DebugWindow : Window, IDisposable
         // encounter
         if (ImGui.CollapsingHeader("Encounter"))
         {
-            text = $"Name={data.Name} Active={(data.Active ? "true" : "false")} Finished={(data.Finished ? "true" : "false")} Duration={data.Duration}";
-            ImGui.Text(text);
-            text = $"DamageDealt:\n{data.DamageDealt}";
-            ImGui.Text(text);
-            text = $"DamageReceived:\n{data.DamageReceived}";
-            ImGui.Text(text);
-            text = $"HealingDealt:\n{data.HealDealt}";
-            ImGui.Text(text);
-            text = $"HealingReceived:\n{data.HealReceived}";
-            ImGui.Text(text);
-            text = $"> All other Calculated data should be here <";
-            ImGui.Text(text);
+            ImGui.Text($"Name={data.Name} Active={(data.Active ? "true" : "false")} Finished={(data.Finished ? "true" : "false")} Duration={data.Duration}");
+            ImGui.Text($"DamageDealt:\n{data.DamageDealt}");
+            ImGui.Text($"DamageReceived:\n{data.DamageReceived}");
+            ImGui.Text($"HealingDealt:\n{data.HealDealt}");
+            ImGui.Text($"HealingReceived:\n{data.HealReceived}");
+            ImGui.Text($"DataPerSecounds:\n{data.PerSecounds}");
         }
 
         ImGui.Spacing();
@@ -63,19 +57,12 @@ public class DebugWindow : Window, IDisposable
             var player = p.Value;
             if (ImGui.CollapsingHeader(player.Name))
             {
-
-                text = $"Name={player.Name} World={player.World} Job={player.Job} Id={player.Id} IsActive={(player.IsActive ? "true" : "false")}";
-                ImGui.Text(text);
-                text = $"DamageDealt:\n{player.DamageDealt}";
-                ImGui.Text(text);
-                text = $"DamageReceived:\n{player.DamageReceived}";
-                ImGui.Text(text);
-                text = $"HealingDealt:\n{player.HealDealt}";
-                ImGui.Text(text);
-                text = $"HealingReceived:\n{player.HealReceived}";
-                ImGui.Text(text);
-                text = $"> All other Calculated data should be here <";
-                ImGui.Text(text);
+                ImGui.Text($"Name={player.Name} World={player.World} Job={player.Job} Id={player.Id} IsActive={(player.IsActive ? "true" : "false")}");
+                ImGui.Text($"DamageDealt:\n{player.DamageDealt}");
+                ImGui.Text($"DamageReceived:\n{player.DamageReceived}");
+                ImGui.Text($"HealingDealt:\n{player.HealDealt}");
+                ImGui.Text($"HealingReceived:\n{player.HealReceived}");
+                ImGui.Text($"DataPerSecounds:\n{player.PerSecounds}");
             }
         }
     }

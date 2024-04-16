@@ -177,3 +177,23 @@ public class HealCountPercent()
         Critical = (float)count.Critical / count.Total * 100;
     }
 }
+
+public class PerSecounds()
+{
+    public float DamageDealt { get; set; } = 0f;
+    public float DamageReceived { get; set; } = 0f;
+    public float HealDealt { get; set; } = 0f;
+    public float HealReceived { get; set; } = 0f;
+
+    public override string ToString() => $"DamageDealt={DamageDealt}, DamageTaken={DamageReceived}, HealTaken={HealReceived}, HealDealt={HealDealt}";
+
+    public void Calculate(Damage damageDealt, Damage damageReceived, Heal healDealt, Heal healReceived, Encounter encounter)
+    {
+        var seconds = (float)encounter.Duration.TotalSeconds < 1 ? 1 : (float)encounter.Duration.TotalSeconds;
+
+        DamageDealt = damageDealt.Value.Total / seconds;
+        DamageReceived = damageReceived.Value.Total / seconds;
+        HealDealt = healDealt.Value.Total / seconds;
+        HealReceived = healReceived.Value.Total / seconds;
+    }
+}

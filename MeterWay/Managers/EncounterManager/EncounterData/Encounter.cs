@@ -30,8 +30,7 @@ public class Encounter
     public Heal HealDealt { get; set; }
     public Heal HealReceived { get; set; }
 
-    public float Dps { get; set; } = 0;
-    public float Hps { get; set; } = 0;
+    public PerSecounds PerSecounds { get; set; }
 
     public Encounter()
     {
@@ -45,8 +44,7 @@ public class Encounter
         HealDealt = new Heal();
         HealReceived = new Heal();
 
-        Dps = 0;
-        Hps = 0;
+        PerSecounds = new PerSecounds();
     }
 
     public void Start()
@@ -68,10 +66,8 @@ public class Encounter
         DamageReceived.Calculate();
         HealDealt.Calculate();
         HealReceived.Calculate();
-        
-        // var seconds = Duration.TotalSeconds <= 1 ? 1 : Duration.TotalSeconds; // overflow protection
-        // Dps = (float)(DamageDealt.Total / seconds);
-        // Hps = (float)(HealDealt.Total / seconds); 
+
+        PerSecounds.Calculate(DamageDealt, DamageReceived, HealDealt, HealReceived, this);
     }
 
     public void Parse() { foreach (var action in RawActions) LoglineParser.Parse(action, this); }

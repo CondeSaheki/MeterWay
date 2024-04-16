@@ -23,20 +23,16 @@ public class Player(Character character, Encounter encounter)
     public Heal HealDealt { get; set; } = new Heal();
     public Heal HealReceived { get; set; } = new Heal();
 
-    // calculated
-    public float Dps { get; set; } = 0;
-    public float Hps { get; set; } = 0;
-
+    public PerSecounds PerSecounds { get; set; } = new PerSecounds();
+    
     public void Calculate()
     {
         DamageDealt.Calculate();
         DamageReceived.Calculate();
         HealDealt.Calculate();
         HealReceived.Calculate();
-
-        var seconds = Encounter.Duration.TotalSeconds <= 1 ? 1 : Encounter.Duration.TotalSeconds;
-        Dps = (float)(DamageDealt.Value.Total / seconds);
-        Hps = (float)(HealDealt.Value.Total / seconds);
+        
+        PerSecounds.Calculate(DamageDealt, DamageReceived, HealDealt, HealReceived, Encounter);
     }
 
     public bool Update()
