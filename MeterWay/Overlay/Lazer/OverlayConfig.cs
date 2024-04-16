@@ -1,7 +1,6 @@
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 
-using MeterWay.Windows;
 using MeterWay.Overlay;
 
 namespace Lazer;

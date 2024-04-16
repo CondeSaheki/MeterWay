@@ -3,7 +3,6 @@ using ImGuiNET;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
-using MeterWay.Windows;
 
 namespace Dynamic;
 
@@ -12,9 +11,10 @@ public partial class Overlay : IOverlay, IOverlayTab
     public static string Name => "Dynamic"; // required
 
     private Configuration Config { get; init; }
-    public  LuaScript? Script { get; private set; }
+    public LuaScript? Script { get; private set; }
 
     private Encounter Data = new();
+    private OverlayWindow Window { get; init; }
 
     private static readonly LuaScript.Function[] Registers =
     [
@@ -23,15 +23,21 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     public Overlay(OverlayWindow overlayWindow)
     {
-        Config = File.Load<Configuration>(Name);
-        overlayWindow.Flags = ImGuiWindowFlags.None;
+        Window = overlayWindow;
+        Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
+        Window.Flags = ImGuiWindowFlags.None;
 
-        if(Config.LoadInit) LoadScript();
+        if (Config.LoadInit) LoadScript();
     }
 
     public void DataUpdate()
     {
         Data = EncounterManager.Inst.CurrentEncounter();
+    }
+
+    public void Remove()
+    {
+        File.Delete($"{Window.Name}{Window.Id}");
     }
 
     public void Draw() => Script?.ExecuteDraw();

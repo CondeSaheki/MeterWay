@@ -30,8 +30,8 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     public Overlay(OverlayWindow overlayWindow)
     {
-        Config = File.Load<Configuration>(Name);
         Window = overlayWindow;
+        Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
         Window.Flags = OverlayWindow.defaultflags; // temporary
         Window.SizeConstraints = new WindowSizeConstraints
         {
@@ -121,6 +121,11 @@ public partial class Overlay : IOverlay, IOverlayTab
         }
 
         FontMogu.Pop();
+    }
+    
+    public void Remove()
+    {
+        File.Delete($"{Window.Name}{Window.Id}");
     }
 
     public void Dispose()

@@ -15,13 +15,16 @@ public class Overlay : IOverlay, IOverlayTab, IOverlayCommandHandler
     public static string Name => "HelloWorld"; // required
 
     private Configuration Config { get; init; }
+    
+    private OverlayWindow Window { get; init; }
 
     private Encounter Data = new();
 
     public Overlay(OverlayWindow overlayWindow)
     {
-        Config = File.Load<Configuration>(Name);
-        overlayWindow.Flags = ImGuiWindowFlags.None; // you can change the window properties if you want
+        Window = overlayWindow;
+        Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
+        Window.Flags = ImGuiWindowFlags.None; // you can change the window properties if you want
     }
 
     // this function is called wenever you need to update data
@@ -50,6 +53,11 @@ public class Overlay : IOverlay, IOverlayTab, IOverlayCommandHandler
         }
     }
     
+    public void Remove()
+    {
+        File.Delete($"{Window.Name}{Window.Id}");
+    }
+
     public string CommandHelpMessage(string? command)
     {
         StringBuilder builder = new();

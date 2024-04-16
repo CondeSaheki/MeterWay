@@ -30,8 +30,8 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     public Overlay(OverlayWindow overlayWindow)
     {
-        Config = File.Load<Configuration>(Name);
         Window = overlayWindow;
+        Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
         Window.Flags = OverlayWindow.defaultflags; // temporary
         FontLazer = DefaultFont; // TODO load font from config
     }
@@ -109,6 +109,11 @@ public partial class Overlay : IOverlay, IOverlayTab
     {
         FontLazer?.Dispose();
         FontAtlas?.Dispose();
+    }
+    
+    public void Remove()
+    {
+        File.Delete($"{Window.Name}{Window.Id}");
     }
 
     private void DrawPlayerLine(Canvas canvas, Player player, LerpPlayerData data)

@@ -7,6 +7,7 @@ public interface IOverlay : IDisposable
 {
     public void Draw();
     public void DataUpdate();
+    public void Remove();
 }
 
 public interface IOverlayTab

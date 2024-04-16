@@ -19,9 +19,9 @@ public class OverlayManager : IDisposable
 
     public OverlayManager(Type[] overlays)
     {
-        #if DEBUG
-            ValidateOverlays<IOverlay>(overlays);
-        #endif
+#if DEBUG
+        ValidateOverlays<IOverlay>(overlays);
+#endif
 
         OverlayTypes = overlays.Select(type => ((string)type.GetProperty("Name")?.GetValue(null)!, type)).ToArray();
 
@@ -53,7 +53,7 @@ public class OverlayManager : IDisposable
     {
         try
         {
-            uint id = ++UniqueId;
+            uint id = UniqueId++;
             OverlayWindow overlay = new(overlayType, id);
             Overlays.Add(overlay);
             WindowSystem.AddWindow(overlay);
@@ -77,6 +77,7 @@ public class OverlayManager : IDisposable
         {
             WindowSystem.RemoveWindow(overlay);
             Overlays.Remove(overlay);
+            overlay.Remove();
             overlay.Dispose();
         }
         catch (Exception ex)
@@ -88,21 +89,29 @@ public class OverlayManager : IDisposable
 
     public void Draw()
     {
-        ImGui.Text("Overlays Manager");
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
+
+        var size = ImGui.GetContentRegionAvail();
+        size.Y -= 140;
+        ImGui.BeginChild("##Overlays", size, border: false);
+        
+        if(Overlays.Count == 0)
+        {
+            ImGui.Text("No overlays, click the \'Add\' button to start");
+        }
 
         foreach (var overlay in Overlays)
         {
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
+            bool enableValue = overlay.Enabled;
+            if (ImGui.Checkbox($"##Checkbox{overlay.Id}", ref enableValue))
+            {
+                if (!enableValue) overlay.Disable();
+                else overlay.Enable();
 
-            if (overlay.Enabled)
-            {
-                if (ImGui.Button($"Disable##{overlay.Id}")) overlay.Disable();
-            }
-            else
-            {
-                if (ImGui.Button($"Enabled##{overlay.Id}")) overlay.Enable();
+                ConfigurationManager.Inst.Configuration.Overlays = Overlays.Select(x => x.GetSpecs()).ToList();
+                ConfigurationManager.Inst.Configuration.Save();
             }
 
             ImGui.SameLine();
@@ -111,15 +120,19 @@ public class OverlayManager : IDisposable
             ImGui.SameLine();
             ImGui.PushItemWidth(160);
             var commentValue = overlay.Comment;
-            if (ImGui.InputText($"##comment{overlay.Id}", ref commentValue, 32))
+            const int commentSize = 16;
+            if (ImGui.InputText($"##comment{overlay.Id}", ref commentValue, commentSize, ImGuiInputTextFlags.AutoSelectAll))
             {
-                overlay.Comment = commentValue[..32];
+                overlay.Comment = commentValue.Length > commentSize ? commentValue[..commentSize] : commentValue;
 
                 ConfigurationManager.Inst.Configuration.Overlays = Overlays.Select(x => x.GetSpecs()).ToList();
                 ConfigurationManager.Inst.Configuration.Save();
             }
             ImGui.PopItemWidth();
             ImGui.SameLine();
+
+            if (overlay.Enabled) ImGui.BeginDisabled();
+
             if (ImGui.Button($"remove##{overlay.Id}"))
             {
                 Remove(overlay.Id);
@@ -129,25 +142,30 @@ public class OverlayManager : IDisposable
                 break;
             }
 
-            if(!overlay.Enabled) ImGui.BeginDisabled();
-            
+            if (overlay.Enabled) ImGui.EndDisabled();
+
+            if (!overlay.Enabled) ImGui.BeginDisabled();
+
             if (overlay.HasConfigs)
             {
                 ImGui.SameLine();
                 if (ImGui.Button($"Config##{overlay.Id}"))
                 {
-                    Dalamud.Log.Info("CONFIG CLICK");
                     PopupTest popup = new($"{overlay.Name}_Configurations##{overlay.Id}", overlay.DrawConfig);
                 }
             }
 
-            if(!overlay.Enabled) ImGui.EndDisabled();
+            if (!overlay.Enabled) ImGui.EndDisabled();
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
         }
+        ImGui.EndChild();
 
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
-
 
         ImGui.PushItemWidth(160);
         var overlayNames = OverlayTypes.Select(x => x.Name).ToArray();
@@ -243,12 +261,6 @@ public class PopupTest
         }
 
         Content.Invoke();
-        
-        // if (ImGui.Button($"Close##{Label}", new Vector2(120, 0)))
-        // {
-        //     ImGui.CloseCurrentPopup();
-        //     tcs.SetResult();
-        // }
 
         ImGui.EndPopup();
 

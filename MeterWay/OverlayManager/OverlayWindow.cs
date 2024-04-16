@@ -116,7 +116,9 @@ public class OverlayWindow : Window, IDisposable
         Overlay?.Dispose();
         Overlay = null;
     }
-
+    
+    public void Remove() => Overlay?.Remove();
+    
     private void OnDataUpdate(object? _, EventArgs __)
     {
         if (Overlay == null) return;

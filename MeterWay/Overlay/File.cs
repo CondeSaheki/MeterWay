@@ -47,6 +47,26 @@ static class File
         }
     }
 
+    public static void Delete(string fileName)
+    {
+        var file = GetFile($"{fileName}.json");
+        if (file == null || !file.Exists)
+        {
+            Dalamud.Log.Warning($"File '{fileName}.json' not found.");
+            return;
+        }
+
+        try
+        {
+            file.Delete();
+            Dalamud.Log.Debug($"Deleted: {file.FullName}");
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"Error deleting file '{file.FullName}':\n{ex}");
+        }
+    }
+
     private static FileInfo? GetFile(string fileName)
     {
         var Path = new DirectoryInfo(Dalamud.PluginInterface.GetPluginConfigDirectory());

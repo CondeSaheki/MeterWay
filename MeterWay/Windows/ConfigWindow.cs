@@ -14,7 +14,11 @@ public class ConfigWindow : Window, IDisposable
 
     public ConfigWindow(Plugin plugin) : base("MeterWay Configurations", ImGuiWindowFlags.NoCollapse)
     {
-        //Size = new Vector2(400, 300);
+        SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new Vector2(430, 255),
+            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
+        };
         //SizeCondition = ImGuiCond.Always;
 
         Plugin = plugin;
