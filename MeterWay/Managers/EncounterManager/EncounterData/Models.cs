@@ -178,7 +178,7 @@ public class HealCountPercent()
     }
 }
 
-public class PerSecounds()
+public class PerSeconds()
 {
     public float DamageDealt { get; set; } = 0f;
     public float DamageReceived { get; set; } = 0f;

@@ -1,3 +1,4 @@
+using System;
 using Dalamud.Interface.FontIdentifier;
 using Dalamud.Interface.ImGuiFontChooserDialog;
 using Dalamud.Interface.ManagedFontAtlas;
@@ -6,7 +7,6 @@ using ImGuiNET;
 
 using MeterWay.Overlay;
 using MeterWay.Utils;
-using MeterWay.Windows;
 
 namespace Mogu;
 
@@ -21,6 +21,52 @@ public partial class Overlay : IOverlay, IOverlayTab
         DrawAppearanceTab();
         DrawFontsTab();
         DrawJobColorsTab();
+        DrawVisibilityTab();
+    }
+
+    private void DrawVisibilityTab()
+    {
+        using var tab = ImRaii.TabItem("Visibility");
+        if (!tab) return;
+
+        ImGui.Spacing();
+
+        bool alwaysValue = Config.Always;
+        if (ImGui.Checkbox("Always", ref alwaysValue))
+        {
+            Config.Always = alwaysValue;
+            File.Save($"{Window.Name}{Window.Id}", Config);
+        }
+
+        if (alwaysValue) ImGui.BeginDisabled();
+
+        bool combatValue = Config.Combat;
+        if (ImGui.Checkbox("Combat", ref combatValue))
+        {
+            Config.Combat = combatValue;
+            File.Save($"{Window.Name}{Window.Id}", Config);
+        }
+
+        bool delayValue = Config.Delay;
+        if (ImGui.Checkbox("Dismmis after", ref delayValue))
+        {
+            Config.Delay = delayValue;
+            File.Save($"{Window.Name}{Window.Id}", Config);
+        }
+        
+        ImGui.SameLine();
+        ImGui.PushItemWidth(70);
+        float delayDurationValue = (float)Config.DelayDuration.TotalSeconds;
+        if (ImGui.DragFloat("##DelaySecond", ref delayDurationValue, 0.1f, 0.1f, 3600f))
+        {
+            Config.DelayDuration = TimeSpan.FromSeconds(delayDurationValue);
+            File.Save($"{Window.Name}{Window.Id}", Config);
+        }
+        ImGui.PopItemWidth();
+        ImGui.SameLine();
+        ImGui.Text("Seconds");
+
+        if (alwaysValue) ImGui.EndDisabled();
     }
 
     private void DrawGeneralTab()
@@ -34,7 +80,7 @@ public partial class Overlay : IOverlay, IOverlayTab
         if (ImGui.Checkbox("Click Through", ref clickThroughValue))
         {
             Config.ClickThrough = clickThroughValue;
-            File.Save(Name, Config);
+            File.Save($"{Window.Name}{Window.Id}", Config);
             if (clickThroughValue) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
             else Window.Flags = OverlayWindow.defaultflags;
         }
@@ -43,7 +89,7 @@ public partial class Overlay : IOverlay, IOverlayTab
         if (ImGui.Checkbox("Calculate per frame", ref frameCalcValue))
         {
             Config.FrameCalc = frameCalcValue;
-            File.Save(Name, Config);
+            File.Save($"{Window.Name}{Window.Id}", Config);
         }
     }
 
@@ -60,7 +106,7 @@ public partial class Overlay : IOverlay, IOverlayTab
             if (ImGui.Checkbox("Background", ref BackgroundValue))
             {
                 Config.Background = BackgroundValue;
-                File.Save(Name, Config);
+                File.Save($"{Window.Name}{Window.Id}", Config);
             }
 
             if (Config.Background)
@@ -70,7 +116,7 @@ public partial class Overlay : IOverlay, IOverlayTab
                     ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
                 {
                     Config.BackgroundColor = ImGui.ColorConvertFloat4ToU32(OverlayBackgroundColorValue);
-                    File.Save(Name, Config);
+                    File.Save($"{Window.Name}{Window.Id}", Config);
                 }
             }
         }
@@ -80,7 +126,7 @@ public partial class Overlay : IOverlay, IOverlayTab
             if (ImGui.Checkbox("Header", ref HeaderValue))
             {
                 Config.Header = HeaderValue;
-                File.Save(Name, Config);
+                File.Save($"{Window.Name}{Window.Id}", Config);
             }
             if (Config.Header)
             {
@@ -88,14 +134,14 @@ public partial class Overlay : IOverlay, IOverlayTab
                 if (DrawAlingmentButtons(ref HeaderAlignmentValue))
                 {
                     Config.HeaderAlignment = (Canvas.HorizontalAlign)HeaderAlignmentValue;
-                    File.Save(Name, Config);
+                    File.Save($"{Window.Name}{Window.Id}", Config);
                 }
 
                 var HeaderBackgroundValue = Config.HeaderBackground;
                 if (ImGui.Checkbox("Header Background", ref HeaderBackgroundValue))
                 {
                     Config.HeaderBackground = HeaderBackgroundValue;
-                    File.Save(Name, Config);
+                    File.Save($"{Window.Name}{Window.Id}", Config);
                 }
                 if (Config.HeaderBackground)
                 {
@@ -104,7 +150,7 @@ public partial class Overlay : IOverlay, IOverlayTab
                         ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
                     {
                         Config.HeaderBackgroundColor = ImGui.ColorConvertFloat4ToU32(HeaderBackgroundColorValue);
-                        File.Save(Name, Config);
+                        File.Save($"{Window.Name}{Window.Id}", Config);
                     }
                 }
             }
@@ -115,14 +161,14 @@ public partial class Overlay : IOverlay, IOverlayTab
             if (ImGui.Checkbox("Job Icon", ref JobIconsValue))
             {
                 Config.PlayerJobIcon = JobIconsValue;
-                File.Save(Name, Config);
+                File.Save($"{Window.Name}{Window.Id}", Config);
             }
 
             var BarValue = Config.Bar;
             if (ImGui.Checkbox("Bar", ref BarValue))
             {
                 Config.Bar = BarValue;
-                File.Save(Name, Config);
+                File.Save($"{Window.Name}{Window.Id}", Config);
             }
             if (Config.Bar)
             {
@@ -130,7 +176,7 @@ public partial class Overlay : IOverlay, IOverlayTab
                 if (ImGui.Checkbox("job colors", ref BarColorJobValue))
                 {
                     Config.BarColorJob = BarColorJobValue;
-                    File.Save(Name, Config);
+                    File.Save($"{Window.Name}{Window.Id}", Config);
                 }
                 if (!Config.BarColorJob)
                 {
@@ -139,7 +185,7 @@ public partial class Overlay : IOverlay, IOverlayTab
                         ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
                     {
                         Config.BarColor = ImGui.ColorConvertFloat4ToU32(BarColorValue);
-                        File.Save(Name, Config);
+                        File.Save($"{Window.Name}{Window.Id}", Config);
                     }
                 }
             }
@@ -161,7 +207,7 @@ public partial class Overlay : IOverlay, IOverlayTab
             {
                 Title = "Font Chooser",
                 PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",
-                SelectedFont = Config.MoguFontSpec ??  new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance },
+                SelectedFont = Config.MoguFontSpec != null ? (SingleFontSpec)Config.MoguFontSpec : new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance },
             };
             chooser.ResultTask.ContinueWith(chooserTask =>
             {
@@ -172,7 +218,7 @@ public partial class Overlay : IOverlay, IOverlayTab
                     FontMogu = chooserTask.Result.CreateFontHandle(FontAtlas);
 
                     Config.MoguFontSpec = chooser.SelectedFont;
-                    File.Save(Name, Config);
+                    File.Save($"{Window.Name}{Window.Id}", Config);
                 }
                 MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= chooser.Draw;
                 chooser.Dispose();
@@ -185,14 +231,14 @@ public partial class Overlay : IOverlay, IOverlayTab
             FontMogu?.Dispose();
             FontMogu = FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
         }
-
         var FontColorValue = ImGui.ColorConvertU32ToFloat4(Config.MoguFontColor);
         if (ImGui.ColorEdit4("Color", ref FontColorValue,
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
         {
             Config.MoguFontColor = ImGui.ColorConvertFloat4ToU32(FontColorValue);
-            File.Save(Name, Config);
+            File.Save($"{Window.Name}{Window.Id}", Config);
         }
+        
         // ImGui.Spacing();
         // ImGui.Text("Font Tester");
         // ImGui.Spacing();
@@ -220,7 +266,7 @@ public partial class Overlay : IOverlay, IOverlayTab
                 ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
             {
                 Config.JobColors[i].Color = ImGui.ColorConvertFloat4ToU32(ColorValue);
-                File.Save(Name, Config);
+                File.Save($"{Window.Name}{Window.Id}", Config);
             }
         }
         ImGui.EndTable();
@@ -232,7 +278,7 @@ public partial class Overlay : IOverlay, IOverlayTab
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
         {
             Config.JobDefaultColor = ImGui.ColorConvertFloat4ToU32(DefaultColorValue);
-            File.Save(Name, Config);
+            File.Save($"{Window.Name}{Window.Id}", Config);
         }
     }
 }

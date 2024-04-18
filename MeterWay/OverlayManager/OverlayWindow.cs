@@ -96,7 +96,7 @@ public class OverlayWindow : Window, IDisposable
     public void Enable()
     {
         if (Overlay != null) return;
-        EncounterManager.Inst.ClientsNotifier.OnDataUpdate += OnDataUpdate; ;
+        EncounterManager.Inst.ClientsNotifier.DataUpdate += OnDataUpdate; ;
         Overlay?.Dispose();
         try
         {
@@ -112,7 +112,7 @@ public class OverlayWindow : Window, IDisposable
     public void Disable()
     {
         if (Overlay == null) return;
-        EncounterManager.Inst.ClientsNotifier.OnDataUpdate -= OnDataUpdate;
+        EncounterManager.Inst.ClientsNotifier.DataUpdate -= OnDataUpdate;
         Overlay?.Dispose();
         Overlay = null;
     }

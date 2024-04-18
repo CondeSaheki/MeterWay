@@ -2,6 +2,8 @@ using System.Numerics;
 using ImGuiNET;
 using System;
 using Dalamud.Plugin.Services;
+using System.Threading;
+using System.Threading.Tasks;
 
 using MeterWay.Utils;
 using MeterWay.Overlay;
@@ -51,18 +53,40 @@ public partial class Overlay : IOverlay, IOverlayTab
         return result;
     }
 
-    public uint GetJobColor(uint rawJob)
+    private uint GetJobColor(uint rawJob)
     {
         var index = Array.FindIndex(Config.JobColors, element => element.Job == new Job(rawJob).Id);
         if (index != -1) return Config.JobColors[index].Color;
         return Config.JobDefaultColor;
     }
 
-    public static void DrawJobIcon(Canvas area, uint job)
+    private static void DrawJobIcon(Canvas area, uint job)
     {
         var icon = MeterWay.Dalamud.Textures.GetIcon(job + 62000u, ITextureProvider.IconFlags.None);
         if (icon == null) return;
 
         ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
+    }
+
+    private static CancellationTokenSource DelayedAction(TimeSpan delay, Action action)
+    {
+        async Task Delay(CancellationTokenSource cancelSource)
+        {
+            try
+            {
+                await Task.Delay((int)delay.TotalMilliseconds, cancelSource.Token);
+
+                MeterWay.Dalamud.Log.Info("Delayed action triggered.");
+                action.Invoke();
+            }
+            catch (TaskCanceledException)
+            {
+                MeterWay.Dalamud.Log.Info("Delayed action canceled.");
+            }
+        }
+
+        CancellationTokenSource cancelSource = new();
+        _ = Delay(cancelSource);
+        return cancelSource;
     }
 }

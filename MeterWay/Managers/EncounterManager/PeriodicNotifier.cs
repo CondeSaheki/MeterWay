@@ -5,7 +5,7 @@ namespace MeterWay.Managers;
 
 public class Notifier
 {
-    public event EventHandler OnDataUpdate = delegate { };
+    public event EventHandler DataUpdate = delegate { };
 
     private bool TimerActive { get; set; }
     private Timer? TimerNotification { get; set; }
@@ -35,7 +35,7 @@ public class Notifier
         NotifyAll(null);
     }
 
-    private void NotifyAll(object? _) => OnDataUpdate?.Invoke(this, EventArgs.Empty);
+    private void NotifyAll(object? _) => DataUpdate?.Invoke(this, EventArgs.Empty);
 
     public void StartTimer()
     {

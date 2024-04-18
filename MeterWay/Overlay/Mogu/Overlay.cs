@@ -11,6 +11,7 @@ using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
+using System.Threading;
 
 namespace Mogu;
 
@@ -27,6 +28,9 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     private Encounter Data = new();
     private List<uint> SortCache = [];
+    
+    private CancellationTokenSource? DelayToken { get; set; }
+
 
     public Overlay(OverlayWindow overlayWindow)
     {
@@ -39,7 +43,19 @@ public partial class Overlay : IOverlay, IOverlayTab
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
 
-        FontMogu = Config.MoguFontSpec != null ? Config.MoguFontSpec.CreateFontHandle(FontAtlas) : DefaultFont;
+        if (Config.MoguFontSpec != null)
+        {
+            FontMogu = Config.MoguFontSpec.CreateFontHandle(FontAtlas);
+            MeterWay.Dalamud.Log.Info("Font handle created using custom MoguFontSpec.");
+        }
+        else
+        {
+            FontMogu = DefaultFont;
+            MeterWay.Dalamud.Log.Info("Using default font as MoguFontSpec is not configured.");
+        }
+
+        EncounterManager.Inst.EncounterEnd += OnEnconterEnd;
+        EncounterManager.Inst.EncounterBegin += OnEncounterBegin;
     }
 
     public void DataUpdate()
@@ -122,7 +138,34 @@ public partial class Overlay : IOverlay, IOverlayTab
 
         FontMogu.Pop();
     }
-    
+
+    void OnEnconterEnd(object? _, EventArgs __)
+    {
+        if (Config.Always || !Config.Combat) return;
+
+        if (!Config.Delay)
+        {
+            Window.IsOpen = false;
+            return;
+        }
+
+        DelayToken?.Cancel();
+        DelayToken = DelayedAction(Config.DelayDuration, () =>
+        {
+            Window.IsOpen = false;
+        });
+    }
+
+    void OnEncounterBegin(object? _, EventArgs __)
+    {
+        DelayToken?.Cancel();
+        if (Config.Always || Config.Combat)
+        {
+            Window.IsOpen = true;
+            return;
+        }
+    }
+
     public void Remove()
     {
         File.Delete($"{Window.Name}{Window.Id}");
@@ -130,6 +173,7 @@ public partial class Overlay : IOverlay, IOverlayTab
 
     public void Dispose()
     {
+        EncounterManager.Inst.EncounterEnd -= OnEnconterEnd;
         FontMogu?.Dispose();
         FontAtlas?.Dispose();
     }

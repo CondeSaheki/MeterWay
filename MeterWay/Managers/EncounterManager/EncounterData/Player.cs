@@ -23,7 +23,7 @@ public class Player(Character character, Encounter encounter)
     public Heal HealDealt { get; set; } = new Heal();
     public Heal HealReceived { get; set; } = new Heal();
 
-    public PerSecounds PerSecounds { get; set; } = new PerSecounds();
+    public PerSeconds PerSecounds { get; set; } = new PerSeconds();
     
     public void Calculate()
     {

@@ -75,7 +75,7 @@ public class ConfigWindow : Window, IDisposable
             ConfigurationManager.Inst.Configuration.Save();
         }
 
-        if (OverlayRealtimeUpdateValue == false)
+        if (!OverlayRealtimeUpdateValue)
         {
             ImGui.PushItemWidth(50);
             var OverlayIntervalUpdateValue2 = 1000 / (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.TotalMilliseconds;

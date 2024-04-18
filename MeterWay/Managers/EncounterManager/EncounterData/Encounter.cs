@@ -30,7 +30,7 @@ public class Encounter
     public Heal HealDealt { get; set; }
     public Heal HealReceived { get; set; }
 
-    public PerSecounds PerSecounds { get; set; }
+    public PerSeconds PerSecounds { get; set; }
 
     public Encounter()
     {
@@ -44,7 +44,7 @@ public class Encounter
         HealDealt = new Heal();
         HealReceived = new Heal();
 
-        PerSecounds = new PerSecounds();
+        PerSecounds = new PerSeconds();
     }
 
     public void Start()

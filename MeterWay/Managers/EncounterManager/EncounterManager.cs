@@ -19,7 +19,10 @@ public class EncounterManager : IDisposable
     public static Encounter LastEncounter => Inst.encounters.Last();
 
     public Notifier ClientsNotifier { get; init; }
-
+    
+    public event EventHandler EncounterBegin  = delegate { };
+    public event EventHandler EncounterEnd = delegate { };
+    
     public EncounterManager()
     {
         encounters = [];
@@ -32,7 +35,7 @@ public class EncounterManager : IDisposable
         Inst = this;
     }
 
-    private static void OnDutyStart<ArgType>(object? sender, ArgType Args)
+    private static void OnDutyStart<ArgType>(object? _, ArgType __)
     {
         Dalamud.Log.Info("EncounterManager OnDutyStart event trigerred!");
         if (!Stop()) Reset();
@@ -53,6 +56,7 @@ public class EncounterManager : IDisposable
         LastEncounter.RawActions.RemoveAll(r => r.TimePoint < LastEncounter.Begin - TimeSpan.FromSeconds(30));
         LastEncounter.Start();
         Inst.ClientsNotifier.StartTimer();
+        Inst.EncounterBegin?.Invoke(null, EventArgs.Empty);
         return true;
     }
 
@@ -69,6 +73,7 @@ public class EncounterManager : IDisposable
         LastEncounter.Update();
         Inst.encounters.Add(new Encounter());
         Inst.ClientsNotifier.StopTimer();
+        Inst.EncounterEnd?.Invoke(null, EventArgs.Empty);
         return true;
     }
 
