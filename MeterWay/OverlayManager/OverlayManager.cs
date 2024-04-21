@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
+
 using MeterWay.Managers;
 using MeterWay.Utils;
 
@@ -12,9 +14,25 @@ public class OverlayManager : IDisposable
 {
     private WindowSystem WindowSystem { get; init; } = new();
     private HashSet<OverlayWindow> Overlays { get; set; } = [];
-    private (string Name, Type Type)[] OverlayTypes { get; init; }
+    private OverlayInfo[] OverlayInfos { get; init; }
     private int OverlayIndexValue = 0;
     private uint UniqueId;
+
+    private class OverlayInfo
+    {
+        public string Name { get; private init; }
+        public string? Autor { get; private init; }
+        public string? Description { get; private init; }
+        public Type Type { get; private init; }
+
+        public OverlayInfo(Type overlay)
+        {
+            Name = ((string?)overlay.GetProperty("Name")?.GetValue(null)) ?? "Empty";
+            Autor = (string?)overlay.GetProperty("Autor")?.GetValue(null);
+            Description = (string?)overlay.GetProperty("Description")?.GetValue(null);
+            Type = overlay;
+        }
+    }
 
     public OverlayManager(Type[] overlays)
     {
@@ -22,12 +40,12 @@ public class OverlayManager : IDisposable
             ValidateOverlays<IOverlay>(overlays);
         #endif
 
-        OverlayTypes = overlays.Select(type => ((string)type.GetProperty("Name")?.GetValue(null)!, type)).ToArray();
+        OverlayInfos = overlays.Select(overlay => new OverlayInfo(overlay)).ToArray();
 
         // load config
         foreach (var overlay in ConfigurationManager.Inst.Configuration.Overlays)
         {
-            var type = ConfigGetType(OverlayTypes, overlay.Name);
+            var type = ConfigGetType(OverlayInfos, overlay.Name);
             if (type == null)
             {
                 Dalamud.Log.Warning($"{overlay.Name}{overlay.Id} could not be reatrived an got ignored.");
@@ -43,7 +61,7 @@ public class OverlayManager : IDisposable
             Overlays.Add(obj);
         }
 
-        UniqueId = Overlays.Count != 0 ? Overlays.Max(overlay => overlay.Id) : 1;
+        UniqueId = Overlays.Count != 0 ? Overlays.Max(overlay => overlay.Id) + 1 : 1;
 
         Dalamud.PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
     }
@@ -59,7 +77,7 @@ public class OverlayManager : IDisposable
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"Error removing overlay window {overlayType.Name}:\n{ex}");
+            Dalamud.Log.Error($"Error adding overlay window {overlayType.Name}:\n{ex}");
             Dispose();
         }
     }
@@ -94,7 +112,7 @@ public class OverlayManager : IDisposable
 
         var size = ImGui.GetContentRegionAvail();
         size.Y -= 140;
-        ImGui.BeginChild("##Overlays", size, border: false);
+        ImGui.BeginChild("##Overlays", size, border: false, ImGuiWindowFlags.AlwaysVerticalScrollbar);
 
         if (Overlays.Count == 0)
         {
@@ -126,8 +144,6 @@ public class OverlayManager : IDisposable
             }
             ImGui.PopItemWidth();
 
-            if (overlay.Enabled) ImGui.BeginDisabled();
-
             ImGui.SameLine();
             if (ImGui.Button($"remove##{overlay.Id}"))
             {
@@ -138,8 +154,6 @@ public class OverlayManager : IDisposable
                 break;
             }
 
-            if (overlay.Enabled) ImGui.EndDisabled();
-
             if (!overlay.Enabled) ImGui.BeginDisabled();
 
             if (overlay.HasConfigs)
@@ -147,7 +161,7 @@ public class OverlayManager : IDisposable
                 ImGui.SameLine();
                 if (ImGui.Button($"Config##{overlay.Id}"))
                 {
-                    Helpers.PopupWindow overlayConfig = new($"{overlay.Name}_Configurations##{overlay.Id}", overlay.DrawConfig);
+                    Helpers.PopupWindow overlayConfig = new($"{overlay.Name} Configurations##{overlay.Id}", overlay.DrawConfig);
                 }
             }
 
@@ -163,18 +177,45 @@ public class OverlayManager : IDisposable
         ImGui.Separator();
         ImGui.Spacing();
 
-        ImGui.PushItemWidth(160);
-        var overlayNames = OverlayTypes.Select(x => x.Name).ToArray();
-        ImGui.Combo("Overlay type", ref OverlayIndexValue, overlayNames, overlayNames.Length);
-        ImGui.PopItemWidth();
-
-        ImGui.SameLine();
-        if (ImGui.Button("Add"))
+        if (ImGui.Button("Add overlay"))
         {
-            Add(Array.Find(OverlayTypes, x => x.Name == overlayNames[OverlayIndexValue]).Type);
+            var addOverlayPopup = new Helpers.PopupWindow("Add overlay",
+            (TaskSource) =>
+            {
+                ImGui.PushItemWidth(160);
+                var overlayNames = OverlayInfos.Select(x => x.Name).ToArray();
+                ImGui.Combo("Overlay type", ref OverlayIndexValue, overlayNames, overlayNames.Length);
+                ImGui.PopItemWidth();
 
-            ConfigurationManager.Inst.Configuration.Overlays = Overlays.Select(x => x.GetSpecs()).ToList();
-            ConfigurationManager.Inst.Configuration.Save();
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                ImGui.Text($"Description");
+                ImGui.TextWrapped($"{OverlayInfos[OverlayIndexValue].Description ?? "Empty"}");
+                ImGui.Text($"Autor");
+                ImGui.TextWrapped($"{OverlayInfos[OverlayIndexValue].Autor ?? "Empty"}");
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                if (ImGui.Button("Confirm"))
+                {
+                    var overlayInfo = Array.Find(OverlayInfos, x => x.Name == overlayNames[OverlayIndexValue]);
+                    if (overlayInfo != null)
+                    {
+                        Add(overlayInfo.Type);
+                        ConfigurationManager.Inst.Configuration.Overlays = Overlays.Select(x => x.GetSpecs()).ToList();
+                        ConfigurationManager.Inst.Configuration.Save();
+                        TaskSource.SetResult();
+                    }
+                    else
+                    {
+                        Dalamud.Log.Warning($"Overlay info for {overlayNames[OverlayIndexValue]} not found.");
+                    }
+                }
+            });
         }
     }
 
@@ -189,9 +230,9 @@ public class OverlayManager : IDisposable
         Overlays?.Clear();
     }
 
-    private static Type? ConfigGetType((string Name, Type Type)[] overlayTypes, string name)
+    private static Type? ConfigGetType(OverlayInfo[] overlayInfos, string name)
     {
-        var value = overlayTypes.FirstOrDefault(x => x.Name == name);
+        var value = overlayInfos.FirstOrDefault(x => x.Name == name);
         if (value == default)
         {
             Dalamud.Log.Warning($"Overlay type with name \'{name}\' not found.");

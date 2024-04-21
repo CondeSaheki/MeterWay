@@ -18,6 +18,8 @@ namespace Mogu;
 public partial class Overlay : IOverlay, IOverlayConfig
 {
     public static string Name => "Mogu"; // required
+    public static string Autor => "MeterWay";
+    public static string Description => "Mogu is a overlay designed to provide a versatile and complete solution for a wide range of needs this overlay offers a clean and flexible interface tailored to enhance your experience across various contexts with no amogus please.";
 
     private OverlayWindow Window { get; init; }
     private Configuration Config { get; init; }
@@ -174,6 +176,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
     public void Dispose()
     {
         EncounterManager.Inst.EncounterEnd -= OnEnconterEnd;
+        EncounterManager.Inst.EncounterEnd -= OnEncounterBegin;
         FontMogu?.Dispose();
         FontAtlas?.Dispose();
     }

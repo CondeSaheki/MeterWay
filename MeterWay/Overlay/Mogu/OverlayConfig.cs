@@ -22,6 +22,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         DrawFontsTab();
         DrawJobColorsTab();
         DrawVisibilityTab();
+        DrawAboutTab();
     }
 
     private void DrawVisibilityTab()
@@ -53,7 +54,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             Config.Delay = delayValue;
             File.Save($"{Window.Name}{Window.Id}", Config);
         }
-        
+
         ImGui.SameLine();
         ImGui.PushItemWidth(70);
         float delayDurationValue = (float)Config.DelayDuration.TotalSeconds;
@@ -238,7 +239,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             Config.MoguFontColor = ImGui.ColorConvertFloat4ToU32(FontColorValue);
             File.Save($"{Window.Name}{Window.Id}", Config);
         }
-        
+
         // ImGui.Spacing();
         // ImGui.Text("Font Tester");
         // ImGui.Spacing();
@@ -281,4 +282,21 @@ public partial class Overlay : IOverlay, IOverlayConfig
             File.Save($"{Window.Name}{Window.Id}", Config);
         }
     }
+
+    private void DrawAboutTab()
+    {
+        using var tab = ImRaii.TabItem("About");
+        if (!tab) return;
+        
+        DrawAbout();
+    }
+
+    private void DrawAbout()
+    {
+        ImGui.Text($"Description");
+        ImGui.TextWrapped($"{Description}");
+        ImGui.Text($"Autor");
+        ImGui.TextWrapped($"{Autor}");
+    }
+
 }

@@ -86,14 +86,14 @@ public static class Helpers
 
     public class PopupWindow
     {
-        public Action Content { get; private init; }
+        public Action<TaskCompletionSource> Content { get; private init; }
         public string Label { get; private init; }
         public Vector2 Size { get; private init; }
 
         private TaskCompletionSource TaskSource { get; set; } = new();
         private bool FirstDraw { get; set; } = true;
 
-        public PopupWindow(string label, Action content, Vector2? size = null)
+        public PopupWindow(string label, Action<TaskCompletionSource> content, Vector2? size = null)
         {
             Content = content;
             Label = label;
@@ -106,6 +106,8 @@ public static class Helpers
                 Dalamud.PluginInterface.UiBuilder.Draw -= Draw;
             });
         }
+
+        public PopupWindow(string label, Action content, Vector2? size = null) : this(label, taskSource => content.Invoke(), size) {}
 
         private void Draw()
         {
@@ -125,7 +127,7 @@ public static class Helpers
                 return;
             }
 
-            Content.Invoke();
+            Content.Invoke(TaskSource);
 
             ImGui.EndPopup();
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Interface.ImGuiFileDialog;
+using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 
 using MeterWay.Overlay;
@@ -10,8 +11,11 @@ namespace Dynamic;
 
 public partial class Overlay : IOverlay, IOverlayConfig
 {
-    public void DrawConfig()
+    public void DrawScriptTab()
     {
+        using var tab = ImRaii.TabItem("Script");
+        if (!tab) return;
+
         bool disabled = false;
 
         if (ImGui.Button("Choose Script"))
@@ -44,7 +48,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         ImGui.TableNextColumn();
         ImGui.Text("File");
         ImGui.TableNextColumn();
-        ImGui.Text(Script != null ? Script.FilePath.FullName : "Empty"); 
+        ImGui.Text(Script != null ? Script.FilePath.FullName : "Empty");
         ImGui.EndTable();
 
         if (Config.ScriptFile == null) ImGui_Disable(ref disabled);
@@ -62,12 +66,18 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.Button("Unload")) UnLoadScript();
 
         ImGui.SameLine();
-        if(Script != null && !Script.HasDrawConfig) ImGui_Disable(ref disabled);
+        if (Script != null && !Script.HasDrawConfig) ImGui_Disable(ref disabled);
         if (ImGui.Button("Config"))
         {
-            if (Script != null) 
+            if (Script != null)
             {
-                Helpers.PopupWindow popup = new($"Script {Script.Name} configurations", Script!.ExecuteDrawTab);
+                Helpers.PopupWindow popup = new($"Script {Script.Name} configurations", 
+                () => 
+                {
+                    if (Script == null) return;
+                    Script.ExecuteDrawTab();
+                    if (!Script.Status) Window.IsOpen = false;
+                });
             }
         }
         ImGui_Enable(ref disabled);
@@ -82,5 +92,30 @@ public partial class Overlay : IOverlay, IOverlayConfig
             Config.Startup = startupValue;
             File.Save($"{Window.Name}{Window.Id}", Config);
         }
+    }
+
+    public void DrawConfig()
+    {
+        using var bar = ImRaii.TabBar("Overlay Settings Tabs");
+        if (!bar) return;
+
+        DrawScriptTab();
+        DrawAboutTab();
+    }
+
+    private void DrawAboutTab()
+    {
+        using var tab = ImRaii.TabItem("About");
+        if (!tab) return;
+
+        DrawAbout();
+    }
+
+    private void DrawAbout()
+    {
+        ImGui.Text($"Description");
+        ImGui.TextWrapped($"{Description}");
+        ImGui.Text($"Autor");
+        ImGui.TextWrapped($"{Autor}");
     }
 }

@@ -6,13 +6,14 @@ using ImGuiNET;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
-using MeterWay.Windows;
 
 namespace HelloWorld;
 
 public class Overlay : IOverlay, IOverlayConfig, IOverlayCommandHandler
 {
     public static string Name => "HelloWorld"; // required
+    public static string Autor => "MeterWay";
+    public static string Description => "An simple overlay.";
 
     private Configuration Config { get; init; }
     

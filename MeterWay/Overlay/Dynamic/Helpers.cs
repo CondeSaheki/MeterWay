@@ -49,7 +49,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         Window.IsOpen = true;
     }
 
-    private bool StatusScript() => Script != null;
+    private bool StatusScript() => Script != null && Script.Status;
 
     private static void ImGui_Disable(ref bool disabled)
     {

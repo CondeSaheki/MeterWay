@@ -49,7 +49,7 @@ public class ConfigWindow : Window, IDisposable
 
     private void DrawOverlayTab()
     {
-        using var tab = ImRaii.TabItem("Overlay");
+        using var tab = ImRaii.TabItem("Overlays");
         if (!tab) return;
 
         ImGui.Spacing();

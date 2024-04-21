@@ -7,9 +7,9 @@ namespace Dynamic;
 
 public class LuaScript : IDisposable
 {
-    public FileInfo FilePath { get; init; }
-    public string Name { get; init; }
-    public Function[] Functions { get; init; }
+    public FileInfo FilePath { get; private init; }
+    public string Name { get; private init; }
+    public Function[] Functions { get; private init; }
 
     private Lua? LuaInterpreter { get; set; }
     private LuaFunction? Script { get; set; }
@@ -18,6 +18,7 @@ public class LuaScript : IDisposable
 
     public bool HasDraw => Draw != null;
     public bool HasDrawConfig => DrawConfig != null;
+    public bool Status => LuaInterpreter != null;
 
     public LuaScript(FileInfo filePath, Function[] functions)
     {
@@ -118,7 +119,9 @@ public class LuaScript : IDisposable
         if (LuaInterpreter == null) return null;
         try
         {
-            return LuaInterpreter?.GetFunction(functionName);
+            var function = LuaInterpreter?.GetFunction(functionName);
+            if (function == default) throw new Exception("Function is empty");
+            return function;
         }
         catch (LuaException ex)
         {
@@ -137,6 +140,7 @@ public class LuaScript : IDisposable
         catch (Exception ex)
         {
             MeterWay.Dalamud.Log.Error($"Error running Lua script:\n{ex}");
+            LuaInterpreter = null;
         }
     }
 }
