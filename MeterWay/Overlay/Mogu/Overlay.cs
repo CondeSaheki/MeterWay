@@ -15,7 +15,7 @@ using System.Threading;
 
 namespace Mogu;
 
-public partial class Overlay : IOverlay, IOverlayTab
+public partial class Overlay : IOverlay, IOverlayConfig
 {
     public static string Name => "Mogu"; // required
 

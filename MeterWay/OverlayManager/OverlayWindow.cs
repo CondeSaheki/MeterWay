@@ -42,7 +42,7 @@ public class OverlayWindow : Window, IDisposable
         Flags = defaultflags;
         Type = overlay;
         Name = (string)overlay.GetProperty("Name")?.GetValue(null)!;
-        HasConfigs = overlay.GetInterfaces().Contains(typeof(IOverlayTab));
+        HasConfigs = overlay.GetInterfaces().Contains(typeof(IOverlayConfig));
         Id = id;
         Comment = $"{Name}{Id}";
     }
@@ -66,7 +66,7 @@ public class OverlayWindow : Window, IDisposable
         if (Overlay == null) return;
         try
         {
-            ((IOverlayTab)Overlay!).DrawConfig();
+            ((IOverlayConfig)Overlay!).DrawConfig();
         }
         catch (Exception ex)
         {

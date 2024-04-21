@@ -10,7 +10,7 @@ using MeterWay.Overlay;
 
 namespace Mogu;
 
-public partial class Overlay : IOverlay, IOverlayTab
+public partial class Overlay : IOverlay, IOverlayConfig
 {
     private static void DrawTextShadow(Vector2 position, uint color, string text, uint shadowColor)
     {

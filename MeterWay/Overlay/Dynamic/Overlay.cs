@@ -6,13 +6,13 @@ using MeterWay.Overlay;
 
 namespace Dynamic;
 
-public partial class Overlay : IOverlay, IOverlayTab
+public partial class Overlay : IOverlay, IOverlayConfig
 {
     public static string Name => "Dynamic"; // required
 
     private Configuration Config { get; init; }
     public LuaScript? Script { get; private set; }
-
+    
     private Encounter Data = new();
     private OverlayWindow Window { get; init; }
 
@@ -26,8 +26,9 @@ public partial class Overlay : IOverlay, IOverlayTab
         Window = overlayWindow;
         Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
         Window.Flags = ImGuiWindowFlags.None;
+        Window.IsOpen = false;
 
-        if (Config.LoadInit) LoadScript();
+        if (Config.Startup) LoadScript();
     }
 
     public void DataUpdate()

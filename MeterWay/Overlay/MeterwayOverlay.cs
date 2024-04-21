@@ -10,7 +10,7 @@ public interface IOverlay : IDisposable
     public void Remove();
 }
 
-public interface IOverlayTab
+public interface IOverlayConfig
 {
     public void DrawConfig();
 }

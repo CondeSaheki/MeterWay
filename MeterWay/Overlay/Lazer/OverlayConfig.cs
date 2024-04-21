@@ -5,7 +5,7 @@ using MeterWay.Overlay;
 
 namespace Lazer;
 
-public partial class Overlay : IOverlay, IOverlayTab
+public partial class Overlay : IOverlay, IOverlayConfig
 {
     public void DrawConfig()
     {

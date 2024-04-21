@@ -10,7 +10,7 @@ using MeterWay.Windows;
 
 namespace HelloWorld;
 
-public class Overlay : IOverlay, IOverlayTab, IOverlayCommandHandler
+public class Overlay : IOverlay, IOverlayConfig, IOverlayCommandHandler
 {
     public static string Name => "HelloWorld"; // required
 

@@ -1,6 +1,5 @@
 using MeterWay.Overlay;
 using System;
-using System.Collections.Generic;
 
 namespace Dynamic;
 
@@ -9,8 +8,6 @@ public class Configuration : IConfiguration
 {
     public int Version { get; set; } = 0;
     
-    public Dictionary<string, string> Scripts { get; set; } = [];
-    public string? ScriptName { get; set; } = null;
-    
-    public bool LoadInit { get; set; } = false;
+    public string? ScriptFile { get; set; } = null;
+    public bool Startup { get; set; } = true;
 }

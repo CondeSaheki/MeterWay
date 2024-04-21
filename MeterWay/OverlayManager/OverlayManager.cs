@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using MeterWay.Managers;
+using MeterWay.Utils;
 
 namespace MeterWay.Overlay;
 
@@ -19,9 +18,9 @@ public class OverlayManager : IDisposable
 
     public OverlayManager(Type[] overlays)
     {
-#if DEBUG
-        ValidateOverlays<IOverlay>(overlays);
-#endif
+        #if DEBUG
+            ValidateOverlays<IOverlay>(overlays);
+        #endif
 
         OverlayTypes = overlays.Select(type => ((string)type.GetProperty("Name")?.GetValue(null)!, type)).ToArray();
 
@@ -96,8 +95,8 @@ public class OverlayManager : IDisposable
         var size = ImGui.GetContentRegionAvail();
         size.Y -= 140;
         ImGui.BeginChild("##Overlays", size, border: false);
-        
-        if(Overlays.Count == 0)
+
+        if (Overlays.Count == 0)
         {
             ImGui.Text("No overlays, click the \'Add\' button to start");
         }
@@ -115,9 +114,6 @@ public class OverlayManager : IDisposable
             }
 
             ImGui.SameLine();
-            //ImGui.Text($"{overlay.Name} {overlay.Id}");
-
-            ImGui.SameLine();
             ImGui.PushItemWidth(160);
             var commentValue = overlay.Comment;
             const int commentSize = 16;
@@ -129,10 +125,10 @@ public class OverlayManager : IDisposable
                 ConfigurationManager.Inst.Configuration.Save();
             }
             ImGui.PopItemWidth();
-            ImGui.SameLine();
 
             if (overlay.Enabled) ImGui.BeginDisabled();
 
+            ImGui.SameLine();
             if (ImGui.Button($"remove##{overlay.Id}"))
             {
                 Remove(overlay.Id);
@@ -151,7 +147,7 @@ public class OverlayManager : IDisposable
                 ImGui.SameLine();
                 if (ImGui.Button($"Config##{overlay.Id}"))
                 {
-                    PopupTest popup = new($"{overlay.Name}_Configurations##{overlay.Id}", overlay.DrawConfig);
+                    Helpers.PopupWindow overlayConfig = new($"{overlay.Name}_Configurations##{overlay.Id}", overlay.DrawConfig);
                 }
             }
 
@@ -198,7 +194,7 @@ public class OverlayManager : IDisposable
         var value = overlayTypes.FirstOrDefault(x => x.Name == name);
         if (value == default)
         {
-            Dalamud.Log.Warning($"Overlay type with name '{name}' not found.");
+            Dalamud.Log.Warning($"Overlay type with name \'{name}\' not found.");
             return null;
         }
         return value.Type;
@@ -219,51 +215,5 @@ public class OverlayManager : IDisposable
             values.Add(value);
         }
         if (values.Distinct().Count() != values.Count) throw new Exception($"Overlays must have elements with unique names!");
-    }
-}
-
-public class PopupTest
-{
-    private readonly Action Content;
-    private readonly string Label;
-    private readonly TaskCompletionSource tcs = new();
-    private bool firstDraw = true;
-
-    public PopupTest(string label, Action content)
-    {
-        Content = content;
-        Label = label;
-
-        Dalamud.PluginInterface.UiBuilder.Draw += Draw;
-        tcs.Task.ContinueWith(t =>
-        {
-            _ = t.Exception;
-            Dalamud.PluginInterface.UiBuilder.Draw -= Draw;
-        });
-    }
-
-    public void Draw()
-    {
-        if (firstDraw)
-        {
-            ImGui.OpenPopup(Label);
-            Vector2 center = ImGui.GetMainViewport().GetCenter();
-            ImGui.SetNextWindowPos(center, ImGuiCond.Always, new Vector2(0.5f, 0.5f));
-            ImGui.SetNextWindowSize(new Vector2(320, 180), ImGuiCond.Always);
-        }
-        ImGui.SetNextWindowSizeConstraints(new Vector2(320f, 180), new Vector2(float.MaxValue));
-
-        bool p_open = true;
-        if (!ImGui.BeginPopupModal(Label, ref p_open) || !p_open)
-        {
-            tcs.SetCanceled();
-            return;
-        }
-
-        Content.Invoke();
-
-        ImGui.EndPopup();
-
-        firstDraw = false;
     }
 }

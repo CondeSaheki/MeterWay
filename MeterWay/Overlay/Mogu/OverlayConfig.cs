@@ -10,7 +10,7 @@ using MeterWay.Utils;
 
 namespace Mogu;
 
-public partial class Overlay : IOverlay, IOverlayTab
+public partial class Overlay : IOverlay, IOverlayConfig
 {
     public void DrawConfig()
     {

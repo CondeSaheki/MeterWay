@@ -48,8 +48,8 @@ public sealed class Plugin : IDalamudPlugin
                 [
                     //typeof(HelloWorld.Overlay),
                     //typeof(Lazer.Overlay),
-                    typeof(Mogu.Overlay)
-                    //typeof(Dynamic.Overlay)
+                    typeof(Mogu.Overlay),
+                    typeof(Dynamic.Overlay)
                 ]
             );
             

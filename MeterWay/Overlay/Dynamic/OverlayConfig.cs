@@ -1,115 +1,86 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Numerics;
 using Dalamud.Interface.ImGuiFileDialog;
-using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 
 using MeterWay.Overlay;
+using MeterWay.Utils;
 
 namespace Dynamic;
 
-public partial class Overlay : IOverlay, IOverlayTab
+public partial class Overlay : IOverlay, IOverlayConfig
 {
     public void DrawConfig()
     {
-        using var bar = ImRaii.TabBar("Overlay Settings Tabs");
-        if (!bar) return;
+        bool disabled = false;
 
-        DrawGeneral();
-        DrawScriptTab();
-    }
-
-    void DrawScriptTab()
-    {
-        if (Script == null) return;
-
-        using var tab = ImRaii.TabItem("Lua Script");
-        if (!tab) return;
-
-        Script.ExecuteDrawTab();
-    }
-
-    public void DrawGeneral()
-    {
-        using var tab = ImRaii.TabItem("General");
-        if (!tab) return;
-
-        var loadInitValue = Config.LoadInit;
-        if (ImGui.Checkbox("Load on init", ref loadInitValue))
+        if (ImGui.Button("Choose Script"))
         {
-            Config.LoadInit = loadInitValue;
-            File.Save(Name, Config);
+            var fileDialog = new FileDialogManager();
+            fileDialog.OpenFileDialog("Choose Script", ".lua",
+            (bool isOk, List<string> selectedFiles) =>
+            {
+                MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= fileDialog.Draw;
+                if (!isOk || selectedFiles.Count == 0) return;
+                Config.ScriptFile = selectedFiles[0];
+                File.Save($"{Window.Name}{Window.Id}", Config);
+            }, 1, null, true);
+            MeterWay.Dalamud.PluginInterface.UiBuilder.Draw += fileDialog.Draw;
         }
-        if (Config.Scripts.Count != 0)
+
+        ImGui.BeginTable("ScriptDetailsTable", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg);
+
+        ImGui.TableSetupColumn("Property", ImGuiTableColumnFlags.WidthFixed, 50.0f);
+        ImGui.TableSetupColumn("Value");
+
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        ImGui.Text("Status");
+        ImGui.TableNextColumn();
+        if (StatusScript()) ImGui.TextColored(new Vector4(0f, 1f, 0f, 1f), "Active");
+        else ImGui.TextColored(new Vector4(1f, 0f, 0f, 1f), "Deactive");
+
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        ImGui.Text("File");
+        ImGui.TableNextColumn();
+        ImGui.Text(Script != null ? Script.FilePath.FullName : "Empty"); 
+        ImGui.EndTable();
+
+        if (Config.ScriptFile == null) ImGui_Disable(ref disabled);
+        if (!StatusScript())
         {
-            var scriptNames = Config.Scripts.Select(x => x.Key).ToArray();
-            int scriptIndexValue = Config.ScriptName == null ? 0 : Array.FindIndex(scriptNames, x => x == Config.ScriptName);
-            if (scriptIndexValue == -1) scriptIndexValue = 0;
-            ImGui.PushItemWidth(160);
-            if (ImGui.Combo("Lua Script", ref scriptIndexValue, scriptNames, Config.Scripts.Count))
-            {
-                Config.ScriptName = scriptNames[scriptIndexValue];
-                File.Save(Name, Config);
-            }
-            ImGui.PopItemWidth();
-            ImGui.SameLine();
-            if (Script != null)
-            {
-                if (ImGui.Button("Reload")) Script.Reload();
-            }
-            else
-            {
-                if (ImGui.Button("Load")) LoadScript();
-            }
+            if (ImGui.Button("Load")) LoadScript();
         }
+        else
+        {
+            if (ImGui.Button("Reload")) ReloadScript();
+        }
+
         ImGui.SameLine();
-        if (Script == null) ImGui.BeginDisabled();
-        if (ImGui.Button("Unload"))
-        {
-            Script?.Dispose();
-            Script = null;
-        }
-        if (Script == null) ImGui.EndDisabled();
+        if (!StatusScript()) ImGui_Disable(ref disabled);
+        if (ImGui.Button("Unload")) UnLoadScript();
 
+        ImGui.SameLine();
+        if(Script != null && !Script.HasDrawConfig) ImGui_Disable(ref disabled);
+        if (ImGui.Button("Config"))
+        {
+            if (Script != null) 
+            {
+                Helpers.PopupWindow popup = new($"Script {Script.Name} configurations", Script!.ExecuteDrawTab);
+            }
+        }
+        ImGui_Enable(ref disabled);
 
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
 
-        if (ImGui.Button("Add"))
+        var startupValue = Config.Startup;
+        if (ImGui.Checkbox("Load on startup", ref startupValue))
         {
-            FileDialogManager fileDialogManager = new();
-            fileDialogManager.OpenFileDialog("Chose Script", ".lua",
-            (bool isOk, List<string> selectedFolder) =>
-            {
-                MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= fileDialogManager.Draw;
-                if (!isOk) return;
-
-                var file = new System.IO.FileInfo(selectedFolder.First());
-                if (file.Exists)
-                {
-                    Config.Scripts.Add(file.Name, file.FullName);
-                    File.Save(Name, Config);
-
-                    MeterWay.Dalamud.Log.Info($"FileDialogManager completed:\n{selectedFolder}");
-                }
-            }, 1, null, true);
-            MeterWay.Dalamud.PluginInterface.UiBuilder.Draw += fileDialogManager.Draw;
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("Remove"))
-        {
-            if (Config.ScriptName != null)
-            {
-                if (Script != null)
-                {
-                    Script.Dispose();
-                    Script = null;
-                }
-                Config.Scripts.Remove(Config.ScriptName);
-                File.Save(Name, Config);
-            }
+            Config.Startup = startupValue;
+            File.Save($"{Window.Name}{Window.Id}", Config);
         }
     }
 }

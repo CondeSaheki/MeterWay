@@ -14,12 +14,15 @@ public class LuaScript : IDisposable
     private Lua? LuaInterpreter { get; set; }
     private LuaFunction? Script { get; set; }
     private LuaFunction? Draw { get; set; }
-    private LuaFunction? DrawTab { get; set; }
+    private LuaFunction? DrawConfig { get; set; }
 
-    public LuaScript(string name, string filePath, Function[] functions)
+    public bool HasDraw => Draw != null;
+    public bool HasDrawConfig => DrawConfig != null;
+
+    public LuaScript(FileInfo filePath, Function[] functions)
     {
-        FilePath = new FileInfo(filePath);
-        Name = name;
+        FilePath = filePath;
+        Name = Path.GetFileNameWithoutExtension(FilePath.FullName);
         Functions = functions;
         Init();
     }
@@ -38,8 +41,8 @@ public class LuaScript : IDisposable
     }
 
     public void ExecuteDraw() => Executefunction(Draw);
-    public void ExecuteDrawTab() => Executefunction(DrawTab);
-    public void Execute() => Executefunction(DrawTab);
+    public void ExecuteDrawTab() => Executefunction(DrawConfig);
+    public void Execute() => Executefunction(DrawConfig);
 
     public void Dispose()
     {
@@ -47,7 +50,7 @@ public class LuaScript : IDisposable
 
         Script?.Dispose();
         Draw?.Dispose();
-        DrawTab?.Dispose();
+        DrawConfig?.Dispose();
     }
 
     private void Init()
@@ -59,7 +62,7 @@ public class LuaScript : IDisposable
         Script = LoadScript(FilePath);
 
         Draw = GetFunction("Draw");
-        DrawTab = GetFunction("DrawTab");
+        DrawConfig = GetFunction("DrawConfig");
     }
 
     private void RegisterFunctions()
