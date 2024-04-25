@@ -37,9 +37,10 @@ public class OverlayWindow : Window, IDisposable
             MinimumSize = new Vector2(80, 45),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
-        IsOpen = true;
+        IsOpen = false;
         RespectCloseHotkey = false;
         Flags = defaultflags;
+        
         Type = overlay;
         Name = (string)overlay.GetProperty("Name")?.GetValue(null)!;
         HasConfigs = overlay.GetInterfaces().Contains(typeof(IOverlayConfig));
@@ -96,8 +97,8 @@ public class OverlayWindow : Window, IDisposable
     public void Enable()
     {
         if (Overlay != null) return;
-        EncounterManager.Inst.ClientsNotifier.DataUpdate += OnDataUpdate; ;
         Overlay?.Dispose();
+        IsOpen = true;
         try
         {
             Overlay = (IOverlay?)Activator.CreateInstance(Type, [this]);
@@ -107,14 +108,16 @@ public class OverlayWindow : Window, IDisposable
             Dalamud.Log.Error($"OverlayWindow \'{Id}\' trow an error creating \'{Name}\' overlay instance:\n{ex}");
             Disable();
         }
+        EncounterManager.Inst.ClientsNotifier.DataUpdate += OnDataUpdate;
     }
 
     public void Disable()
     {
         if (Overlay == null) return;
-        EncounterManager.Inst.ClientsNotifier.DataUpdate -= OnDataUpdate;
         Overlay?.Dispose();
         Overlay = null;
+        EncounterManager.Inst.ClientsNotifier.DataUpdate -= OnDataUpdate;
+        IsOpen = false;
     }
     
     public void Remove()

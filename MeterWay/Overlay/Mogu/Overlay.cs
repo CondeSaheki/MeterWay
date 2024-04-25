@@ -33,12 +33,14 @@ public partial class Overlay : IOverlay, IOverlayConfig
     
     private CancellationTokenSource? DelayToken { get; set; }
 
-
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
         Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
-        Window.Flags = OverlayWindow.defaultflags; // temporary
+
+        if (Config.ClickThrough) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
+        else Window.Flags = OverlayWindow.defaultflags;
+        Window.IsOpen = true;
         Window.SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(320, 180),
@@ -66,7 +68,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         Data = EncounterManager.Inst.CurrentEncounter();
 
         if (Data.Party.Id != oldPartyId) SortCache = Helpers.CreateDictionarySortCache(Data.Players, (x) => { return true; });
-        SortCache.Sort((uint first, uint second) => { return Data.Players[second].DamageDealt.Value.Total.CompareTo(Data.Players[first].DamageDealt.Value.Total); });
+        SortCache.Sort((first, second) => Data.Players[second].DamageDealt.Value.Total.CompareTo(Data.Players[first].DamageDealt.Value.Total));
         if (!Config.FrameCalc) Data.Calculate();
     }
 
@@ -75,8 +77,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (Config.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
 
         var draw = ImGui.GetWindowDrawList();
-        // Canvas windowCanvas = OverlayWindow.GetCanvas();
-        Canvas cursor = OverlayWindow.GetCanvas(); //new(windowCanvas.Area);
+        Canvas cursor = OverlayWindow.GetCanvas();
 
         FontMogu.Push();
         float fontSize = ImGui.GetFontSize();
@@ -123,7 +124,6 @@ public partial class Overlay : IOverlay, IOverlayConfig
             position = cursor.Padding((spacing, 0)).Align(player.Name, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
             if (Config.PlayerJobIcon)
             {
-
                 Canvas iconArea = new(cursor.Area);
                 iconArea.Max = iconArea.Min + new Vector2(iconArea.Height, iconArea.Height);
                 iconArea.Padding(spacing + 1);
