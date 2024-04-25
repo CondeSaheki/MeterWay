@@ -46,8 +46,10 @@ public sealed class Plugin : IDalamudPlugin
             // register your overlays here
             OverlayManager = new(
                 [
-                    //typeof(HelloWorld.Overlay),
-                    //typeof(Lazer.Overlay),
+                    #if DEBUG
+                        typeof(HelloWorld.Overlay),
+                    #endif
+                    typeof(Lazer.Overlay),
                     typeof(Mogu.Overlay),
                     typeof(Dynamic.Overlay)
                 ]

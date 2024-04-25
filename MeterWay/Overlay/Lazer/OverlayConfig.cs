@@ -28,7 +28,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.Checkbox("Click Through", ref clickThroughValue))
         {
             Config.ClickThrough = clickThroughValue;
-            File.Save(Name, Config);
+            File.Save($"{Window.Name}{Window.Id}", Config);
             if (clickThroughValue) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
             else Window.Flags = OverlayWindow.defaultflags;
         }
@@ -46,7 +46,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
         {
             Config.BackgroundColor = ImGui.ColorConvertFloat4ToU32(OverlayBackgroundColorValue);
-            File.Save(Name, Config);
+            File.Save($"{Window.Name}{Window.Id}", Config);
         }
     }
 
