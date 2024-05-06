@@ -177,6 +177,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
     {
         EncounterManager.Inst.EncounterEnd -= OnEnconterEnd;
         EncounterManager.Inst.EncounterEnd -= OnEncounterBegin;
+        DelayToken?.Cancel();
         FontMogu?.Dispose();
         FontAtlas?.Dispose();
     }

@@ -239,14 +239,6 @@ public partial class Overlay : IOverlay, IOverlayConfig
             Config.MoguFontColor = ImGui.ColorConvertFloat4ToU32(FontColorValue);
             File.Save($"{Window.Name}{Window.Id}", Config);
         }
-
-        // ImGui.Spacing();
-        // ImGui.Text("Font Tester");
-        // ImGui.Spacing();
-        // FontMogu.Push();
-        // string text = "abcdefghijklmnopqrstuvxyzw";
-        // ImGui.InputText("##text", ref text, 200);
-        // FontMogu.Pop();
     }
 
     private void DrawJobColorsTab()
