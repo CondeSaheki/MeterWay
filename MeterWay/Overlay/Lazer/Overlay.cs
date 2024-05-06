@@ -28,6 +28,13 @@ public partial class Overlay : IOverlay, IOverlayConfig
     private Encounter Data = new();
     private List<uint> SortCache = [];
 
+    private Lerp<Dictionary<uint, PlayerData>> Lerping { get; init; }
+
+    public struct PlayerData
+    {
+        public double Progress { get; set; }
+    }
+
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
@@ -40,6 +47,8 @@ public partial class Overlay : IOverlay, IOverlayConfig
             MinimumSize = new Vector2(320, 180),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
+
+        Lerping = CreateLerping();
 
         if (Config.LazerFontSpec != null)
         {
@@ -61,13 +70,23 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (Data.Party.Id != oldPartyId)
         {
             SortCache = Helpers.CreateDictionarySortCache(Data.Players, (x) => { return true; });
-            if (false) // ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate == true
-            {
-                // targetInfo = [];
-                // lerpedInfo = [];
-            }
+            Lerping.Reset();
         }
+
         SortCache.Sort((first, second) => Data.Players[second].DamageDealt.Value.Total.CompareTo(Data.Players[first].DamageDealt.Value.Total));
+
+        uint topDamage = 1;
+        if (SortCache.Count != 0) topDamage = Data.Players.GetValueOrDefault(SortCache.First())!.DamageDealt.Value.Total;
+        Dictionary<uint, PlayerData> updatedPlayersData = [];
+        foreach (var id in SortCache)
+        {
+            updatedPlayersData.Add(id, new()
+            {
+                Progress = (float)Data.Players[id].DamageDealt.Value.Total / topDamage,
+            });
+        }
+        if (!(Lerping.End != null && Lerping.End.Value.Data.Keys.ToHashSet().SetEquals([..updatedPlayersData.Keys]))) Lerping.Reset(); // must contain same content
+        Lerping.Update(updatedPlayersData);
     }
 
     public void Draw()
@@ -106,21 +125,19 @@ public partial class Overlay : IOverlay, IOverlayConfig
         cursor.Move((0, cursor.Height));
 
         // Players
-        uint topDamage = 1;
-        if (sortCache.Count != 0) topDamage = Data.Players.GetValueOrDefault(sortCache.First())!.DamageDealt.Value.Total;
+        var dataLerped = Lerping.Now();
         foreach (var id in sortCache)
         {
             Player player = Data.Players[id];
+            var playerLerped = dataLerped?[id];
             Canvas line = new(cursor.Area);
-            // DoLerpPlayerData(player);
-            // lerpedInfo[player.Id];
 
             // Background
             draw.AddRectFilled(line.Min, line.Max, Config.Color1);
 
             // Bar
             var barColor = player.Id == MeterWay.Dalamud.ClientState.LocalPlayer?.ObjectId ? Config.Color2 : Config.Color3;
-            float progress = (float)player.DamageDealt.Value.Total / topDamage;
+            float progress = (float)(playerLerped?.Progress ?? 1);
             DrawProgressBar(line.Min, line.Max, barColor, progress);
             draw.AddRect(line.Min, line.Max, Config.Color4);
 
