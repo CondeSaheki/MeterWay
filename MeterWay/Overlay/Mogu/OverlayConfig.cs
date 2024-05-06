@@ -124,7 +124,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.CollapsingHeader("Header", ImGuiTreeNodeFlags.None))
         {
             var HeaderValue = Config.Header;
-            if (ImGui.Checkbox("Header", ref HeaderValue))
+            if (ImGui.Checkbox("Header##button", ref HeaderValue))
             {
                 Config.Header = HeaderValue;
                 File.Save($"{Window.Name}{Window.Id}", Config);

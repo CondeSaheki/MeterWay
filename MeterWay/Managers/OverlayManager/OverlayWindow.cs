@@ -58,6 +58,7 @@ public class OverlayWindow : Window, IDisposable
         catch (Exception ex)
         {
             Dalamud.Log.Error($"\'{Name}\' overlay \'{Id}\' trow an error on \'Draw\' and got inactivated:\n{ex}");
+            Dalamud.Chat.Print($"Meterway, an error ocurred on \'{Name}\' overlay \'{Id}\' and got it inactivated, contact the autor for feedback");
             Disable();
         }
     }
@@ -72,6 +73,7 @@ public class OverlayWindow : Window, IDisposable
         catch (Exception ex)
         {
             Dalamud.Log.Error($"\'{Name}\' overlay \'{Id}\' trow an error on \'DrawTab\' and got inactivated:\n{ex}");
+            Dalamud.Chat.Print($"Meterway, an error ocurred on \'{Name}\' overlay \'{Id}\' and got it inactivated, contact the autor for feedback");
             Disable();
         }
     }
@@ -106,6 +108,7 @@ public class OverlayWindow : Window, IDisposable
         catch (Exception ex)
         {
             Dalamud.Log.Error($"OverlayWindow \'{Id}\' trow an error creating \'{Name}\' overlay instance:\n{ex}");
+            Dalamud.Chat.Print($"Meterway, an error ocurred on \'{Name}\' overlay \'{Id}\' and got it inactivated, contact the autor for feedback");
             Disable();
         }
         EncounterManager.Inst.ClientsNotifier.DataUpdate += OnDataUpdate;
@@ -136,6 +139,7 @@ public class OverlayWindow : Window, IDisposable
         catch (Exception ex)
         {
             Dalamud.Log.Error($"\'{Name}\' overlay \'{Id}\' trow an error on \'DataUpdate\' and got inactivated:\n{ex}");
+            Dalamud.Chat.Print($"Meterway, an error ocurred on \'{Name}\' overlay \'{Id}\' and got it inactivated, contact the autor for feedback");
             Disable();
         }
     }

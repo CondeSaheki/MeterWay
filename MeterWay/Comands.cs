@@ -34,7 +34,7 @@ public class Commands : IDisposable
         helpMessageBuilder("reconnect", "Try to reconnect to IINACT.");
         helpMessageBuilder("status", "Display the connection to IINACT status.");
 
-        helpMessageBuilder("overlay", "Run overlay command handler."); // wip
+        //helpMessageBuilder("overlay", "Run overlay command handler."); // wip
 
         helpMessageBuilder("help", "Display this help message");
 
@@ -59,7 +59,7 @@ public class Commands : IDisposable
                 Dalamud.Chat.Print(msg);
             },
 
-            "overlay" => () => { Dalamud.Log.Info($"wip => run with args: {args}"); },
+            // "overlay" => () => { Dalamud.Log.Info($"wip => run with args: {args}"); },
 
             "help" when args.Count == 1 => () => { Dalamud.Chat.Print(HelpMessage()); },
 

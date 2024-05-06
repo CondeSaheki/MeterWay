@@ -16,7 +16,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
 {
     public static string Name => "Lazer"; // required
     public static string Autor => "Maotovisk";
-    public static string Description => "TODO";
+    public static string Description => "The Lazer overlay is your companion for your gaming journey, and for a any journey you need stunning aesthetics.";
 
     private OverlayWindow Window { get; init; }
     private Configuration Config { get; init; }
@@ -126,7 +126,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             // Bar
             var barColor = player.Id == MeterWay.Dalamud.ClientState.LocalPlayer?.ObjectId ? Config.Color2 : Config.Color3;
             float progress = (float)(playerLerped?.Progress ?? 1);
-            DrawProgressBar(line.Min, line.Max, barColor, progress);
+            DrawProgressBar(line.Area, barColor, progress);
             draw.AddRect(line.Min, line.Max, Config.Color4);
 
             // icon

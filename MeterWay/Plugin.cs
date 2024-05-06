@@ -47,8 +47,8 @@ public sealed class Plugin : IDalamudPlugin
                     #if DEBUG
                         typeof(HelloWorld.Overlay),
                     #endif
-                    typeof(Lazer.Overlay),
                     typeof(Mogu.Overlay),
+                    typeof(Lazer.Overlay),
                     typeof(Dynamic.Overlay)
                 ]
             );

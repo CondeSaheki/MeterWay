@@ -71,7 +71,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         {
             if (Script != null)
             {
-                Helpers.PopupWindow popup = new($"Script {Script.Name} configurations", 
+                PopupWindow popup = new($"Script {Script.Name} configurations", 
                 () => 
                 {
                     if (Script == null) return;

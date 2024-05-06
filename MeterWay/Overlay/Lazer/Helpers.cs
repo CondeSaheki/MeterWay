@@ -41,7 +41,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             return true;
         });
     }
-    
+
     private void UpdateLerping()
     {
         uint topDamage = 1;
@@ -65,8 +65,9 @@ public partial class Overlay : IOverlay, IOverlayConfig
         ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
     }
 
-    private static void DrawProgressBar(Vector2 min, Vector2 max, uint color, float progress)
+    private static void DrawProgressBar((Vector2 Min, Vector2 Max) rectangle, uint color, float progress)
     {
-        ImGui.GetWindowDrawList().AddRectFilledMultiColor(min, new Vector2(min.X + (max.X - min.X) * progress, max.Y), colorBlack, color, color, colorBlack);
+        rectangle.Max.X = rectangle.Min.X + ((rectangle.Max.X - rectangle.Min.X) * progress);
+        ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, colorBlack, color, color, colorBlack);
     }
 }

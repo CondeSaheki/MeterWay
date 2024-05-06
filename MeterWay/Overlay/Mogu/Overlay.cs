@@ -152,7 +152,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         }
 
         DelayToken?.Cancel();
-        DelayToken = DelayedAction(Config.DelayDuration, () =>
+        DelayToken = Helpers.DelayedAction(Config.DelayDuration, () =>
         {
             Window.IsOpen = false;
         });

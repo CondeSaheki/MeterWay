@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
@@ -17,7 +16,7 @@ public class OverlayManager : IDisposable
     private OverlayInfo[] OverlayInfos { get; init; }
     private int OverlayIndexValue = 0;
     private uint UniqueId;
-
+    
     private class OverlayInfo
     {
         public string Name { get; private init; }
@@ -161,7 +160,7 @@ public class OverlayManager : IDisposable
                 ImGui.SameLine();
                 if (ImGui.Button($"Config##{overlay.Id}"))
                 {
-                    Helpers.PopupWindow overlayConfig = new($"{overlay.Name} Configurations##{overlay.Id}", overlay.DrawConfig);
+                    PopupWindow overlayConfig = new($"{overlay.Name} Configurations##{overlay.Id}", overlay.DrawConfig);
                 }
             }
 
@@ -179,7 +178,7 @@ public class OverlayManager : IDisposable
 
         if (ImGui.Button("Add overlay"))
         {
-            var addOverlayPopup = new Helpers.PopupWindow("Add overlay",
+            var addOverlayPopup = new PopupWindow("Add overlay",
             (TaskSource) =>
             {
                 ImGui.PushItemWidth(160);

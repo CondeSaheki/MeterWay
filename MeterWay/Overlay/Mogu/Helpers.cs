@@ -2,8 +2,6 @@ using System.Numerics;
 using ImGuiNET;
 using System;
 using Dalamud.Plugin.Services;
-using System.Threading;
-using System.Threading.Tasks;
 
 using MeterWay.Utils;
 using MeterWay.Overlay;
@@ -66,27 +64,5 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (icon == null) return;
 
         ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
-    }
-
-    private static CancellationTokenSource DelayedAction(TimeSpan delay, Action action)
-    {
-        async Task Delay(CancellationTokenSource cancelSource)
-        {
-            try
-            {
-                await Task.Delay((int)delay.TotalMilliseconds, cancelSource.Token);
-
-                MeterWay.Dalamud.Log.Info("Delayed action triggered.");
-                action.Invoke();
-            }
-            catch (TaskCanceledException)
-            {
-                MeterWay.Dalamud.Log.Info("Delayed action canceled.");
-            }
-        }
-
-        CancellationTokenSource cancelSource = new();
-        _ = Delay(cancelSource);
-        return cancelSource;
     }
 }
