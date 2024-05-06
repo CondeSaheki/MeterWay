@@ -2,6 +2,7 @@ using System.Numerics;
 using ImGuiNET;
 using Dalamud.Plugin.Services;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 using MeterWay.Utils;
@@ -39,6 +40,22 @@ public partial class Overlay : IOverlay, IOverlayConfig
             }
             return true;
         });
+    }
+    
+    private void UpdateLerping()
+    {
+        uint topDamage = 1;
+        if (SortCache.Count != 0) topDamage = Data.Players.GetValueOrDefault(SortCache.First())!.DamageDealt.Value.Total;
+        Dictionary<uint, PlayerData> updatedPlayersData = [];
+        foreach (var id in SortCache)
+        {
+            updatedPlayersData.Add(id, new()
+            {
+                Progress = (float)Data.Players[id].DamageDealt.Value.Total / topDamage,
+            });
+        }
+        if (!(Lerping.End != null && Lerping.End.Value.Data.Keys.ToHashSet().SetEquals([.. updatedPlayersData.Keys]))) Lerping.Reset(); // must contain same content
+        Lerping.Update(updatedPlayersData);
     }
 
     private static void DrawJobIcon(Canvas area, uint job)

@@ -74,19 +74,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         }
 
         SortCache.Sort((first, second) => Data.Players[second].DamageDealt.Value.Total.CompareTo(Data.Players[first].DamageDealt.Value.Total));
-
-        uint topDamage = 1;
-        if (SortCache.Count != 0) topDamage = Data.Players.GetValueOrDefault(SortCache.First())!.DamageDealt.Value.Total;
-        Dictionary<uint, PlayerData> updatedPlayersData = [];
-        foreach (var id in SortCache)
-        {
-            updatedPlayersData.Add(id, new()
-            {
-                Progress = (float)Data.Players[id].DamageDealt.Value.Total / topDamage,
-            });
-        }
-        if (!(Lerping.End != null && Lerping.End.Value.Data.Keys.ToHashSet().SetEquals([..updatedPlayersData.Keys]))) Lerping.Reset(); // must contain same content
-        Lerping.Update(updatedPlayersData);
+        UpdateLerping();
     }
 
     public void Draw()
