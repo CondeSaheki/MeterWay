@@ -83,6 +83,7 @@ public class ConfigWindow : Window, IDisposable
             {
                 ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromMilliseconds(1000 / OverlayIntervalUpdateValue2);
                 ConfigurationManager.Inst.Configuration.Save();
+                EncounterManager.Inst.ClientsNotifier.ChangeNotificationInterval(ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate);
             }
             ImGui.SameLine();
             ImGui.Text(" | ");
@@ -92,6 +93,7 @@ public class ConfigWindow : Window, IDisposable
             {
                 ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromMilliseconds(OverlayIntervalUpdateValue * 1000);
                 ConfigurationManager.Inst.Configuration.Save();
+                EncounterManager.Inst.ClientsNotifier.ChangeNotificationInterval(ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate);
             }
             ImGui.PopItemWidth();
         }

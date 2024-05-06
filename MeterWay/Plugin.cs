@@ -4,7 +4,6 @@ using Dalamud.Interface.Windowing;
 using MeterWay.Windows;
 using MeterWay.Ipc;
 using MeterWay.Managers;
-using Dalamud.Interface;
 using MeterWay.Overlay;
 
 namespace MeterWay;
@@ -30,7 +29,6 @@ public sealed class Plugin : IDalamudPlugin
     
     public Plugin(DalamudPluginInterface pluginInterface)
     {
-        
         try
         {
             Dalamud.Initialize(pluginInterface);

@@ -26,11 +26,12 @@ public class Notifier
 
     public void Notify()
     {
-        if (ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate)
+        if (!ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate)
         {
             StartTimer();
             return;
         }
+        StopTimer();
         if (EncounterManager.Inst.CurrentEncounter().Finished) return;
         NotifyAll(null);
     }
@@ -51,5 +52,4 @@ public class Notifier
         TimerActive = false;
         NotifyAll(null);
     }
-
 }
