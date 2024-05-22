@@ -26,7 +26,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
-        Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
+        Config = File.Load<Configuration>(Window.NameId);
         Window.Flags = ImGuiWindowFlags.None;
         Window.IsOpen = false;
 
@@ -40,7 +40,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
 
     public void Remove()
     {
-        File.Delete($"{Window.Name}{Window.Id}");
+        File.Delete(Window.NameId);
     }
 
     public void Draw()

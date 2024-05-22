@@ -36,7 +36,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.Checkbox("Always", ref alwaysValue))
         {
             Config.Always = alwaysValue;
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
         }
 
         if (alwaysValue) ImGui.BeginDisabled();
@@ -45,14 +45,14 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.Checkbox("Combat", ref combatValue))
         {
             Config.Combat = combatValue;
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
         }
 
         bool delayValue = Config.Delay;
         if (ImGui.Checkbox("Dismmis after", ref delayValue))
         {
             Config.Delay = delayValue;
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
         }
 
         ImGui.SameLine();
@@ -61,7 +61,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.DragFloat("##DelaySecond", ref delayDurationValue, 0.1f, 0.1f, 3600f))
         {
             Config.DelayDuration = TimeSpan.FromSeconds(delayDurationValue);
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
         }
         ImGui.PopItemWidth();
         ImGui.SameLine();
@@ -81,7 +81,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.Checkbox("Click Through", ref clickThroughValue))
         {
             Config.ClickThrough = clickThroughValue;
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
             if (clickThroughValue) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
             else Window.Flags = OverlayWindow.defaultflags;
         }
@@ -90,7 +90,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.Checkbox("Calculate per frame", ref frameCalcValue))
         {
             Config.FrameCalc = frameCalcValue;
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
         }
     }
 
@@ -107,7 +107,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             if (ImGui.Checkbox("Background", ref BackgroundValue))
             {
                 Config.Background = BackgroundValue;
-                File.Save($"{Window.Name}{Window.Id}", Config);
+                File.Save(Window.NameId, Config);
             }
 
             if (Config.Background)
@@ -117,7 +117,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                     ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
                 {
                     Config.BackgroundColor = ImGui.ColorConvertFloat4ToU32(OverlayBackgroundColorValue);
-                    File.Save($"{Window.Name}{Window.Id}", Config);
+                    File.Save(Window.NameId, Config);
                 }
             }
         }
@@ -127,7 +127,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             if (ImGui.Checkbox("Header##button", ref HeaderValue))
             {
                 Config.Header = HeaderValue;
-                File.Save($"{Window.Name}{Window.Id}", Config);
+                File.Save(Window.NameId, Config);
             }
             if (Config.Header)
             {
@@ -135,14 +135,14 @@ public partial class Overlay : IOverlay, IOverlayConfig
                 if (DrawAlingmentButtons(ref HeaderAlignmentValue))
                 {
                     Config.HeaderAlignment = (Canvas.HorizontalAlign)HeaderAlignmentValue;
-                    File.Save($"{Window.Name}{Window.Id}", Config);
+                    File.Save(Window.NameId, Config);
                 }
 
                 var HeaderBackgroundValue = Config.HeaderBackground;
                 if (ImGui.Checkbox("Header Background", ref HeaderBackgroundValue))
                 {
                     Config.HeaderBackground = HeaderBackgroundValue;
-                    File.Save($"{Window.Name}{Window.Id}", Config);
+                    File.Save(Window.NameId, Config);
                 }
                 if (Config.HeaderBackground)
                 {
@@ -151,7 +151,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                         ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
                     {
                         Config.HeaderBackgroundColor = ImGui.ColorConvertFloat4ToU32(HeaderBackgroundColorValue);
-                        File.Save($"{Window.Name}{Window.Id}", Config);
+                        File.Save(Window.NameId, Config);
                     }
                 }
             }
@@ -162,14 +162,14 @@ public partial class Overlay : IOverlay, IOverlayConfig
             if (ImGui.Checkbox("Job Icon", ref JobIconsValue))
             {
                 Config.PlayerJobIcon = JobIconsValue;
-                File.Save($"{Window.Name}{Window.Id}", Config);
+                File.Save(Window.NameId, Config);
             }
 
             var BarValue = Config.Bar;
             if (ImGui.Checkbox("Bar", ref BarValue))
             {
                 Config.Bar = BarValue;
-                File.Save($"{Window.Name}{Window.Id}", Config);
+                File.Save(Window.NameId, Config);
             }
             if (Config.Bar)
             {
@@ -177,7 +177,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                 if (ImGui.Checkbox("job colors", ref BarColorJobValue))
                 {
                     Config.BarColorJob = BarColorJobValue;
-                    File.Save($"{Window.Name}{Window.Id}", Config);
+                    File.Save(Window.NameId, Config);
                 }
                 if (!Config.BarColorJob)
                 {
@@ -186,7 +186,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                         ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
                     {
                         Config.BarColor = ImGui.ColorConvertFloat4ToU32(BarColorValue);
-                        File.Save($"{Window.Name}{Window.Id}", Config);
+                        File.Save(Window.NameId, Config);
                     }
                 }
             }
@@ -219,7 +219,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                     FontMogu = chooserTask.Result.CreateFontHandle(FontAtlas);
 
                     Config.MoguFontSpec = chooser.SelectedFont;
-                    File.Save($"{Window.Name}{Window.Id}", Config);
+                    File.Save(Window.NameId, Config);
                 }
                 MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= chooser.Draw;
                 chooser.Dispose();
@@ -237,7 +237,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
         {
             Config.MoguFontColor = ImGui.ColorConvertFloat4ToU32(FontColorValue);
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
         }
     }
 
@@ -259,7 +259,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                 ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
             {
                 Config.JobColors[i].Color = ImGui.ColorConvertFloat4ToU32(ColorValue);
-                File.Save($"{Window.Name}{Window.Id}", Config);
+                File.Save(Window.NameId, Config);
             }
         }
         ImGui.EndTable();
@@ -271,7 +271,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
         {
             Config.JobDefaultColor = ImGui.ColorConvertFloat4ToU32(DefaultColorValue);
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
         }
     }
 

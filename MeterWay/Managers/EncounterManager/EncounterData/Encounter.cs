@@ -49,14 +49,14 @@ public class Encounter
 
     public void Start()
     {
-        Dalamud.Log.Info("Encounter started.");
         if (Begin == null) Begin = DateTime.Now; // Active = true
+        Dalamud.Log.Info("Encounter Start: Done.");
     }
 
     public void Stop()
     {
-        Dalamud.Log.Info("Encounter ended.");
         if (End == null) End = DateTime.Now; // finished = true
+        Dalamud.Log.Info("Encounter Stop: Done.");
     }
 
     public void Calculate()

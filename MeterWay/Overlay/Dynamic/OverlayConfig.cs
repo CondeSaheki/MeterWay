@@ -27,7 +27,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                 MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= fileDialog.Draw;
                 if (!isOk || selectedFiles.Count == 0) return;
                 Config.ScriptFile = selectedFiles[0];
-                File.Save($"{Window.Name}{Window.Id}", Config);
+                File.Save(Window.NameId, Config);
             }, 1, null, true);
             MeterWay.Dalamud.PluginInterface.UiBuilder.Draw += fileDialog.Draw;
         }
@@ -90,7 +90,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.Checkbox("Load on startup", ref startupValue))
         {
             Config.Startup = startupValue;
-            File.Save($"{Window.Name}{Window.Id}", Config);
+            File.Save(Window.NameId, Config);
         }
     }
 

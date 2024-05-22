@@ -5,6 +5,8 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility.Raii;
 
 using MeterWay.Managers;
+using MeterWay.Connection;
+using System.Reflection;
 
 namespace MeterWay.Windows;
 
@@ -35,7 +37,7 @@ public class ConfigWindow : Window, IDisposable
         DrawOverlayTab();
         //DrawOverlayConfigTab();
         //DrawAppearenceTab();
-        DrawIINACTTab();
+        DrawConnectionTab();
         //DrawAboutTab();
     }
 
@@ -107,40 +109,70 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Spacing();
     }
 
-    private void DrawIINACTTab()
+    private void DrawConnectionTab()
     {
-        using var tab = ImRaii.TabItem("IINACT");
+        using var tab = ImRaii.TabItem("Connection");
         if (!tab) return;
 
-        var status = Plugin.IinactIpcClient.Status();
+        static bool DrawEnumRadioButtons<TEnum>(ref int value) where TEnum : Enum
+        {
+            var result = false;
+            foreach (TEnum enumValue in Enum.GetValues(typeof(TEnum)))
+            {
+                if (ImGui.RadioButton(enumValue.ToString(), ref value, Convert.ToInt32(enumValue))) result = true;
+                ImGui.SameLine();
+            }
+            return result;
+        }
+
+        int clientValue = (int)ConfigurationManager.Inst.Configuration.ClientType;
+        if (DrawEnumRadioButtons<ClientType>(ref clientValue))
+        {
+            ConfigurationManager.Inst.Configuration.ClientType = (ClientType)clientValue;
+            ConfigurationManager.Inst.Configuration.Save();
+        }
+
+        var status = Plugin.ConnectionManager.Status();
 
         ImGui.Text($"State: ");
         ImGui.SameLine();
-        ImGui.TextColored(status ? new Vector4(0f, 1f, 0f, 1f) : new Vector4(1f, 0f, 0f, 1f), status ? "Connected" : "Disconnected");
+        
+        ImGui.TextColored(status == ClientStatus.Connected ? new Vector4(0f, 1f, 0f, 1f) : new Vector4(1f, 0f, 0f, 1f), status.ToString());
 
         ImGui.Spacing();
         ImGui.Separator();
 
-        if (ImGui.Button(status ? "Restart" : "Start"))
+        if (ImGui.Button(status == ClientStatus.Connected ? "Restart" : "Start"))
         {
-            if (status)
+            if (status == ClientStatus.Connected)
             {
-                Plugin.IinactIpcClient.Reconnect();
+                Plugin.ConnectionManager.Reconnect();
             }
             else
             {
-                Plugin.IinactIpcClient.Connect();
+                Plugin.ConnectionManager.Connect();
             }
         }
 
-        if (!status) ImGui.BeginDisabled();
+        if (status != ClientStatus.Connected) ImGui.BeginDisabled();
 
         ImGui.SameLine();
         if (ImGui.Button("Stop"))
         {
-            Plugin.IinactIpcClient.Disconnect();
+            Plugin.ConnectionManager.Disconnect();
         }
-        if (!status) ImGui.EndDisabled();
+        if (status != ClientStatus.Connected) ImGui.EndDisabled();
+
+        // if (Plugin.ConnectionManager.Client is ActWebSocket client)
+        // {
+        //     var addressValue = ConfigurationManager.Inst.Configuration.Address;
+        //     if (ImGui.InputTextWithHint("Address", "Default: 'ws://127.0.0.1:10501/ws'", ref addressValue, 64))
+        //     {
+        //         client.Uri = new(addressValue);
+        //         ConfigurationManager.Inst.Configuration.Address = addressValue;
+        //         ConfigurationManager.Inst.Configuration.Save();
+        //     }
+        // }
     }
 
     private void DrawAboutTab()

@@ -36,7 +36,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
-        Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
+        Config = File.Load<Configuration>(Window.NameId);
 
         if (Config.ClickThrough) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
         else Window.Flags = OverlayWindow.defaultflags;
@@ -50,12 +50,12 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (Config.MoguFontSpec != null)
         {
             FontMogu = Config.MoguFontSpec.CreateFontHandle(FontAtlas);
-            MeterWay.Dalamud.Log.Info("Font handle created using custom MoguFontSpec.");
+            MeterWay.Dalamud.Log.Info($"{Window.NameId}: Font handle created using custom MoguFontSpec.");
         }
         else
         {
             FontMogu = DefaultFont;
-            MeterWay.Dalamud.Log.Info("Using default font as MoguFontSpec is not configured.");
+            MeterWay.Dalamud.Log.Info($"{Window.NameId}: Using default font as MoguFontSpec is not configured.");
         }
 
         EncounterManager.Inst.EncounterEnd += OnEnconterEnd;
@@ -170,7 +170,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
 
     public void Remove()
     {
-        File.Delete($"{Window.Name}{Window.Id}");
+        File.Delete(Window.NameId);
     }
 
     public void Dispose()

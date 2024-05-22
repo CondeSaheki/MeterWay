@@ -15,8 +15,8 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (!file.Exists)
         {
             Config.ScriptFile = null;
-            File.Save($"{Window.Name}{Window.Id}", Config);
-            MeterWay.Dalamud.Log.Info("Error loading script, file does not exist!");
+            File.Save(Window.NameId, Config);
+            MeterWay.Dalamud.Log.Info("Dynamic Overlay LoadScript: File does not exist!");
             Window.IsOpen = false;
             return;
         }
@@ -39,9 +39,9 @@ public partial class Overlay : IOverlay, IOverlayConfig
             if (Config.ScriptFile == Script.FilePath.FullName)
             {
                 Config.ScriptFile = null;
-                File.Save($"{Window.Name}{Window.Id}", Config);
+                File.Save(Window.NameId, Config);
             }
-            MeterWay.Dalamud.Log.Info("Error reloading script, file does not exist!");
+            MeterWay.Dalamud.Log.Info("Dynamic Overlay ReloadScript: File does not exist!");
             Window.IsOpen = false;
             return;
         }
@@ -64,7 +64,6 @@ public partial class Overlay : IOverlay, IOverlayConfig
         ImGui.EndDisabled();
         disabled = false;
     }
-
 
     public static void Text()
     {

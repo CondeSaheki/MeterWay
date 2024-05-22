@@ -47,7 +47,7 @@ public class OverlayManager : IDisposable
             var type = ConfigGetType(OverlayInfos, overlay.Name);
             if (type == null)
             {
-                Dalamud.Log.Warning($"{overlay.Name}{overlay.Id} could not be reatrived an got ignored.");
+                Dalamud.Log.Warning($"OverlayManager, name \'{overlay.Name}\', id \'{overlay.Id}\': Not recovered.");
                 continue;
             }
 
@@ -76,7 +76,7 @@ public class OverlayManager : IDisposable
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"Error adding overlay window {overlayType.Name}:\n{ex}");
+            Dalamud.Log.Error($"OverlayManager Add, name \'{overlayType.Name}\':\n{ex}");
             Dispose();
         }
     }
@@ -86,7 +86,7 @@ public class OverlayManager : IDisposable
         var overlay = Overlays.FirstOrDefault(x => x.Id == id);
         if (overlay == null)
         {
-            Dalamud.Log.Error($"Could not find overlay window {id}");
+            Dalamud.Log.Error($"OverlayManager Remove, id \'{id}\': Not found");
             return;
         }
         try
@@ -98,7 +98,7 @@ public class OverlayManager : IDisposable
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"Error removing overlay window {id}:\n{ex}");
+            Dalamud.Log.Error($"OverlayManager Remove, id \'{id}\':\n{ex}");
             Dispose();
         }
     }
@@ -211,7 +211,7 @@ public class OverlayManager : IDisposable
                     }
                     else
                     {
-                        Dalamud.Log.Warning($"Overlay info for {overlayNames[OverlayIndexValue]} not found.");
+                        Dalamud.Log.Warning($"OverlayManager Draw, name \'{overlayNames[OverlayIndexValue]}\': Not found.");
                     }
                 }
             });
@@ -234,7 +234,7 @@ public class OverlayManager : IDisposable
         var value = overlayInfos.FirstOrDefault(x => x.Name == name);
         if (value == default)
         {
-            Dalamud.Log.Warning($"Overlay type with name \'{name}\' not found.");
+            Dalamud.Log.Warning($"OverlayManager ConfigGetType, type name \'{name}\': Not found.");
             return null;
         }
         return value.Type;

@@ -37,7 +37,7 @@ public class EncounterManager : IDisposable
 
     private static void OnDutyStart<ArgType>(object? _, ArgType __)
     {
-        Dalamud.Log.Info("EncounterManager OnDutyStart event trigerred!");
+        Dalamud.Log.Debug("EncounterManager OnDutyStart, got trigerred");
         if (!Stop()) Reset();
         LastEncounter.Update();
     }

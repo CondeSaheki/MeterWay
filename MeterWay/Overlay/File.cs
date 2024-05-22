@@ -15,14 +15,14 @@ static class File
         {
             try
             {
-                Dalamud.Log.Debug($"Reading: {file.FullName}");
+                Dalamud.Log.Debug($"File Load, file \'{file.FullName}\': Reading");
                 var fileContent = System.IO.File.ReadAllText(file.FullName);
                 config = JsonConvert.DeserializeObject<Configuration>(fileContent)!;
                 if (config != null) return config;
             }
             catch (Exception ex)
             {
-                Dalamud.Log.Warning($"Error loading configuration from \'{file.FullName}\':\n{ex}");
+                Dalamud.Log.Warning($"File Load, file \'{file.FullName}\':\n{ex}");
             }
         }
         config = new();
@@ -37,13 +37,13 @@ static class File
 
         try
         {
-            Dalamud.Log.Debug($"Writing: {file.FullName}");
+            Dalamud.Log.Debug($"File Save, file \'{file.FullName}\': Writing");
             var fileContent = JsonConvert.SerializeObject(config, Formatting.Indented);
             System.IO.File.WriteAllText(file.FullName, fileContent);
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"Could not write file {file.FullName}:\n{ex}");
+            Dalamud.Log.Error($"File Save, file \'{file.FullName}\':\n{ex}");
         }
     }
 
@@ -52,18 +52,18 @@ static class File
         var file = GetFile($"{fileName}.json");
         if (file == null || !file.Exists)
         {
-            Dalamud.Log.Warning($"File '{fileName}.json' not found.");
+            Dalamud.Log.Warning($"File Delete, file \'{fileName}.json\': Not found.");
             return;
         }
 
         try
         {
             file.Delete();
-            Dalamud.Log.Debug($"Deleted: {file.FullName}");
+            Dalamud.Log.Debug($"File Delete, file \'{fileName}.json\': Done");
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"Error deleting file '{file.FullName}':\n{ex}");
+            Dalamud.Log.Error($"File Delete, file \'{fileName}.json\':\n{ex}");
         }
     }
 
@@ -79,7 +79,7 @@ static class File
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"Could not create directory: {Path.FullName}:\n{ex}");
+            Dalamud.Log.Error($"GetFile, path \'{Path.FullName}\':\n{ex}");
             return null;
         }
 

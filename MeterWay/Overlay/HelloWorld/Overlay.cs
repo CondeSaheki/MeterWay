@@ -24,7 +24,7 @@ public class Overlay : IOverlay, IOverlayConfig, IOverlayCommandHandler
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
-        Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
+        Config = File.Load<Configuration>(Window.NameId);
         Window.Flags = ImGuiWindowFlags.None; // you can change the window properties if you want
     }
 
@@ -56,7 +56,7 @@ public class Overlay : IOverlay, IOverlayConfig, IOverlayCommandHandler
     
     public void Remove()
     {
-        File.Delete($"{Window.Name}{Window.Id}");
+        File.Delete(Window.NameId);
     }
 
     public string CommandHelpMessage(string? command)

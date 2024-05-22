@@ -83,7 +83,7 @@ public static class Helpers
         if (data[x].IsEmpty || data[y].IsEmpty || data[z].IsEmpty || data[h].IsEmpty) return null;
         return new Vector4(float.Parse(data[x].Span), float.Parse(data[y].Span), float.Parse(data[z].Span), float.Parse(data[h].Span));
     }
-    
+
     public static CancellationTokenSource DelayedAction(TimeSpan delay, Action action)
     {
         async Task Delay(CancellationTokenSource cancelSource)
@@ -91,18 +91,59 @@ public static class Helpers
             try
             {
                 await Task.Delay((int)delay.TotalMilliseconds, cancelSource.Token);
-
-                Dalamud.Log.Info("Delayed action triggered.");
                 action.Invoke();
             }
-            catch (TaskCanceledException)
-            {
-                Dalamud.Log.Info("Delayed action canceled.");
-            }
+            catch (TaskCanceledException) { }
         }
 
         CancellationTokenSource cancelSource = new();
         _ = Delay(cancelSource);
         return cancelSource;
+    }
+
+    // public static async Task<bool> TimeOutTask(Action<CancellationToken> action, CancellationTokenSource Cancel, TimeSpan? duration = null)
+    // {
+    //     if (Cancel.IsCancellationRequested) return false;
+
+    //     var cancelSource = new CancellationTokenSource();
+    //     var registration = Cancel.Token.Register(cancelSource.Cancel);
+
+    //     Task task = new(() => action.Invoke(cancelSource.Token));
+    //     var timeout = Task.Delay(duration != null ? (int)duration.Value.TotalMilliseconds : 5000); // 5 sec
+    //     var completed = await Task.WhenAny(task, timeout);
+
+    //     if (completed != task)
+    //     {
+    //         cancelSource.Cancel();
+    //     }
+    //     await task;
+    //     registration.Dispose();
+    //     cancelSource.Dispose();
+    //     return completed != task;
+    // }
+
+    /// <summary>
+    /// Execute a Task with an timeout to avoid blocking
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="duration"></param>
+    /// <returns> Task.Result is true if action completed and false if timeout </returns>
+    public static async Task<bool> TimeOutTask(Action<CancellationToken> action, TimeSpan? duration = null)
+    {
+        if (action == null) return false;
+        var cancelSource = new CancellationTokenSource();
+
+        Task task = new(() => action.Invoke(cancelSource.Token));
+        var timeout = Task.Delay(duration != null ? (int)duration.Value.TotalMilliseconds : 5000); // 5 sec
+        var completed = await Task.WhenAny(task, timeout);
+
+        if (completed == timeout) cancelSource.Cancel();
+
+        await task;
+        cancelSource.Dispose();
+        task.Dispose();
+        timeout.Dispose();
+        completed.Dispose();
+        return completed == task;
     }
 }

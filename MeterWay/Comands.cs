@@ -28,15 +28,15 @@ public class Commands : IDisposable
         void helpMessageBuilder(string arg, string help) => Message.Append($"{CommandName}{(arg != "" ? " " : "")}{arg} -> {help}\n");
 
         helpMessageBuilder("", "Display MeterWay main window.");
-        helpMessageBuilder("config", "Display MeterWay configuration window.");
-        helpMessageBuilder("connect", "Try to connect to IINACT.");
-        helpMessageBuilder("disconnect", "Diconnect from IINACT.");
-        helpMessageBuilder("reconnect", "Try to reconnect to IINACT.");
-        helpMessageBuilder("status", "Display the connection to IINACT status.");
+        helpMessageBuilder("config", "MeterWay configuration window.");
+        helpMessageBuilder("connect", "Connect");
+        helpMessageBuilder("disconnect", "Diconnect");
+        helpMessageBuilder("reconnect", "Reconnect");
+        helpMessageBuilder("status", "Connection to status.");
 
         //helpMessageBuilder("overlay", "Run overlay command handler."); // wip
 
-        helpMessageBuilder("help", "Display this help message");
+        helpMessageBuilder("help", "This help message");
 
         Message.Remove(Message.Length - 1, 1);
         
@@ -50,14 +50,10 @@ public class Commands : IDisposable
         {
             "" when args.Count == 1 => () => { Plugin.MainWindow.IsOpen = true; },
             "config" when args.Count == 1 => () => { Plugin.ConfigWindow.IsOpen = true; },
-            "connect" when args.Count == 1 => Plugin.IinactIpcClient.Connect,
-            "disconnect" when args.Count == 1 => Plugin.IinactIpcClient.Disconnect,
-            "reconnect" when args.Count == 1 => Plugin.IinactIpcClient.Reconnect,
-            "status" when args.Count == 1 => () =>
-            {
-                var msg = $"MeterWay is {(Plugin.IinactIpcClient.Status() ? "connected" : "disconnected")} to IINACT.";
-                Dalamud.Chat.Print(msg);
-            },
+            "connect" when args.Count == 1 => Plugin.ConnectionManager.Connect,
+            "disconnect" when args.Count == 1 =>  Plugin.ConnectionManager.Disconnect,
+            "reconnect" when args.Count == 1 =>  Plugin.ConnectionManager.Reconnect,
+            "status" when args.Count == 1 => () => { Dalamud.Chat.Print($"MeterWay connection status: {Plugin.ConnectionManager.Status()}"); },
 
             // "overlay" => () => { Dalamud.Log.Info($"wip => run with args: {args}"); },
 
@@ -87,7 +83,6 @@ public class Commands : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         Dalamud.Commands.RemoveHandler(CommandName);
     }
 }

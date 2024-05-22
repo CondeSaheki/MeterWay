@@ -52,7 +52,7 @@ public class Player(Character character, Encounter encounter)
             Job = player.ClassJob.Id;
             Id = Helpers.CreateId();
 
-            Dalamud.Log.Info("Player Updated");
+            Dalamud.Log.Info("Player Update: Done");
             return true;
         }
         return false;

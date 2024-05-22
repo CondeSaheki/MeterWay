@@ -115,7 +115,7 @@ public class EncounterParty
         }
 
         Id = Helpers.CreateId();
-        Dalamud.Log.Info("Party updated");
+        Dalamud.Log.Info("Party Update, Done");
     }
 
     private uint? GetOrRecoverPlayer(PartyMember player)
@@ -154,7 +154,7 @@ public class EncounterParty
         }
 
         Id = Helpers.CreateId();
-        Dalamud.Log.Info("Party updated");
+        Dalamud.Log.Info("Party Disband, Done");
     }
 
     public bool HasChanged()

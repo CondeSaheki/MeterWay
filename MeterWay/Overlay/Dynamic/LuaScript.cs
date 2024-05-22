@@ -76,7 +76,7 @@ public class LuaScript : IDisposable
             }
             catch (Exception ex)
             {
-                MeterWay.Dalamud.Log.Warning($"Error registering function \'{function.Name}\':\n{ex}");
+                MeterWay.Dalamud.Log.Warning($"LuaScript RegisterFunctions, function \'{function.Name}\':\n{ex}");
                 LuaInterpreter = null;
                 break;
             }
@@ -88,19 +88,19 @@ public class LuaScript : IDisposable
         if (LuaInterpreter == null) return null;
         if (filePath == null || !filePath.Exists)
         {
-            MeterWay.Dalamud.Log.Warning($"Script \'{filePath}\' do not exists");
+            MeterWay.Dalamud.Log.Warning($"LuaScript LoadScript, Script \'{filePath}\': File do not exists");
             return null;
         }
         string script = string.Empty;
 
-        MeterWay.Dalamud.Log.Info($"Reading: {filePath.FullName}");
+        MeterWay.Dalamud.Log.Debug($"LuaScript LoadScript, file \'{filePath.FullName}\': Reading");
         try
         {
             script = File.ReadAllText(filePath.FullName);
         }
         catch (Exception ex)
         {
-            MeterWay.Dalamud.Log.Warning($"Error reading file \'{filePath.FullName}\':\n{ex}");
+            MeterWay.Dalamud.Log.Warning($"LuaScript LoadScript, file \'{filePath.FullName}\', ReadAllText:\n{ex}");
             return null;
         }
         try
@@ -109,7 +109,7 @@ public class LuaScript : IDisposable
         }
         catch (Exception ex)
         {
-            MeterWay.Dalamud.Log.Warning($"Error loading script from \'{filePath.FullName}\':\n{ex}");
+            MeterWay.Dalamud.Log.Warning($"LuaScript LoadScript, file \'{filePath.FullName}\', LoadString:\n{ex}");
         }
         return null;
     }
@@ -125,7 +125,7 @@ public class LuaScript : IDisposable
         }
         catch (LuaException ex)
         {
-            MeterWay.Dalamud.Log.Error($"Failed to get Lua function \'{functionName}\':\n{ex}");
+            MeterWay.Dalamud.Log.Error($"LuaScript GetFunction, function \'{functionName}\':\n{ex}");
         }
         return null;
     }
@@ -139,7 +139,7 @@ public class LuaScript : IDisposable
         }
         catch (Exception ex)
         {
-            MeterWay.Dalamud.Log.Error($"Error running Lua script:\n{ex}");
+            MeterWay.Dalamud.Log.Error($"LuaScript Executefunction:\n{ex}");
             LuaInterpreter = null;
         }
     }

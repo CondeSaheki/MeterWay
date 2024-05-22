@@ -38,7 +38,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
     public Overlay(OverlayWindow overlayWindow)
     {
         Window = overlayWindow;
-        Config = File.Load<Configuration>($"{Window.Name}{Window.Id}");
+        Config = File.Load<Configuration>(Window.NameId);
         if (Config.ClickThrough) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
         else Window.Flags = OverlayWindow.defaultflags;
         Window.IsOpen = true;
@@ -53,12 +53,12 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (Config.LazerFontSpec != null)
         {
             FontLazer = Config.LazerFontSpec.CreateFontHandle(FontAtlas);
-            MeterWay.Dalamud.Log.Info("Font handle created using custom LazerFontSpec.");
+            MeterWay.Dalamud.Log.Info("Lazer Overlay: Font handle created using custom LazerFontSpec.");
         }
         else
         {
             FontLazer = DefaultFont;
-            MeterWay.Dalamud.Log.Info("Using default font as LazerFontSpec is not configured.");
+            MeterWay.Dalamud.Log.Info("Lazer Overlay: Using default font as LazerFontSpec is not configured.");
         }
     }
 
@@ -172,6 +172,6 @@ public partial class Overlay : IOverlay, IOverlayConfig
 
     public void Remove()
     {
-        File.Delete($"{Window.Name}{Window.Id}");
+        File.Delete(Window.NameId);
     }
 }

@@ -54,7 +54,7 @@ public class LogLineData
             }
             catch (Exception ex)
             {
-                Dalamud.Log.Warning($"Failed to parse LogLine {MsgType} - {((uint)MsgType).ToString()} ->\n {RawLine} \n Error -> \n {ex}");
+                Dalamud.Log.Warning($"LogLineData Parse, type \'{MsgType}\', id \'{((uint)MsgType).ToString()}\', rawLine \'{RawLine}\':\n{ex}");
             }
         }
     }
