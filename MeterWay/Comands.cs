@@ -32,7 +32,7 @@ public class Commands : IDisposable
         helpMessageBuilder("connect", "Connect");
         helpMessageBuilder("disconnect", "Diconnect");
         helpMessageBuilder("reconnect", "Reconnect");
-        helpMessageBuilder("status", "Connection to status.");
+        helpMessageBuilder("status", "Connection status.");
 
         //helpMessageBuilder("overlay", "Run overlay command handler."); // wip
 

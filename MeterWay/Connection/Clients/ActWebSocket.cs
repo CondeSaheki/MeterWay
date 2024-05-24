@@ -15,21 +15,15 @@ public class ActWebSocket : IClient
 
     private ThreadSafeEnum<ClientStatus> Status { get; set; } = new(ClientStatus.None);
     private Action<JObject> ReceiveAction { get; set; }
-    private ClientWebSocket Client { get; } = new();
-    private Task? ReceiverTask { get; set; } = null;
+    private ClientWebSocket? Client { get; set; } = null;
     private CancellationTokenSource? ReceiverCancelSource { get; set; } = null;
-
-    private readonly object ReceiverCancelSourceLock = new();
     private readonly Mutex ClientLock = new();
+
+    public ClientStatus GetStatus() => Status.Value;
 
     public ActWebSocket(Action<JObject> receive)
     {
         ReceiveAction = receive ?? throw new ArgumentNullException(nameof(receive));
-    }
-
-    public ClientStatus GetStatus()
-    {
-        return Status.Value;
     }
 
     public void Connect()
@@ -37,17 +31,23 @@ public class ActWebSocket : IClient
         ClientLock.WaitOne();
         try
         {
-            if (Status.Value == ClientStatus.Connected) return;
-
-            if (!_Connect() || !StartReceiving())
+            if (Status.Value != ClientStatus.Disconnected && Status.Value != ClientStatus.None)
             {
-                Disconnect();
-                Status.Value = ClientStatus.Error;
+                Dalamud.Log.Warning("ActWebSocket Connect, Is already connected");
+                return;
+            };
+
+            if (!TryConnect())
+            {
+                Status.Value = ClientStatus.Disconnected;
+                Dalamud.Log.Error($"ActWebSocket Connect: Connection failed");
                 return;
             }
 
+            StartReceiver();
+
             Status.Value = ClientStatus.Connected;
-            Dalamud.Log.Info($"ActWebSocket is connected");
+            Dalamud.Log.Info($"ActWebSocket Connect: Done");
         }
         finally
         {
@@ -60,19 +60,23 @@ public class ActWebSocket : IClient
         ClientLock.WaitOne();
         try
         {
-            if (Status.Value == ClientStatus.Disconnected) return;
-
-            var disconnectResult = _Disconnect();
-            var stopReceivingResult = StopReceiving();
-
-            if (!disconnectResult || !stopReceivingResult)
+            if (Status.Value != ClientStatus.Connected)
             {
-                Status.Value = ClientStatus.Error;
+                Dalamud.Log.Warning("ActWebSocket Disconnect, Is not connected");
+                return;
+            };
+
+            StopReceiver();
+
+            if (!TryDisconnect())
+            {
+                Status.Value = ClientStatus.Disconnected;
+                Dalamud.Log.Warning($"ActWebSocket Disconnect: failed");
                 return;
             }
 
             Status.Value = ClientStatus.Disconnected;
-            Dalamud.Log.Info($"ActWebSocket is disconnected");
+            Dalamud.Log.Info($"ActWebSocket Disconnect: Done");
         }
         finally
         {
@@ -85,9 +89,32 @@ public class ActWebSocket : IClient
         ClientLock.WaitOne();
         try
         {
-            if (Status.Value != ClientStatus.Connected) return;
-            Disconnect();
-            Connect();
+            if (Status.Value != ClientStatus.Connected)
+            {
+                Dalamud.Log.Warning("ActWebSocket Reconnect, Is not connected");
+                return;
+            };
+
+            StopReceiver();
+
+            if (!TryDisconnect())
+            {
+                Status.Value = ClientStatus.Disconnected;
+                Dalamud.Log.Warning("ActWebSocket Reconnect: Failed Disconnect");
+                return;
+            }
+
+            if (!TryConnect())
+            {
+                Status.Value = ClientStatus.Disconnected;
+                Dalamud.Log.Warning("ActWebSocket Reconnect: Failed Connect");
+                return;
+            }
+
+            StartReceiver();
+
+            Status.Value = ClientStatus.Connected;
+            Dalamud.Log.Info("ActWebSocket Reconnect: Done");
         }
         finally
         {
@@ -100,24 +127,17 @@ public class ActWebSocket : IClient
         ClientLock.WaitOne();
         try
         {
-            if (Status.Value != ClientStatus.Connected) throw new Exception("Client is not connected.");
+            if (Client == null) throw new InvalidOperationException("Client is null");
+            if (Status.Value != ClientStatus.Connected) throw new InvalidOperationException("Is not connected");
 
-            var sendResult = Helpers.TimeOutTask((tokenSource) =>
-            {
-                byte[] buffer = Encoding.UTF8.GetBytes(message.ToString());
-                try
-                {
-                    Client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, tokenSource).Wait(tokenSource);
-                }
-                catch (OperationCanceledException) { }
-            });
-            sendResult.Wait();
-            if (sendResult.IsFaulted) throw new Exception($"sendResult Task, exception:\n{sendResult.Exception.InnerException}");
-            if (sendResult.Result == false) throw new Exception("sendResult Task, Timeout");
+            using var cancelSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            Client.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message.ToString())), WebSocketMessageType.Text, true, cancelSource.Token).Wait(cancelSource.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"ActWebSocket Send, Uri \'{Uri?.OriginalString ?? "null"}\', message \'{message}\':\n{ex}");
+            Dalamud.Log.Error($"ActWebSocket Send, message \'{message}\':\n{ex}");
             Disconnect();
         }
         finally
@@ -131,9 +151,8 @@ public class ActWebSocket : IClient
         ClientLock.WaitOne();
         try
         {
-            Disconnect();
-            ReceiverTask?.Dispose();
-            Client?.Dispose();
+            ReceiverCancelSource?.Cancel();
+            ForceDisconnect();
         }
         finally
         {
@@ -141,102 +160,104 @@ public class ActWebSocket : IClient
         }
     }
 
-    private bool _Connect()
+    private bool TryConnect()
     {
         try
         {
-            if (Uri == null) return false;
-            var connectResult = Helpers.TimeOutTask((tokenSource) =>
+            if (Uri == null) throw new InvalidOperationException("Uri is null");
+            if (Client != null) throw new InvalidOperationException("Client is not null");
+
+            using var cancelSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            do
             {
+                Client = new();
                 try
                 {
-                    Client.ConnectAsync(Uri, tokenSource).Wait(tokenSource);
+                    Client.ConnectAsync(Uri, cancelSource.Token).Wait(cancelSource.Token);
                 }
-                catch (OperationCanceledException) { }
-            });
-            connectResult.Wait();
-            if (connectResult.IsFaulted) throw new Exception($"connectResult Task, exception:\n{connectResult.Exception.InnerException}");
-            if (connectResult.Result == false) throw new Exception("connectResult Task, Timeout");
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    Dalamud.Log.Info($"ActWebSocket TryConnect, ConnectAsync: \'{ex.Message}\'");
+                    Client?.Dispose();
+                    Client = null;
+                    Task.Delay(TimeSpan.FromMilliseconds(50), cancelSource.Token).Wait(cancelSource.Token);
+                    continue;
+                }
+
+                for (var delays = 0; delays != 4 && Client.State == WebSocketState.Connecting; ++delays)
+                {
+                    Task.Delay(TimeSpan.FromMilliseconds(50), cancelSource.Token).Wait(cancelSource.Token);
+                }
+                if (Client.State == WebSocketState.Open) return true;
+
+                Task.Delay(TimeSpan.FromMilliseconds(50), cancelSource.Token).Wait(cancelSource.Token);
+
+                Client?.Dispose();
+                Client = null;
+            }
+            while (!cancelSource.IsCancellationRequested);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"ActWebSocket Connect, Uri \'{Uri?.OriginalString ?? "null"}\':\n{ex}");
-            return false;
+            Dalamud.Log.Error($"ActWebSocket TryConnect:\n{ex}");
         }
-        return true;
+        Client?.Dispose();
+        Client = null;
+        return false;
     }
 
-    private bool _Disconnect()
+    private bool TryDisconnect()
     {
         try
         {
-            if (Uri == null) return false;
+            if (Client == null) throw new InvalidOperationException("Client is null");
+            if (Client.State != WebSocketState.Open && Client.State != WebSocketState.CloseSent && Client.State != WebSocketState.CloseReceived) throw new InvalidOperationException("Is not connected");
 
-            var disconnectResult = Helpers.TimeOutTask((tokenSource) =>
+            using var cancelSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            do
             {
-                try
-                {
-                    Client.ConnectAsync(Uri, tokenSource).Wait(tokenSource);
-                }
-                catch (OperationCanceledException) { }
-            });
-            disconnectResult.Wait();
-            if (disconnectResult.IsFaulted) throw new Exception($"disconnectResult Task, exception:\n{disconnectResult.Exception.InnerException}");
-            if (disconnectResult.Result == false) throw new Exception("disconnectResult Task, Timeout");
+                Client.CloseAsync(WebSocketCloseStatus.NormalClosure, null, cancelSource.Token).Wait(cancelSource.Token);
+                if (Client.State == WebSocketState.Closed) return true;
+                Task.Delay(TimeSpan.FromMilliseconds(250), cancelSource.Token).Wait(cancelSource.Token);
+            }
+            while (Client.State != WebSocketState.Open && Client.State != WebSocketState.CloseSent && Client.State != WebSocketState.CloseReceived);
+
+            Dalamud.Log.Warning($"ActWebSocket TryDisconnect: Forced done");
+            return true; // Client.State == WebSocketState.Closed;
         }
+        catch (OperationCanceledException) { return true; }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"ActWebSocket Disconnect, Uri \'{Uri?.OriginalString ?? "null"}\':\n{ex}");
+            Dalamud.Log.Error($"ActWebSocket TryDisconnect, ClientState {Client?.State.ToString() ?? "null"}:\n{ex}");
             return false;
         }
-        return true;
-    }
-
-    private bool StartReceiving()
-    {
-        lock (ReceiverCancelSourceLock)
+        finally
         {
-            if (ReceiverCancelSource != null) return false;
-            ReceiverCancelSource = new CancellationTokenSource();
+            Client?.Dispose();
+            Client = null;
         }
-
-        ReceiverTask = Task.Run(() =>
-        {
-            try
-            {
-                Receiver();
-            }
-            finally
-            {
-                lock (ReceiverCancelSourceLock)
-                {
-                    ReceiverCancelSource?.Dispose();
-                    ReceiverCancelSource = null;
-                }
-            }
-        });
-        return true;
     }
 
-    private bool StopReceiving()
-    {
-        lock (ReceiverCancelSourceLock)
-        {
-            if (ReceiverCancelSource == null) return false;
-            ReceiverCancelSource.Cancel();
-        }
+    private void StartReceiver() => Task.Run(Receiver);
 
-        Dalamud.Log.Info("ActWebSocket StopReceiving is waiting cancellation");
-        ReceiverTask?.GetAwaiter().GetResult();
-        Dalamud.Log.Info("ActWebSocket StopReceiving cancellation done");
-        return ReceiverTask?.IsFaulted ?? true;
-    }
+    private void StopReceiver() => ReceiverCancelSource?.Cancel();
 
     private void Receiver()
     {
+        if (Client == null) throw new InvalidOperationException("Client is null");
+        if (Client.State != WebSocketState.Open) throw new InvalidOperationException("Is not connected");
+        if (ReceiverCancelSource != null)
+        {
+            Dalamud.Log.Error($"ActWebSocket Receiver: Cancellation token is not null");
+            return;
+        }
         try
         {
-            while (!ReceiverCancelSource!.IsCancellationRequested)
+            ReceiverCancelSource = new();
+
+            while (!ReceiverCancelSource.IsCancellationRequested)
             {
                 byte[] buffer = new byte[1024];
                 WebSocketReceiveResult result;
@@ -244,29 +265,36 @@ public class ActWebSocket : IClient
 
                 do
                 {
-                    result = Client.ReceiveAsync(new ArraySegment<byte>(buffer), ReceiverCancelSource.Token).Result;
+                    // .Result gives Agreggate Task Canceled Exception
+                    // cancelling token make client state aborted
+                    var receiveTask = Client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    receiveTask.Wait(ReceiverCancelSource.Token);
+                    result = receiveTask.Result;
+
+                    // IINACT close hand shake is not implemented
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        Dalamud.Log.Info("ActWebSocket Receiver: disconnect requested");
+                        ForceDisconnect();
+                        return;
+                    }
                     builder.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+
                 } while (!result.EndOfMessage && !ReceiverCancelSource.IsCancellationRequested);
 
-                Task.Run(() => Received(builder.ToString()));
+                if (!ReceiverCancelSource.IsCancellationRequested) Task.Run(() => Received(builder.ToString()));
             }
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-
-            Console.Error.WriteLine($"ActWebSocket Receiver:\n{ex}");
-
-            ClientLock.WaitOne();
-            try
-            {
-                if (Status.Value == ClientStatus.Connected) _Disconnect();
-                Status.Value = ClientStatus.Error;
-            }
-            finally
-            {
-                ClientLock.ReleaseMutex();
-            }
+            Dalamud.Log.Error($"ActWebSocket Receiver:\n{ex}");
+            ForceDisconnect();
+        }
+        finally
+        {
+            ReceiverCancelSource?.Dispose();
+            ReceiverCancelSource = null;
         }
     }
 
@@ -281,6 +309,24 @@ public class ActWebSocket : IClient
         catch (Exception ex)
         {
             Dalamud.Log.Error($"ActWebSocket Received, string \'{message}\':\n{ex}");
+        }
+    }
+
+    private void ForceDisconnect()
+    {
+        ClientLock.WaitOne();
+        try
+        {
+            if (Client == null) return;
+            if (Client.State != WebSocketState.Open && Client.State != WebSocketState.CloseSent && Client.State != WebSocketState.CloseReceived) return;
+            _ = TryDisconnect();
+        }
+        finally
+        {
+            Client?.Dispose();
+            Client = null;
+            Status.Value = ClientStatus.Disconnected;
+            ClientLock.ReleaseMutex();
         }
     }
 }

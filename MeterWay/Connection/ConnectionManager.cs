@@ -48,10 +48,14 @@ public class ConnectionManager : IDisposable
 
         Client.Connect();
 
-        if (Client.GetStatus() != ClientStatus.Connected) return;
+        if (Client.GetStatus() != ClientStatus.Connected)
+        {
+            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload("Meterway could not connect."), new UIForegroundPayload(0)));
+            return;
+        }
 
-        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is connected."), new UIForegroundPayload(0)));
         Subscribe();
+        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is connected."), new UIForegroundPayload(0)));
     });
 
     public void Disconnect() => Task.Run(() =>
@@ -60,8 +64,11 @@ public class ConnectionManager : IDisposable
 
         Client.Disconnect();
 
-        if (Client.GetStatus() != ClientStatus.Disconnected) return;
-
+        if (Client.GetStatus() != ClientStatus.Disconnected)
+        {
+            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload("Meterway could not disconnect."), new UIForegroundPayload(0)));
+            return;
+        }
         Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is disconnected."), new UIForegroundPayload(0)));
     });
 
@@ -70,8 +77,12 @@ public class ConnectionManager : IDisposable
         if (Client == null || Client.GetStatus() != ClientStatus.Connected) return;
         Client.Reconnect();
 
-        if (Client.GetStatus() != ClientStatus.Connected) return;
-
+        if (Client.GetStatus() != ClientStatus.Connected)
+        {
+            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload("Meterway could not reconnect."), new UIForegroundPayload(0)));
+            return;
+        }
+        Subscribe();
         Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is reconnected."), new UIForegroundPayload(0)));
     });
 
