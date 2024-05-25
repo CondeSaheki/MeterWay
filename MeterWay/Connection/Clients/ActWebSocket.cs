@@ -6,6 +6,7 @@ using System.Net.WebSockets;
 using Newtonsoft.Json.Linq;
 
 using MeterWay.Utils;
+using Dalamud.Utility;
 
 namespace MeterWay.Connection;
 
@@ -13,7 +14,7 @@ public class ActWebSocket : IClient
 {
     public Uri? Uri { get; set; } = null;
 
-    private ThreadSafeEnum<ClientStatus> Status { get; set; } = new(ClientStatus.None);
+    private ThreadSafeEnum<ClientStatus> Status { get; set; } = new(ClientStatus.Disconnected);
     private Action<JObject> ReceiveAction { get; set; }
     private ClientWebSocket? Client { get; set; } = null;
     private CancellationTokenSource? ReceiverCancelSource { get; set; } = null;
@@ -31,7 +32,7 @@ public class ActWebSocket : IClient
         ClientLock.WaitOne();
         try
         {
-            if (Status.Value != ClientStatus.Disconnected && Status.Value != ClientStatus.None)
+            if (Status.Value != ClientStatus.Disconnected)
             {
                 Dalamud.Log.Warning("ActWebSocket Connect, Is already connected");
                 return;
@@ -151,7 +152,7 @@ public class ActWebSocket : IClient
         ClientLock.WaitOne();
         try
         {
-            ReceiverCancelSource?.Cancel();
+            StopReceiver();
             ForceDisconnect();
         }
         finally
@@ -159,6 +160,31 @@ public class ActWebSocket : IClient
             ClientLock.Dispose();
         }
     }
+
+    public bool ChangeUri(string addres)
+    {
+        ClientLock.WaitOne();
+        try
+        {
+            if (addres.IsNullOrEmpty()) return false;
+            if (Uri?.OriginalString == addres) return false;
+
+            var newUri = new Uri(addres);            
+            Uri = newUri;
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"ActWebSocket ChangeUri, Uri {Uri?.OriginalString ?? "null"}, addres {addres}:\n{ex}");
+            return false;
+        }
+        finally
+        {
+            ClientLock.ReleaseMutex();
+        }
+    }
+
 
     private bool TryConnect()
     {

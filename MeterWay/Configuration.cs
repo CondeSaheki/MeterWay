@@ -14,6 +14,7 @@ public class Configuration : IPluginConfiguration
 
     // Connection
     public ClientType ClientType { get; set; } = ClientType.Iinact;
+    public bool AutoConnect { get; set; } = true;
     public string Address { get; set; } = "ws://127.0.0.1:10501/ws";
 
     // Overlay

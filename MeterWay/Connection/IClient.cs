@@ -14,9 +14,8 @@ public interface IClient : IDisposable
 
 public enum ClientStatus
 {
-    None, // use in initialization
-    Error,
-    Disconnected,
+    NotInitialized, // do not use, exclusive to ConnectionManager Status
     Connected,
-    NotInitialized // do not use, exclusive to ConnectionManager Status
+    Disconnected,
+    Error,
 }

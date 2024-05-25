@@ -10,7 +10,7 @@ namespace MeterWay.Connection;
 public class IinactIpc : IClient
 {
     private Action<JObject> ReceiveAction { get; set; }
-    private ThreadSafeEnum<ClientStatus> Status { get; set; } = new(ClientStatus.None);
+    private ThreadSafeEnum<ClientStatus> Status { get; set; } = new(ClientStatus.Disconnected);
     private ICallGateProvider<JObject, bool>? ReceiverIpc { get; set; }
 
     private const string MeterWayReceiver = "MeterWay.Receiver";
@@ -112,9 +112,15 @@ public class IinactIpc : IClient
 
     public void Dispose()
     {
-        Disconnect();
         ClientLock.WaitOne();
-        ClientLock.Dispose();
+        try
+        {
+            if (Status.Value != ClientStatus.Disconnected) Disconnect();
+        }
+        finally
+        {
+            ClientLock.Dispose();
+        }
     }
 
     private bool Receiver(JObject json)

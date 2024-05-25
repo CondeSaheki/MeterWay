@@ -32,15 +32,15 @@ public class ConnectionManager : IDisposable
 
     public event EventHandler<JObject> OnDataReceived = delegate { };
 
-    private IClient? Client { get; set; }
+    public IClient? Client { get; private set; }
 
     public ConnectionManager()
     {
         Init();
-        if (true) AutoConnect();
+        if (ConfigurationManager.Inst.Configuration.AutoConnect) AutoConnect();
     }
 
-    public ClientStatus Status() => Client?.GetStatus() ?? ClientStatus.None;
+    public ClientStatus Status() => Client?.GetStatus() ?? ClientStatus.NotInitialized;
 
     public void Connect() => Task.Run(() =>
     {
@@ -106,7 +106,7 @@ public class ConnectionManager : IDisposable
         else Dalamud.Framework.Update += OnLogin;
     }
 
-    private void Init()
+    public void Init()
     {
         try
         {
