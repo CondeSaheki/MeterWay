@@ -9,7 +9,7 @@
 # Meterway
 Dalamud-based FFXIV addon that display and help you analyze combat data. 
 
-MeterWay is designed to be used in conjunction with [IINACT](https://www.iinact.com/) and has the hability acts as a real-time log parser alowing to get and display elaborated statistics and data even during combat.
+MeterWay is designed to be used in conjunction with [IINACT](https://www.iinact.com/) or Act and has the ability acts as a real-time log parser alowing to get and display elaborated statistics and data even during combat.
 
 ## Instalation
 1. Click the "Experimental" tab.
