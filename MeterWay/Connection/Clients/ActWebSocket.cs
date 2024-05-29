@@ -166,7 +166,7 @@ public class ActWebSocket : IClient
         ClientLock.WaitOne();
         try
         {
-            if (addres.IsNullOrEmpty()) return false;
+            if (string.IsNullOrEmpty(addres)) return false;
             if (Uri?.OriginalString == addres) return false;
 
             var newUri = new Uri(addres);            

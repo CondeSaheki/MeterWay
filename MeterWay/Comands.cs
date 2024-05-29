@@ -29,9 +29,9 @@ public class Commands : IDisposable
 
         helpMessageBuilder("", "Display MeterWay main window.");
         helpMessageBuilder("config", "MeterWay configuration window.");
-        helpMessageBuilder("connect", "Connect");
-        helpMessageBuilder("disconnect", "Diconnect");
-        helpMessageBuilder("reconnect", "Reconnect");
+        helpMessageBuilder("connect", "Connect.");
+        helpMessageBuilder("disconnect", "Diconnect.");
+        helpMessageBuilder("reconnect", "Reconnect.");
         helpMessageBuilder("status", "Connection status.");
 
         //helpMessageBuilder("overlay", "Run overlay command handler."); // wip
