@@ -131,7 +131,7 @@ public class OverlayManager : IDisposable
             }
 
             ImGui.SameLine();
-            ImGui.PushItemWidth(160);
+            ImGui.PushItemWidth(250);
             var commentValue = overlay.Comment;
             const int commentSize = 16;
             if (ImGui.InputText($"##comment{overlay.Id}", ref commentValue, commentSize, ImGuiInputTextFlags.AutoSelectAll))
@@ -160,7 +160,7 @@ public class OverlayManager : IDisposable
                 ImGui.SameLine();
                 if (ImGui.Button($"Config##{overlay.Id}"))
                 {
-                    PopupWindow overlayConfig = new($"{overlay.Name} Configurations##{overlay.Id}", overlay.DrawConfig);
+                    PopupWindow overlayConfig = new($"{overlay.Name} Configurations##{overlay.Id}", overlay.DrawConfig, false, new(281, 500));
                 }
             }
 
@@ -214,7 +214,7 @@ public class OverlayManager : IDisposable
                         Dalamud.Log.Warning($"OverlayManager Draw, name \'{overlayNames[OverlayIndexValue]}\': Not found.");
                     }
                 }
-            });
+            }, true, new(533, 300));
         }
     }
 

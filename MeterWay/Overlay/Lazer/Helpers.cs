@@ -46,6 +46,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
 
     private void UpdateLerping()
     {
+        if (Data == null) return;
         uint topDamage = 1;
         if (SortCache.Count != 0) topDamage = Data.Players.GetValueOrDefault(SortCache.First())!.DamageDealt.Value.Total;
         Dictionary<uint, PlayerData> updatedPlayersData = [];
