@@ -1,7 +1,9 @@
+using System;
 using System.Numerics;
 using ImGuiNET;
-using System;
 using Dalamud.Plugin.Services;
+using Dalamud.Interface.ImGuiFontChooserDialog;
+using Dalamud.Interface.FontIdentifier;
 
 using MeterWay.Utils;
 using MeterWay.Overlay;
@@ -53,9 +55,9 @@ public partial class Overlay : IOverlay, IOverlayConfig
 
     private uint GetJobColor(uint rawJob)
     {
-        var index = Array.FindIndex(Config.JobColors, element => element.Job == new Job(rawJob).Id);
-        if (index != -1) return Config.JobColors[index].Color;
-        return Config.JobDefaultColor;
+        var index = Array.FindIndex(Config.Appearance.JobColors, element => element.Job == new Job(rawJob).Id);
+        if (index != -1) return Config.Appearance.JobColors[index].Color;
+        return Config.Appearance.JobDefaultColor;
     }
 
     private static void DrawJobIcon(Canvas area, uint job)
@@ -64,5 +66,60 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (icon == null) return;
 
         ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
+    }
+
+    public void _ImGuiBeginDisabled(ref bool value)
+    {
+        if (!value) ImGui.BeginDisabled();
+        value = true;
+    }
+
+    public void _ImGuiEndDisabled(ref bool value)
+    {
+        if (value) ImGui.EndDisabled();
+        value = false;
+    }
+
+    public static void _ImguiCheckboxWithTooltip(string? label, string? tooltip, bool current, Action<bool> setter)
+    {
+        var currentValue = current;
+        if (ImGui.Checkbox(label ?? "", ref currentValue) && currentValue != current) setter(currentValue);
+
+        if (!string.IsNullOrEmpty(tooltip) && ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text(tooltip);
+            ImGui.EndTooltip();
+        }
+    }
+
+    private static void _ImGuiColorPick(string Label, uint current, Action<uint> setter)
+    {
+        var colorValue = ImGui.ColorConvertU32ToFloat4(current);
+        if (ImGui.ColorEdit4(Label, ref colorValue,
+            ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault))
+        {
+            var converted = ImGui.ColorConvertFloat4ToU32(colorValue);
+            if (current != converted) setter(ImGui.ColorConvertFloat4ToU32(colorValue));
+        }
+    }
+
+    private void _SingleFontChooserDialog(string? label, SingleFontSpec? current, Action<SingleFontSpec> setter)
+    {
+        SingleFontChooserDialog chooser = new(MeterWay.Dalamud.PluginInterface.UiBuilder, false, null)
+        {
+            Title = label ?? "Font Chooser",
+            PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",
+            SelectedFont = current ?? new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance },
+            IsModal = false,
+        };
+        chooser.ResultTask.ContinueWith(chooserTask =>
+        {
+            _ = chooserTask.Exception; // not needed ?
+            if (chooserTask.IsCompletedSuccessfully) setter(chooserTask.Result);
+            MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= chooser.Draw;
+            chooser.Dispose();
+        });
+        MeterWay.Dalamud.PluginInterface.UiBuilder.Draw += chooser.Draw;
     }
 }
