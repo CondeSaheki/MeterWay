@@ -15,15 +15,15 @@ public partial class Overlay : IOverlay, IOverlayConfig
     private Configuration Config { get; init; }
     public LuaScript? Script { get; private set; }
 
-    private Encounter Data = new();
-    private OverlayWindow Window { get; init; }
+    private Encounter? Data;
+    private IOverlayWindow Window { get; init; }
 
     private static readonly LuaScript.Function[] Registers =
     [
         new ("Text", null, typeof(Overlay).GetMethod("Text"))
     ];
 
-    public Overlay(OverlayWindow overlayWindow)
+    public Overlay(IOverlayWindow overlayWindow)
     {
         Window = overlayWindow;
         Config = File.Load<Configuration>(Window.NameId);
