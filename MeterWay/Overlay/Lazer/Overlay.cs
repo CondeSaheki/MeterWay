@@ -3,7 +3,8 @@ using ImGuiNET;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface.ManagedFontAtlas;
-using static Dalamud.Interface.Windowing.Window;
+using System;
+using System.Threading;
 
 using MeterWay.Utils;
 using MeterWay.Managers;
@@ -18,53 +19,55 @@ public partial class Overlay : IOverlay, IOverlayConfig
     public static string Autor => "Maotovisk";
     public static string Description => "The Lazer overlay is your companion for your gaming journey, and for a any journey you need stunning aesthetics.";
 
-    private OverlayWindow Window { get; init; }
-    private Configuration Config { get; init; }
+    private IOverlayWindow Window { get; init; }
+    private Configuration Config { get; set; }
 
     private IFontAtlas FontAtlas { get; init; } = MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async);
     private IFontHandle FontLazer { get; set; }
     private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
 
-    private Encounter Data = new();
+    private Encounter? Data;
     private List<uint> SortCache = [];
 
     private Lerp<Dictionary<uint, PlayerData>> Lerping { get; init; }
+
+    private CancellationTokenSource? DelayToken { get; set; }
 
     public struct PlayerData
     {
         public double Progress { get; set; }
     }
 
-    public Overlay(OverlayWindow overlayWindow)
+    public Overlay(IOverlayWindow overlayWindow)
     {
         Window = overlayWindow;
         Config = File.Load<Configuration>(Window.NameId);
-        if (Config.ClickThrough) Window.Flags = OverlayWindow.defaultflags | ImGuiWindowFlags.NoInputs;
-        else Window.Flags = OverlayWindow.defaultflags;
-        Window.IsOpen = true;
-        Window.SizeConstraints = new WindowSizeConstraints
-        {
-            MinimumSize = new Vector2(320, 180),
-            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-        };
-
         Lerping = CreateLerping();
 
-        if (Config.LazerFontSpec != null)
-        {
-            FontLazer = Config.LazerFontSpec.CreateFontHandle(FontAtlas);
-            MeterWay.Dalamud.Log.Info("Lazer Overlay: Font handle created using custom LazerFontSpec.");
-        }
-        else
-        {
-            FontLazer = DefaultFont;
-            MeterWay.Dalamud.Log.Info("Lazer Overlay: Using default font as LazerFontSpec is not configured.");
-        }
+        EncounterManager.Inst.EncounterEnd += OnEnconterEnd;
+        EncounterManager.Inst.EncounterBegin += OnEncounterBegin;
+
+        Init();
+        FontLazer ??= DefaultFont;
+    }
+
+    public void Init()
+    {
+        if (Config.General.NoInput) Window.Flags |= ImGuiWindowFlags.NoInputs;
+        if (Config.General.NoMove) Window.Flags |= ImGuiWindowFlags.NoMove;
+        if (Config.General.NoResize) Window.Flags |= ImGuiWindowFlags.NoResize;
+
+        Window.IsOpen = Config.Visibility.Enabled || Config.Visibility.Always;
+
+        Window.SetPosition(Config.General.Position);
+        Window.SetSize(Config.General.Size);
+
+        if (Config.Font.LazerFontSpec != null) FontLazer = Config.Font.LazerFontSpec.CreateFontHandle(FontAtlas);
     }
 
     public void DataUpdate()
     {
-        var oldPartyId = Data.Party.Id;
+        var oldPartyId = Data?.Party.Id ?? 0;
         Data = EncounterManager.Inst.CurrentEncounter();
 
         if (Data.Party.Id != oldPartyId)
@@ -79,11 +82,12 @@ public partial class Overlay : IOverlay, IOverlayConfig
 
     public void Draw()
     {
+        if (Data == null) return;
         if (!Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
 
         var draw = ImGui.GetWindowDrawList();
         var sortCache = SortCache.ToList();
-        Canvas cursor = OverlayWindow.GetCanvas();
+        Canvas cursor = Window.GetCanvas();
 
         FontLazer?.Push(); // or do "using (FontLazer?.Push()) draw.AddText()"
         float fontSize = ImGui.GetFontSize();
@@ -91,7 +95,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         Vector2 position = new();
 
         // Background
-        draw.AddRectFilled(cursor.Min, cursor.Max, Config.BackgroundColor);
+        draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.BackgroundColor);
 
         // Empty
         if (Data.Begin == null)
@@ -104,8 +108,8 @@ public partial class Overlay : IOverlay, IOverlayConfig
         }
 
         // Header
-        cursor.Max = new(cursor.Max.X, cursor.Min.Y + fontSize + 2 * Config.Spacing);
-        draw.AddRectFilled(cursor.Min, cursor.Max, Config.Color1);
+        cursor.Max = new(cursor.Max.X, cursor.Min.Y + fontSize + 2 * Config.Appearance.Spacing);
+        draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.HeaderBackgroundColor);
 
         text = $"{Data.Name} - ({(!Data.Active ? "Completed in " : "")}{Data.Duration.ToString(@"mm\:ss")})";
         position = cursor.Align(text, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
@@ -121,51 +125,82 @@ public partial class Overlay : IOverlay, IOverlayConfig
             Canvas line = new(cursor.Area);
 
             // Background
-            draw.AddRectFilled(line.Min, line.Max, Config.Color1);
+            draw.AddRectFilled(line.Min, line.Max, Config.Appearance.HeaderBackgroundColor);
 
             // Bar
-            var barColor = player.Id == MeterWay.Dalamud.ClientState.LocalPlayer?.ObjectId ? Config.Color2 : Config.Color3;
+            var barColor = player.Id == MeterWay.Dalamud.ClientState.LocalPlayer?.ObjectId ? Config.Appearance.YourBarColor : Config.Appearance.BarColor;
             float progress = (float)(playerLerped?.Progress ?? 1);
             DrawProgressBar(line.Area, barColor, progress);
-            draw.AddRect(line.Min, line.Max, Config.Color4);
+            draw.AddRect(line.Min, line.Max, Config.Appearance.BarBorderColor);
 
             // icon
             Canvas icon = new(line.Area);
             icon.Max = icon.Min + new Vector2(icon.Height, icon.Height);
-            icon.Padding(Config.Spacing + 1);
+            icon.Padding(Config.Appearance.Spacing + 1);
             draw.AddRectFilled(icon.Min, icon.Max, colorBlack);
-            draw.AddRect(icon.Min, icon.Max, Config.Color7);
+            draw.AddRect(icon.Min, icon.Max, Config.Appearance.JobIconBorderColor);
             DrawJobIcon(icon, player.Job);
-            line.AddMin(icon.Height + Config.Spacing, 0);
+            line.AddMin(icon.Height + Config.Appearance.Spacing, 0);
 
             // Texts
             text = $"{new Job(player.Job).Id}";
-            position = line.Padding((Config.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
-            draw.AddText(position, Config.Color5, text); // scale 0.8
+            position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
+            draw.AddText(position, Config.Appearance.JobNameTextColor, text); // scale 0.8
 
-            line.AddMin(ImGui.CalcTextSize(text).X + Config.Spacing, 0);
+            line.AddMin(ImGui.CalcTextSize(text).X + Config.Appearance.Spacing, 0);
 
             text = player.Name;
-            position = line.Padding((Config.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
+            position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
             draw.AddText(position, colorWhite, text);
-            line.AddMin(ImGui.CalcTextSize(text).X + Config.Spacing, 0);
+            line.AddMin(ImGui.CalcTextSize(text).X + Config.Appearance.Spacing, 0);
 
             text = $"{Helpers.HumanizeNumber(player.PerSecounds.DamageDealt, 1)}/s";
-            position = line.Padding((Config.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
+            position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
             draw.AddText(position, colorWhite, text);
-            line.AddMax(-ImGui.CalcTextSize(text).X - Config.Spacing, 0);
+            line.AddMax(-ImGui.CalcTextSize(text).X - Config.Appearance.Spacing, 0);
 
             text = $"{Helpers.HumanizeNumber(player.DamageDealt.Value.Total, 1)}";
-            position = line.Padding((Config.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
-            draw.AddText(position, Config.Color6, text); // scale 0.8
+            position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
+            draw.AddText(position, Config.Appearance.TotalDamageTextColor, text); // scale 0.8
 
             cursor.Move((0, cursor.Height));
         }
         FontLazer?.Pop();
     }
 
+    private void OnEnconterEnd(object? _, EventArgs __)
+    {
+        if (Config.Visibility.Always || !Config.Visibility.Combat) return;
+
+        if (!Config.Visibility.Delay)
+        {
+            Window.IsOpen = false;
+            return;
+        }
+
+        DelayToken?.Cancel();
+        DelayToken = Helpers.DelayedAction(Config.Visibility.DelayDuration, () =>
+        {
+            Window.IsOpen = false;
+        });
+    }
+
+    private void OnEncounterBegin(object? _, EventArgs __)
+    {
+        DelayToken?.Cancel();
+        if (Config.Visibility.Always || Config.Visibility.Combat)
+        {
+            Window.IsOpen = true;
+            return;
+        }
+    }
+
     public void Dispose()
     {
+        EncounterManager.Inst.EncounterEnd -= OnEnconterEnd;
+        EncounterManager.Inst.EncounterEnd -= OnEncounterBegin;
+        DelayToken?.Cancel();
+        DelayToken?.Dispose();
         FontLazer?.Dispose();
         FontAtlas?.Dispose();
     }
