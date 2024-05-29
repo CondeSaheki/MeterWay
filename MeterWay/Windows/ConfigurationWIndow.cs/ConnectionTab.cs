@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+using ImGuiNET;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using System;
@@ -11,105 +11,8 @@ using MeterWay.Connection;
 
 namespace MeterWay.Windows;
 
-public class ConfigWindow : Window, IDisposable
+public partial class ConfigWindow : Window, IDisposable
 {
-    private readonly Plugin Plugin;
-
-    public ConfigWindow(Plugin plugin) : base("MeterWay Configurations", ImGuiWindowFlags.NoCollapse)
-    {
-        SizeConstraints = new WindowSizeConstraints
-        {
-            MinimumSize = new Vector2(430, 255),
-            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-        };
-        //SizeCondition = ImGuiCond.Always;
-
-        Plugin = plugin;
-    }
-
-    public void Dispose() { }
-
-    public override void Draw()
-    {
-        using var bar = ImRaii.TabBar("Settings Tabs");
-        if (!bar) return;
-
-        //DrawGeneralTab();
-        DrawOverlayTab();
-        //DrawOverlayConfigTab();
-        //DrawAppearenceTab();
-        DrawConnectionTab();
-        //DrawAboutTab();
-    }
-
-    private void DrawGeneralTab()
-    {
-        using var tab = ImRaii.TabItem("General");
-        if (!tab) return;
-
-        ImGui.Text("WIP");
-    }
-
-    private void DrawOverlayTab()
-    {
-        using var tab = ImRaii.TabItem("Overlays");
-        if (!tab) return;
-
-        ImGui.Spacing();
-
-        if (EncounterManager.LastEncounter.Active)
-        {
-            ImGui.Text("You can not change overlay configs when in combat");
-            return;
-        }
-
-        Plugin.OverlayManager.Draw();
-
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
-        ImGui.Text("Update frequency");
-        ImGui.Spacing();
-
-        var OverlayRealtimeUpdateValue = ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate;
-        if (ImGui.Checkbox("Realtime", ref OverlayRealtimeUpdateValue))
-        {
-            ConfigurationManager.Inst.Configuration.OverlayRealtimeUpdate = OverlayRealtimeUpdateValue;
-            ConfigurationManager.Inst.Configuration.Save();
-        }
-
-        if (!OverlayRealtimeUpdateValue)
-        {
-            ImGui.PushItemWidth(50);
-            var OverlayIntervalUpdateValue2 = 1000 / (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.TotalMilliseconds;
-            if (ImGui.DragFloat("Update per Second", ref OverlayIntervalUpdateValue2, 0.001f, 0.01f, 60f))
-            {
-                ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromMilliseconds(1000 / OverlayIntervalUpdateValue2);
-                ConfigurationManager.Inst.Configuration.Save();
-                EncounterManager.Inst.ClientsNotifier.ChangeNotificationInterval(ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate);
-            }
-            ImGui.SameLine();
-            ImGui.Text(" | ");
-            ImGui.SameLine();
-            var OverlayIntervalUpdateValue = (float)ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate.TotalMilliseconds / 1000;
-            if (ImGui.DragFloat("Update Interval", ref OverlayIntervalUpdateValue, 0.001f, 0.01f, 60f))
-            {
-                ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate = TimeSpan.FromMilliseconds(OverlayIntervalUpdateValue * 1000);
-                ConfigurationManager.Inst.Configuration.Save();
-                EncounterManager.Inst.ClientsNotifier.ChangeNotificationInterval(ConfigurationManager.Inst.Configuration.OverlayIntervalUpdate);
-            }
-            ImGui.PopItemWidth();
-        }
-    }
-
-    private void DrawAppearenceTab()
-    {
-        using var tab = ImRaii.TabItem("Appearence");
-        if (!tab) return;
-
-        ImGui.Spacing();
-    }
-
     private void DrawConnectionTab()
     {
         using var tab = ImRaii.TabItem("Connection");
@@ -210,11 +113,4 @@ public class ConfigWindow : Window, IDisposable
         }
     }
 
-    private void DrawAboutTab()
-    {
-        using var tab = ImRaii.TabItem("About");
-        if (!tab) return;
-
-        ImGui.Text("Thx everyone!");
-    }
 }
