@@ -18,7 +18,7 @@ public struct OverlayWindowSpecs()
     public bool Enabled = false;
 }
 
-public class OverlayWindow : Window, IDisposable
+public class OverlayWindow : Window, IOverlayWindow
 {
     private IOverlay? Overlay { get; set; }
 
@@ -28,19 +28,24 @@ public class OverlayWindow : Window, IDisposable
     public uint Id { get; private set; }
     public string NameId { get; private set; }
     public string Comment { get; set; }
-    public static readonly ImGuiWindowFlags defaultflags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBackground;
+    public Vector2 CurrentSize { get; private set; } = new(0, 0);
+    public Vector2 CurrentPos { get; private set; } = new(0, 0);
+
     public bool Enabled => Overlay != null;
 
     public OverlayWindow(Type overlay, uint id) : base($"{id}")
     {
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(80, 45),
+            MinimumSize = new Vector2(0, 0),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
         IsOpen = false;
         RespectCloseHotkey = false;
-        Flags = defaultflags;
+        Flags = ImGuiWindowFlags.NoTitleBar |
+            ImGuiWindowFlags.NoCollapse |
+            ImGuiWindowFlags.NoBackground |
+            ImGuiWindowFlags.NoSavedSettings;
 
         Type = overlay;
         Name = (string)overlay.GetProperty("Name")?.GetValue(null)!;
@@ -52,6 +57,8 @@ public class OverlayWindow : Window, IDisposable
 
     public override void Draw()
     {
+        CurrentSize = ImGui.GetWindowSize();
+        CurrentPos = ImGui.GetWindowPos();
         if (Overlay == null) return;
         try
         {
@@ -82,11 +89,14 @@ public class OverlayWindow : Window, IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         Disable();
     }
 
-    public static Canvas GetCanvas()
+    public void SetSize(Vector2 size) => ImGui.SetWindowSize($"{Id}", size);
+
+    public void SetPosition(Vector2 position) => ImGui.SetWindowPos($"{Id}", position);
+
+    public Canvas GetCanvas()
     {
         Vector2 Min = ImGui.GetWindowContentRegionMin();
         Vector2 Max = ImGui.GetWindowContentRegionMax();
@@ -105,7 +115,7 @@ public class OverlayWindow : Window, IDisposable
         IsOpen = true;
         try
         {
-            Overlay = (IOverlay?)Activator.CreateInstance(Type, [this]);
+            Overlay = (IOverlay?)Activator.CreateInstance(Type, [this as IOverlayWindow]);
         }
         catch (Exception ex)
         {
