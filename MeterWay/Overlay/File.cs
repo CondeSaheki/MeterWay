@@ -5,8 +5,18 @@ using Newtonsoft.Json;
 
 namespace MeterWay.Overlay;
 
-static class File
+/// <summary>
+/// Provides methods for loading, saving, and deleting configuration files.
+/// </summary>
+public static class File
 {
+    /// <summary>
+    /// Loads the configuration from a specified JSON file.
+    /// If the file does not exist or deserialization fails, a new configuration instance is created and saved.
+    /// </summary>
+    /// <typeparam name="Configuration">The type of the configuration, which must implement <see cref="IConfiguration"/> and have a parameterless constructor.</typeparam>
+    /// <param name="fileName">The name of the file (without extension) from which to load the configuration.</param>
+    /// <returns>The loaded or newly created configuration.</returns>
     public static Configuration Load<Configuration>(string fileName) where Configuration : IConfiguration, new()
     {
         Configuration config;
@@ -30,6 +40,12 @@ static class File
         return config;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="Configuration"></typeparam>
+    /// <param name="fileName"></param>
+    /// <param name="config"></param>
     public static void Save<Configuration>(string fileName, Configuration config) where Configuration : IConfiguration, new()
     {
         var file = GetFile($"{fileName}.json");
@@ -47,6 +63,10 @@ static class File
         }
     }
 
+    /// <summary>
+    /// Deletes the specified JSON file.
+    /// </summary>
+    /// <param name="fileName">The name of the file (without extension) to delete.</param>
     public static void Delete(string fileName)
     {
         var file = GetFile($"{fileName}.json");
