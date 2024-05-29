@@ -1,87 +1,64 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using ImGuiNET;
-
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
 
-namespace HelloWorld;
-
-public class Overlay : IOverlay, IOverlayConfig, IOverlayCommandHandler
+namespace HelloWorld
 {
-    public static string Name => "HelloWorld"; // required
-    public static string Autor => "MeterWay";
-    public static string Description => "An simple overlay.";
-
-    private Configuration Config { get; init; }
-    
-    private OverlayWindow Window { get; init; }
-
-    private Encounter Data = new();
-
-    public Overlay(OverlayWindow overlayWindow)
+    public class Overlay : IOverlay, IOverlayConfig
     {
-        Window = overlayWindow;
-        Config = File.Load<Configuration>(Window.NameId);
-        Window.Flags = ImGuiWindowFlags.None; // you can change the window properties if you want
-    }
+        // Static properties providing basic information about the overlay
+        public static string Name => "HelloWorld"; // required
+        public static string Author => "MeterWay";
+        public static string Description => "A simple overlay.";
 
-    // this function is called wenever you need to update data
-    public void DataUpdate()
-    {
-        Data = EncounterManager.Inst.CurrentEncounter();
-    }
+        // Objects to hold the overlay's settings and The window where the overlay will be rendered
+        private Configuration Config { get; init; }
+        private IOverlayWindow Window { get; init; }
 
-    public void Draw()
-    {
-        ImGui.Text("Hello world this is a MeterWay overlay!");
-        ImGui.Spacing();
-        ImGui.Text($"Encounter Name: {Data.Name}");
-        ImGui.Text($"\'Enabled\' Configuration: {(Config.Enabled ? "true" : "false")}");
-    }
+        // Object holding encounter information
+        private Encounter? Data = new();
 
-    public void DrawConfig()
-    {
-        ImGui.Text("I'm a configuration tab!\n");
-
-        var enabledValue = Config.Enabled;
-        if (ImGui.Checkbox("\'Enabled\' Configuration", ref enabledValue))
+        // Constructor initializing the overlay
+        public Overlay(IOverlayWindow overlayWindow)
         {
-            Config.Enabled = enabledValue;
-            File.Save(Name, Config);
+            Window = overlayWindow;
+            Config = File.Load<Configuration>(Window.NameId);
         }
-    }
-    
-    public void Remove()
-    {
-        File.Delete(Window.NameId);
-    }
 
-    public string CommandHelpMessage(string? command)
-    {
-        StringBuilder builder = new();
-        
-        builder.Append("command");
-        builder.Append("command");
-
-        return builder.ToString();
-    }
-
-    public Action? OnCommand(List<string> args)
-    {
-        Action? handler = args[0] switch
+        // Get the current encounter data from the manager
+        public void DataUpdate()
         {
-            "config" when args.Count == 1 => () =>
-            {
-                MeterWay.Dalamud.Chat.Print("hi");
-            },
-            "" when args.Count == 1 => null,
-            _ => null
-        };
-        return handler;
-    }
+            Data = EncounterManager.Inst.CurrentEncounter();
+        }
 
-    public void Dispose() { }
+        public void Draw()
+        {
+            if (Data == null) return; // no data avaliable
+
+            ImGui.Text($"{Data.Name}, Welcome to this MeterWay overlay!");
+        }
+
+        public void DrawConfig()
+        {
+            ImGui.Text("Hey, I am a configuration window!\n");
+
+            // Example checkbox
+            var isEnabledValue = Config.IsEnabled;
+            if (ImGui.Checkbox("Example configuration is enabled ", ref isEnabledValue))
+            {
+                Config.IsEnabled = isEnabledValue;
+                File.Save(Name, Config);
+            }
+        }
+
+        // Method to remove any presistent resources on overlay
+        public void Remove()
+        {
+            File.Delete(Window.NameId);
+        }
+
+        // DO NOT forget to dispose of any resources
+        public void Dispose() { }
+    }
 }
