@@ -12,11 +12,10 @@ public class PopupWindow
     public string Label { get; private init; }
     public Vector2 Size { get; private init; }
     public bool IsModal { get; private init; }
+    public ImGuiWindowFlags WindowFlags { get; set; } = ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoCollapse;    
 
     private TaskCompletionSource TaskSource { get; set; } = new();
     private bool FirstDraw { get; set; } = true;
-
-    public ImGuiWindowFlags WindowFlags = ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.None | ImGuiWindowFlags.NoCollapse;
 
     public PopupWindow(string label, Action<TaskCompletionSource> content, bool isModal = false, Vector2? size = null)
     {

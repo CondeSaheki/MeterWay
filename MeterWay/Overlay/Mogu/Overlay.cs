@@ -14,11 +14,14 @@ using MeterWay.Overlay;
 
 namespace Mogu;
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
-    public static string Name => "Mogu"; // required
-    public static string Autor => "MeterWay";
-    public static string Description => "Mogu is a overlay designed to provide a versatile and complete solution for a wide range of needs this overlay offers a clean and flexible interface tailored to enhance your experience across various contexts with no amogus please.";
+    public static BasicOverlayInfo Info => new()
+    {
+        Name = "Mogu",
+        Author = "MeterWay",
+        Description = "Mogu is a overlay designed to provide a versatile and complete solution for a wide range of needs this overlay offers a clean and flexible interface tailored to enhance your experience across various contexts with no amogus please.",
+    };
 
     private IOverlayWindow Window { get; init; }
     private Configuration Config { get; set; }
@@ -35,10 +38,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
     public Overlay(IOverlayWindow overlayWindow)
     {
         Window = overlayWindow;
-        Config = File.Load<Configuration>(Window.NameId);
-
-        EncounterManager.Inst.EncounterEnd += OnEnconterEnd;
-        EncounterManager.Inst.EncounterBegin += OnEncounterBegin;
+        Config = Load<Configuration>(Window.WindowName);
 
         Init();
         FontMogu ??= DefaultFont;
@@ -58,7 +58,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (Config.Font.MoguFontSpec != null) FontMogu = Config.Font.MoguFontSpec.CreateFontHandle(FontAtlas);
     }
 
-    public void DataUpdate()
+    public override void OnEncounterUpdate()
     {
         var oldPartyId = Data?.Party.Id ?? 0;
         Data = EncounterManager.Inst.CurrentEncounter();
@@ -68,7 +68,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (!Config.General.FrameCalc) Data.Calculate();
     }
 
-    public void Draw()
+    public override void Draw()
     {
         if (Data == null) return;
         if (Config.General.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
@@ -138,7 +138,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         FontMogu.Pop();
     }
 
-    private void OnEnconterEnd(object? _, EventArgs __)
+    public override void OnEncounterEnd()
     {
         if (Config.Visibility.Always || !Config.Visibility.Combat) return;
 
@@ -155,7 +155,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         });
     }
 
-    private void OnEncounterBegin(object? _, EventArgs __)
+    public override void OnEncounterBegin()
     {
         DelayToken?.Cancel();
         if (Config.Visibility.Always || Config.Visibility.Combat)
@@ -165,9 +165,9 @@ public partial class Overlay : IOverlay, IOverlayConfig
         }
     }
 
-    public void Remove()
+    public override void Remove()
     {
-        File.Delete(Window.NameId);
+        Delete(Window.WindowName);
     }
 
     // public string CommandHelpMessage(string? command)
@@ -194,10 +194,8 @@ public partial class Overlay : IOverlay, IOverlayConfig
     //     return handler;
     // }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        EncounterManager.Inst.EncounterEnd -= OnEnconterEnd;
-        EncounterManager.Inst.EncounterEnd -= OnEncounterBegin;
         DelayToken?.Cancel();
         DelayToken?.Dispose();
         FontMogu?.Dispose();

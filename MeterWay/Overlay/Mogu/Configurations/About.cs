@@ -5,7 +5,7 @@ using MeterWay.Overlay;
 
 namespace Mogu;
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
     private void DrawAboutTab()
     {
@@ -13,8 +13,8 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (!tab) return;
 
         ImGui.Text($"Description");
-        ImGui.TextWrapped($"{Description}");
+        ImGui.TextWrapped($"{Info.Description}");
         ImGui.Text($"Autor");
-        ImGui.TextWrapped($"{Autor}");
+        ImGui.TextWrapped($"{Info.Author}");
     }
 }

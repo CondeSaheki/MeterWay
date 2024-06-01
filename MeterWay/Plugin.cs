@@ -40,13 +40,14 @@ public sealed class Plugin : IDalamudPlugin
             ConnectionManager = new() { Subscriptions = [ConnectionManager.SubscriptionType.LogLine] };
             ConnectionManager.OnDataReceived += EncounterManager.Receiver;
 
-            // register your overlays here
+            // register your overlay here
             OverlayManager = new(
                 [
                     #if DEBUG
                         typeof(HelloWorld.Overlay),
                     #endif
                     typeof(Mogu.Overlay),
+                    typeof(Vision.Overlay),
                     typeof(Lazer.Overlay),
                     typeof(Dynamic.Overlay)
                 ]

@@ -15,9 +15,9 @@ public class Font()
     public SingleFontSpec? LazerFontSpec { get; set; } = null;
 }
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
-private void DrawFontsTab()
+    private void DrawFontsTab()
     {
         using var tab = ImRaii.TabItem("Fonts");
         if (!tab) return;
@@ -36,7 +36,7 @@ private void DrawFontsTab()
             FontLazer = result.CreateFontHandle(FontAtlas);
 
             Config.Font.LazerFontSpec = result;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
         ImGui.SameLine();
         if (ImGui.Button("Default"))
@@ -45,13 +45,13 @@ private void DrawFontsTab()
             FontLazer = DefaultFont;
 
             Config.Font.LazerFontSpec = null;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
         ImGui.SameLine();
         _ImGuiColorPick("##MoguFontColor", Config.Font.LazerFontColor, (value) =>
         {
             Config.Font.LazerFontColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
         ImGui.SameLine();
         ImGui.Text("-->");

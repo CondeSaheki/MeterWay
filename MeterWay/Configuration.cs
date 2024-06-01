@@ -18,7 +18,7 @@ public class Configuration : IPluginConfiguration
     public string Address { get; set; } = "ws://127.0.0.1:10501/ws";
 
     // Overlay
-    public List<OverlayWindowSpecs> Overlays { get; set; } = [];
+    public List<OverlayWindowSpec> Overlays { get; set; } = [];
     public bool OverlayRealtimeUpdate { get; set; } = false;
     public TimeSpan OverlayIntervalUpdate { get; set; } = TimeSpan.FromSeconds(1);
 

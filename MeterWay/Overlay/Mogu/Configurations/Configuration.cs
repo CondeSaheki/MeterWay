@@ -6,7 +6,7 @@ using MeterWay.Overlay;
 namespace Mogu;
 
 [Serializable]
-public class Configuration : IConfiguration
+public class Configuration : IBasicOverlayConfiguration
 {
     public int Version { get; set; } = 0;
 
@@ -16,9 +16,9 @@ public class Configuration : IConfiguration
     public Appearance Appearance { get; set; } = new();
 }
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
-    public void DrawConfig()
+    public override void DrawConfiguration()
     {
         using var bar = ImRaii.TabBar("Overlay Settings Tabs");
         if (!bar) return;

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
@@ -9,31 +8,41 @@ using MeterWay.Utils;
 
 namespace MeterWay.Overlay;
 
-[Serializable]
-public struct OverlayWindowSpecs()
-{
-    public string Name = string.Empty;
-    public uint Id = 0;
-    public string Comment = string.Empty;
-    public bool Enabled = false;
-}
-
 public class OverlayWindow : Window, IOverlayWindow
 {
-    private IOverlay? Overlay { get; set; }
-
     public Type Type { get; private set; }
-    public string Name { get; private set; }
-    public bool HasConfigs { get; private set; }
     public uint Id { get; private set; }
-    public string NameId { get; private set; }
-    public string Comment { get; set; }
-    public Vector2 CurrentSize { get; private set; } = new(0, 0);
-    public Vector2 CurrentPos { get; private set; } = new(0, 0);
 
-    public bool Enabled => Overlay != null;
+    public string Comment { get; set; }
+
+    public bool HasConfigurationWindow { get; set; } = true;
+    public Vector2 ConfigurationWindowSize { get; set; } = new(360, 640);
+
+    public Vector2? CurrentSize { get; private set; }
+    public Vector2? CurrentPosition { get; private set; }
+
+    private BasicOverlay? Overlay { get; set; }
 
     public OverlayWindow(Type overlay, uint id) : base($"{id}")
+    {
+        Type = overlay;
+        Id = id;
+        Comment = $"{Info.Name}{Id}";
+        
+        Init();
+    }
+
+    public OverlayWindow(Type overlay, OverlayWindowSpec spec) : base($"{spec.Id}")
+    {
+        Type = overlay;
+        Comment = spec.Comment;
+
+        Init();
+
+        if (spec.IsEnabled) Enable();
+    }
+
+    private void Init()
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -46,55 +55,23 @@ public class OverlayWindow : Window, IOverlayWindow
             ImGuiWindowFlags.NoCollapse |
             ImGuiWindowFlags.NoBackground |
             ImGuiWindowFlags.NoSavedSettings;
-
-        Type = overlay;
-        Name = (string)overlay.GetProperty("Name")?.GetValue(null)!;
-        HasConfigs = overlay.GetInterfaces().Contains(typeof(IOverlayConfig));
-        Id = id;
-        NameId = $"{Name}{Id}";
-        Comment = $"{Name}{Id}";
     }
 
-    public override void Draw()
+    public bool IsEnabled() => Overlay != null;
+
+    public BasicOverlayInfo Info => (BasicOverlayInfo?)Type.GetProperty("Info")?.GetValue(null) ?? throw new Exception("Missing Basic Overlay Information");
+
+    public void SetSize(Vector2 size)
     {
-        CurrentSize = ImGui.GetWindowSize();
-        CurrentPos = ImGui.GetWindowPos();
-        if (Overlay == null) return;
-        try
-        {
-            Overlay.Draw();
-        }
-        catch (Exception ex)
-        {
-            Dalamud.Log.Error($"OverlayWindow Draw, overlay \'{Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Name} overlay {Id}\' Had an error, contact the autor for feedback");
-            Disable();
-        }
+        ImGui.SetWindowSize($"{Id}", size);
+        CurrentSize = size;
     }
 
-    public void DrawConfig()
+    public void SetPosition(Vector2 position)
     {
-        if (Overlay == null) return;
-        try
-        {
-            ((IOverlayConfig)Overlay!).DrawConfig();
-        }
-        catch (Exception ex)
-        {
-            Dalamud.Log.Error($"OverlayWindow DrawConfig, overlay \'{Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Name} overlay {Id}\' Had an error, contact the autor for feedback");
-            Disable();
-        }
+        ImGui.SetWindowPos($"{Id}", position);
+        CurrentPosition = position;
     }
-
-    public void Dispose()
-    {
-        Disable();
-    }
-
-    public void SetSize(Vector2 size) => ImGui.SetWindowSize($"{Id}", size);
-
-    public void SetPosition(Vector2 position) => ImGui.SetWindowPos($"{Id}", position);
 
     public Canvas GetCanvas()
     {
@@ -110,60 +87,183 @@ public class OverlayWindow : Window, IOverlayWindow
 
     public void Enable()
     {
-        if (Overlay != null) return;
-        Overlay?.Dispose();
-        IsOpen = true;
+        if (Overlay != null)
+        {
+            Dalamud.Log.Warning("OverlayWindow Enable: Overlay is not null");
+            return;
+        }
         try
         {
-            Overlay = (IOverlay?)Activator.CreateInstance(Type, [this as IOverlayWindow]);
+            EncounterManager.Inst.ClientsNotifier.DataUpdate += OnEncounterUpdate;
+            EncounterManager.Inst.EncounterBegin += OnEncounterBegin;
+            EncounterManager.Inst.EncounterEnd += OnEncounterEnd;
+
+            Overlay = (BasicOverlay?)Activator.CreateInstance(Type, [this as IOverlayWindow]);
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow Enable, overlay \'{Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Name} overlay {Id}\' Had an error, contact the autor for feedback");
+            Dalamud.Log.Error($"OverlayWindow Enable, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
             Disable();
         }
-        EncounterManager.Inst.ClientsNotifier.DataUpdate += OnDataUpdate;
     }
 
     public void Disable()
     {
-        if (Overlay == null) return;
-        Overlay?.Dispose();
-        Overlay = null;
-        EncounterManager.Inst.ClientsNotifier.DataUpdate -= OnDataUpdate;
-        IsOpen = false;
-    }
-
-    public void Remove()
-    {
-        Overlay?.Remove();
-        Disable();
-    }
-
-    private void OnDataUpdate(object? _, EventArgs __)
-    {
-        if (Overlay == null) return;
+        if (Overlay == null)
+        {
+            Dalamud.Log.Warning("OverlayWindow Disable: Overlay is null");
+        }
         try
         {
-            Overlay?.DataUpdate();
+            EncounterManager.Inst.EncounterEnd -= OnEncounterEnd;
+            EncounterManager.Inst.EncounterBegin -= OnEncounterBegin;
+            EncounterManager.Inst.ClientsNotifier.DataUpdate -= OnEncounterUpdate;
+
+            Overlay?.Dispose();
+            Overlay = null;
+            IsOpen = false;
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow OnDataUpdate, overlay \'{Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Name} overlay {Id}\' Had an error, contact the autor for feedback");
+            Dalamud.Log.Error($"OverlayWindow Disable, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
             Disable();
         }
     }
 
-    public OverlayWindowSpecs GetSpecs()
+    public override void Draw()
     {
-        return new OverlayWindowSpecs
+        if (Overlay == null) return;
+        CurrentSize = ImGui.GetWindowSize();
+        CurrentPosition = ImGui.GetWindowPos();
+        try
         {
-            Name = Name,
-            Id = Id,
-            Comment = Comment,
-            Enabled = Enabled,
-        };
+            Overlay.Draw();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow Draw, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+    }
+
+    public override void Update()
+    {
+        try
+        {
+            Overlay?.Update();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow Update, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+    }
+
+    public override void OnOpen()
+    {
+        try
+        {
+            Overlay?.OnOpen();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow OnOpen, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+    }
+
+    public override void OnClose()
+    {
+        try
+        {
+            Overlay?.OnClose();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow OnClose, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+    }
+
+    public void OnEncounterUpdate(object? _, EventArgs __)
+    {
+        try
+        {
+            Overlay?.OnEncounterUpdate();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow OnEncounterUpdate, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+    }
+
+    public void OnEncounterBegin(object? _, EventArgs __)
+    {
+        try
+        {
+            Overlay?.OnEncounterBegin();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow OnEncounterBegin, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+    }
+
+    public void OnEncounterEnd(object? _, EventArgs __)
+    {
+        try
+        {
+            Overlay?.OnEncounterEnd();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow OnEncounterEnd, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+    }
+
+    public void DrawConfiguration()
+    {
+        try
+        {
+            Overlay?.DrawConfiguration();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow DrawConfig, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+    }
+
+    public void Remove()
+    {
+        try
+        {
+            Overlay?.Remove();
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Error($"OverlayWindow Remove, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            Disable();
+        }
+        Disable();
+    }
+
+    public void Dispose()
+    {
+        if (IsEnabled()) Disable();
     }
 }

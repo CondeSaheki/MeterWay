@@ -3,7 +3,7 @@ using Dalamud.Interface.Utility.Raii;
 
 using MeterWay.Overlay;
 
-namespace Lazer;
+namespace Vision;
 
 [Serializable]
 public class Configuration : IBasicOverlayConfiguration
@@ -11,8 +11,8 @@ public class Configuration : IBasicOverlayConfiguration
     public int Version { get; set; } = 0;
 
     public General General { get; set; } = new();
-    public Font Font { get; set; } = new();
     public Visibility Visibility { get; set; } = new();
+    public Font Font { get; set; } = new();
     public Appearance Appearance { get; set; } = new();
 }
 

@@ -79,7 +79,7 @@ public class Appearance
     public uint JobDefaultColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8549f, 0.6157f, 0.1804f, 0.25f));
 }
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
     private void DrawAppearanceTab()
     {
@@ -113,7 +113,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("Background", null, Config.Appearance.Background, newValue =>
         {
             Config.Appearance.Background = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         if (!Config.Appearance.Background) _ImGuiBeginDisabled(ref isDisabled);
@@ -121,7 +121,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImGuiColorPick("Background Color", Config.Appearance.BackgroundColor, newValue =>
         {
             Config.Appearance.BackgroundColor = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
         ImGui.Unindent();
         _ImGuiEndDisabled(ref isDisabled);
@@ -135,7 +135,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("Header##button", null, Config.Appearance.Header, newValue =>
         {
             Config.Appearance.Header = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         if (!Config.Appearance.Header) _ImGuiBeginDisabled(ref isDisabled);
@@ -145,13 +145,13 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (DrawAlingmentButtons(ref HeaderAlignmentValue))
         {
             Config.Appearance.HeaderAlignment = (Canvas.HorizontalAlign)HeaderAlignmentValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
 
         _ImguiCheckboxWithTooltip("Header Background", null, Config.Appearance.HeaderBackground, newValue =>
         {
             Config.Appearance.HeaderBackground = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         if (!Config.Appearance.HeaderBackground) _ImGuiBeginDisabled(ref isDisabled);
@@ -159,7 +159,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImGuiColorPick("Header Background Color", Config.Appearance.HeaderBackgroundColor, newValue =>
         {
             Config.Appearance.HeaderBackgroundColor = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
         ImGui.Unindent();
         ImGui.Unindent();
@@ -174,13 +174,13 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("Job Icon", null, Config.Appearance.PlayerJobIcon, newValue =>
         {
             Config.Appearance.PlayerJobIcon = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImguiCheckboxWithTooltip("Bar", null, Config.Appearance.Bar, newValue =>
         {
             Config.Appearance.Bar = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         if (!Config.Appearance.Bar) _ImGuiBeginDisabled(ref isDisabled);
@@ -188,7 +188,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("job colors", null, Config.Appearance.BarColorJob, newValue =>
         {
             Config.Appearance.BarColorJob = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         if (Config.Appearance.BarColorJob) _ImGuiBeginDisabled(ref isDisabled);
@@ -196,7 +196,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImGuiColorPick("Color", Config.Appearance.BarColor, newValue =>
         {
             Config.Appearance.BarColor = newValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
         ImGui.Unindent();
         ImGui.Unindent();
@@ -221,7 +221,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                 ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
             {
                 Config.Appearance.JobColors[i].Color = ImGui.ColorConvertFloat4ToU32(ColorValue);
-                File.Save(Window.NameId, Config);
+                Save(Window.WindowName, Config);
             }
         }
         ImGui.EndTable();
@@ -233,7 +233,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
         {
             Config.Appearance.JobDefaultColor = ImGui.ColorConvertFloat4ToU32(DefaultColorValue);
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
     }
 
@@ -256,7 +256,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             FontMogu = result.CreateFontHandle(FontAtlas);
 
             Config.Font.MoguFontSpec = result;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
         ImGui.SameLine();
         if (ImGui.Button("Default"))
@@ -265,13 +265,13 @@ public partial class Overlay : IOverlay, IOverlayConfig
             FontMogu = DefaultFont;
 
             Config.Font.MoguFontSpec = null;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
         ImGui.SameLine();
         _ImGuiColorPick("##MoguFontColor", Config.Font.MoguFontColor, (value) =>
         {
             Config.Font.MoguFontColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
         ImGui.SameLine();
         ImGui.Text("-->");

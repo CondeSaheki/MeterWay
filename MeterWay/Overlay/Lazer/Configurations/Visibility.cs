@@ -17,7 +17,7 @@ public class Visibility()
     public TimeSpan DelayDuration { get; set; } = TimeSpan.FromSeconds(30);
 }
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
     private void DrawVisibilityTab()
     {
@@ -33,7 +33,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("Always Show", "Always show this overlay.", Config.Visibility.Always, (value) =>
         {
             Config.Visibility.Always = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         ImGui.Indent();
@@ -42,13 +42,13 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("When enabled", "Imediatly show this overlay when it gets enabled", Config.Visibility.Enabled, (value) =>
         {
             Config.Visibility.Enabled = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImguiCheckboxWithTooltip("When In Combat", "Show this overlay during combat.", Config.Visibility.Combat, (value) =>
         {
             Config.Visibility.Combat = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         ImGui.Indent();
@@ -57,7 +57,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("Hide Delay", "Automatically hide this overlay after a certain duration of combat ends.", Config.Visibility.Delay, (value) =>
         {
             Config.Visibility.Delay = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
         ImGui.SameLine();
         ImGui.PushItemWidth(70);
@@ -65,7 +65,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.DragFloat("##DelaySecond", ref delayDurationValue, 0.1f, 0.1f, 3600f))
         {
             Config.Visibility.DelayDuration = TimeSpan.FromSeconds(delayDurationValue);
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
         ImGui.PopItemWidth();
         ImGui.SameLine();

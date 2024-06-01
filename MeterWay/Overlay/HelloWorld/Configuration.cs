@@ -4,7 +4,7 @@ using System;
 namespace HelloWorld;
 
 [Serializable]
-public class Configuration : IConfiguration
+public class Configuration : IBasicOverlayConfiguration
 {
     // keep track of the overlay version
     public int Version { get; set; } = 0;

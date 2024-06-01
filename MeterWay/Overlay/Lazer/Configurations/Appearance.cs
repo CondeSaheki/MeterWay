@@ -25,7 +25,7 @@ public class Appearance()
     // public uint Color8 { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(80f / 255f, 80f / 255f, 80f / 255f, 194f / 255f));
 }
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
     private void DrawAppearanceTab()
     {
@@ -53,7 +53,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.DragFloat("Spacing", ref SpacingValue, 0.1f, 0.1f, 3600f))
         {
             Config.Appearance.Spacing = SpacingValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
         ImGui.PopItemWidth();
 
@@ -64,49 +64,49 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImGuiColorPick("Background", Config.Appearance.BackgroundColor, (value) =>
         {
             Config.Appearance.BackgroundColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImGuiColorPick("Header Background", Config.Appearance.HeaderBackgroundColor, (value) =>
         {
             Config.Appearance.HeaderBackgroundColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImGuiColorPick("Your Bar", Config.Appearance.YourBarColor, (value) =>
         {
             Config.Appearance.YourBarColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImGuiColorPick("Bar", Config.Appearance.BarColor, (value) =>
         {
             Config.Appearance.BarColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImGuiColorPick("Bar Border", Config.Appearance.BarBorderColor, (value) =>
         {
             Config.Appearance.BarBorderColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImGuiColorPick("Job Name Text", Config.Appearance.JobNameTextColor, (value) =>
         {
             Config.Appearance.JobNameTextColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImGuiColorPick("Job Icon Border", Config.Appearance.JobIconBorderColor, (value) =>
         {
             Config.Appearance.JobIconBorderColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
 
         _ImGuiColorPick("Total Damage Text", Config.Appearance.TotalDamageTextColor, (value) =>
         {
             Config.Appearance.TotalDamageTextColor = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         });
     }
 }

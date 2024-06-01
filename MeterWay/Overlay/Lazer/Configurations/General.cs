@@ -18,7 +18,7 @@ public class General()
     public bool NoResize { get; set; } = false;
 }
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
     private void DrawGeneralTab()
     {
@@ -33,44 +33,44 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (!Window.IsOpen) _ImGuiBeginDisabled(ref isDisabled);
 
         ImGui.PushItemWidth(50);
-        var heigthValue = (int)Window.CurrentSize.X != 0 ? (int)Window.CurrentSize.X : (int)Config.General.Size.X;
-        var widthValue = (int)Window.CurrentSize.Y != 0 ? (int)Window.CurrentSize.Y : (int)Config.General.Size.Y;
-        if (ImGui.DragInt("##heigth", ref heigthValue) && heigthValue != (int)Window.CurrentSize.X)
+        var heigthValue = (int)(Window.CurrentSize?.X ?? Config.General.Size.X);
+        var widthValue = (int)(Window.CurrentSize?.Y ?? Config.General.Size.Y);
+        if (ImGui.DragInt("##heigth", ref heigthValue) && heigthValue != (int)Config.General.Size.X)
         {
             var vec = new Vector2(heigthValue, widthValue);
             Window.SetSize(vec);
             Config.General.Size = vec;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
         ImGui.SameLine();
-        if (ImGui.DragInt("##width", ref widthValue) && widthValue != (int)Window.CurrentSize.Y)
+        if (ImGui.DragInt("##width", ref widthValue) && widthValue != (int)Config.General.Size.Y)
         {
             var vec = new Vector2(heigthValue, widthValue);
             Window.SetSize(vec);
             Config.General.Size = vec;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
         ImGui.PopItemWidth();
         ImGui.SameLine();
         ImGui.Text("Size");
 
         ImGui.PushItemWidth(50);
-        var XValue = (int)Window.CurrentPos.X != 0 ? (int)Window.CurrentPos.X : (int)Config.General.Position.X;
-        var YValue = (int)Window.CurrentPos.Y != 0 ? (int)Window.CurrentPos.Y : (int)Config.General.Position.Y;
-        if (ImGui.DragInt("##XPos", ref XValue) && XValue != (int)Window.CurrentPos.X)
+        var XValue = (int)(Window.CurrentPosition?.X ?? Config.General.Position.X);
+        var YValue = (int)(Window.CurrentPosition?.Y ?? Config.General.Position.Y);
+        if (ImGui.DragInt("##XPos", ref XValue) && XValue != (int)Config.General.Position.X)
         {
             var vec = new Vector2(XValue, YValue);
             Window.SetPosition(vec);
             Config.General.Position = vec;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
         ImGui.SameLine();
-        if (ImGui.DragInt("##YPos", ref YValue) && YValue != (int)Window.CurrentPos.Y)
+        if (ImGui.DragInt("##YPos", ref YValue) && YValue != (int)Config.General.Position.Y)
         {
             var vec = new Vector2(XValue, YValue);
             Window.SetPosition(vec);
             Config.General.Position = vec;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
         ImGui.PopItemWidth();
         ImGui.SameLine();
@@ -85,7 +85,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("No Input", "Disables all input for this window.", Config.General.NoInput, (value) =>
         {
             Config.General.NoInput = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
 
             if (value) Window.Flags |= ImGuiWindowFlags.NoInputs;
             else Window.Flags &= ~ImGuiWindowFlags.NoInputs;
@@ -97,7 +97,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("No Move", "Prevents the window from being moved.", Config.General.NoMove, (value) =>
         {
             Config.General.NoMove = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
 
             if (value) Window.Flags |= ImGuiWindowFlags.NoMove;
             else Window.Flags &= ~ImGuiWindowFlags.NoMove;
@@ -106,7 +106,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         _ImguiCheckboxWithTooltip("No Resize", "Prevents the window from being resized.", Config.General.NoResize, (value) =>
         {
             Config.General.NoResize = value;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
 
             if (value) Window.Flags |= ImGuiWindowFlags.NoResize;
             else Window.Flags &= ~ImGuiWindowFlags.NoResize;
@@ -122,7 +122,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         {
             Config = new Configuration();
             Init();
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
     }
 }

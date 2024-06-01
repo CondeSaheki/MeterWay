@@ -5,7 +5,7 @@ using MeterWay.Overlay;
 
 namespace Dynamic;
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
     private void LoadScript()
     {
@@ -15,7 +15,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (!file.Exists)
         {
             Config.ScriptFile = null;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
             MeterWay.Dalamud.Log.Info("Dynamic Overlay LoadScript: File does not exist!");
             Window.IsOpen = false;
             return;
@@ -39,7 +39,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
             if (Config.ScriptFile == Script.FilePath.FullName)
             {
                 Config.ScriptFile = null;
-                File.Save(Window.NameId, Config);
+                Save(Window.WindowName, Config);
             }
             MeterWay.Dalamud.Log.Info("Dynamic Overlay ReloadScript: File does not exist!");
             Window.IsOpen = false;

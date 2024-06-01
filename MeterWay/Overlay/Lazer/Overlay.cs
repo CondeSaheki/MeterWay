@@ -1,10 +1,10 @@
-using System.Numerics;
-using ImGuiNET;
-using System.Collections.Generic;
-using System.Linq;
-using Dalamud.Interface.ManagedFontAtlas;
 using System;
+using System.Linq;
+using System.Numerics;
 using System.Threading;
+using System.Collections.Generic;
+using ImGuiNET;
+using Dalamud.Interface.ManagedFontAtlas;
 
 using MeterWay.Utils;
 using MeterWay.Managers;
@@ -13,11 +13,14 @@ using MeterWay.Overlay;
 
 namespace Lazer;
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
-    public static string Name => "Lazer"; // required
-    public static string Autor => "Maotovisk";
-    public static string Description => "The Lazer overlay is your companion for your gaming journey, and for a any journey you need stunning aesthetics.";
+    public static BasicOverlayInfo Info => new()
+    {
+        Name = "Lazer",
+        Author = "Maotovisk",
+        Description = "The Lazer overlay is your companion for your gaming journey, and for a any journey you need stunning aesthetics.",
+    };
 
     private IOverlayWindow Window { get; init; }
     private Configuration Config { get; set; }
@@ -41,11 +44,8 @@ public partial class Overlay : IOverlay, IOverlayConfig
     public Overlay(IOverlayWindow overlayWindow)
     {
         Window = overlayWindow;
-        Config = File.Load<Configuration>(Window.NameId);
+        Config = Load<Configuration>(Window.WindowName);
         Lerping = CreateLerping();
-
-        EncounterManager.Inst.EncounterEnd += OnEnconterEnd;
-        EncounterManager.Inst.EncounterBegin += OnEncounterBegin;
 
         Init();
         FontLazer ??= DefaultFont;
@@ -65,7 +65,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (Config.Font.LazerFontSpec != null) FontLazer = Config.Font.LazerFontSpec.CreateFontHandle(FontAtlas);
     }
 
-    public void DataUpdate()
+    public override void OnEncounterUpdate()
     {
         var oldPartyId = Data?.Party.Id ?? 0;
         Data = EncounterManager.Inst.CurrentEncounter();
@@ -80,7 +80,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         UpdateLerping();
     }
 
-    public void Draw()
+    public override void Draw()
     {
         if (Data == null) return;
         if (!Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
@@ -168,7 +168,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         FontLazer?.Pop();
     }
 
-    private void OnEnconterEnd(object? _, EventArgs __)
+    public override void OnEncounterEnd()
     {
         if (Config.Visibility.Always || !Config.Visibility.Combat) return;
 
@@ -185,7 +185,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
         });
     }
 
-    private void OnEncounterBegin(object? _, EventArgs __)
+    public override void OnEncounterBegin()
     {
         DelayToken?.Cancel();
         if (Config.Visibility.Always || Config.Visibility.Combat)
@@ -195,18 +195,16 @@ public partial class Overlay : IOverlay, IOverlayConfig
         }
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        EncounterManager.Inst.EncounterEnd -= OnEnconterEnd;
-        EncounterManager.Inst.EncounterEnd -= OnEncounterBegin;
         DelayToken?.Cancel();
         DelayToken?.Dispose();
         FontLazer?.Dispose();
         FontAtlas?.Dispose();
     }
 
-    public void Remove()
+    public override void Remove()
     {
-        File.Delete(Window.NameId);
+        Delete(Window.WindowName);
     }
 }

@@ -10,7 +10,7 @@ using MeterWay.Overlay;
 
 namespace Mogu;
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
     private static void DrawTextShadow(Vector2 position, uint color, string text, uint shadowColor)
     {
@@ -121,5 +121,63 @@ public partial class Overlay : IOverlay, IOverlayConfig
             chooser.Dispose();
         });
         MeterWay.Dalamud.PluginInterface.UiBuilder.Draw += chooser.Draw;
+    }
+
+    public class Lerp2<T>(Func<Lerp2<T>, (DateTime, T)> interpolation, Func<T, T, bool> compare) where T : notnull
+    {
+        public Func<Lerp2<T>, (DateTime, T)> Interpolation { get; init; } = interpolation;
+        public Func<T, T, bool> Compare { get; init; } = compare;
+
+        public (DateTime Time, T Data)? Now { get; private set; } = null;
+        public (DateTime Time, T Data)? End { get; private set; } = null;
+
+        public TimeSpan Interval { get; set; } = TimeSpan.FromSeconds(1);
+
+        public T? Update()
+        {
+            if (End == null) return default;
+            if (Now != null && End.Value.Time > DateTime.Now)
+            {
+                Now = Interpolation.Invoke(this);
+                return Now.Value.Data;
+            }
+            return End.Value.Data;
+        }
+
+        public void Update(T data)
+        {
+            DateTime now = DateTime.Now;
+            T? current = Update();
+
+            if (End != null && current != null && !Compare.Invoke(current, data))
+            {
+                End = (now + Interval, data);
+                Now = (now, (T)current);
+                return;
+            }
+            End = (now, data);
+            Now = null;
+        }
+
+        public void Reset()
+        {
+            Now = null;
+            End = null;
+        }
+    }
+
+    private Lerp2<double> CreateLerping()
+    {
+        return new((lerp) =>
+        {
+            // now = end + (now - end) * exp(-decay*deltaTime)
+
+            var timeNow = DateTime.Now;
+            const int decay = 16;
+            var now = lerp!.End!.Value.Data + (lerp.Now!.Value.Data - lerp!.End!.Value.Data) * Math.Exp(-decay * (timeNow - lerp.Now!.Value.Time).TotalSeconds);
+
+            return (timeNow, now);
+        },
+        (left, right) => left == right);
     }
 }

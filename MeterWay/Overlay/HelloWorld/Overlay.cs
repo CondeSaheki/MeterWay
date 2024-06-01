@@ -5,41 +5,44 @@ using MeterWay.Overlay;
 
 namespace HelloWorld
 {
-    public class Overlay : IOverlay, IOverlayConfig
+    public class Overlay : BasicOverlay
     {
-        // Static properties providing basic information about the overlay
-        public static string Name => "HelloWorld"; // required
-        public static string Author => "MeterWay";
-        public static string Description => "A simple overlay.";
+        // REQUIRED static property providing basic information about the overlay
+        public static BasicOverlayInfo Info => new()
+        {
+            Name = "HelloWorld", // required
+            Author = "MeterWay", // required
+            Description = "A simple overlay.",
+        };
 
         // Objects to hold the overlay's settings and The window where the overlay will be rendered
         private Configuration Config { get; init; }
         private IOverlayWindow Window { get; init; }
 
         // Object holding encounter information
-        private Encounter? Data = new();
+        private Encounter? Data;
 
         // Constructor initializing the overlay
         public Overlay(IOverlayWindow overlayWindow)
         {
             Window = overlayWindow;
-            Config = File.Load<Configuration>(Window.NameId);
+            Config = Load<Configuration>(Window.WindowName);
         }
 
         // Get the current encounter data from the manager
-        public void DataUpdate()
+        public override void OnEncounterUpdate()
         {
             Data = EncounterManager.Inst.CurrentEncounter();
         }
 
-        public void Draw()
+        public override void Draw()
         {
             if (Data == null) return; // no data avaliable
 
             ImGui.Text($"{Data.Name}, Welcome to this MeterWay overlay!");
         }
 
-        public void DrawConfig()
+        public override void DrawConfiguration()
         {
             ImGui.Text("Hey, I am a configuration window!\n");
 
@@ -48,17 +51,17 @@ namespace HelloWorld
             if (ImGui.Checkbox("Example configuration is enabled ", ref isEnabledValue))
             {
                 Config.IsEnabled = isEnabledValue;
-                File.Save(Name, Config);
+                Save(Window.WindowName, Config);
             }
         }
 
         // Method to remove any presistent resources on overlay
-        public void Remove()
+        public override void Remove()
         {
-            File.Delete(Window.NameId);
+            Delete(Window.WindowName);
         }
 
-        // DO NOT forget to dispose of any resources
-        public void Dispose() { }
+        // DO NOT forget to dispose of any resources used
+        public override void Dispose() { }
     }
 }

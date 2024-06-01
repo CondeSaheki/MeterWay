@@ -9,7 +9,7 @@ using MeterWay.Utils;
 
 namespace Dynamic;
 
-public partial class Overlay : IOverlay, IOverlayConfig
+public partial class Overlay : BasicOverlay
 {
     public void DrawScriptTab()
     {
@@ -27,7 +27,7 @@ public partial class Overlay : IOverlay, IOverlayConfig
                 MeterWay.Dalamud.PluginInterface.UiBuilder.Draw -= fileDialog.Draw;
                 if (!isOk || selectedFiles.Count == 0) return;
                 Config.ScriptFile = selectedFiles[0];
-                File.Save(Window.NameId, Config);
+                Save(Window.WindowName, Config);
             }, 1, null, true);
             MeterWay.Dalamud.PluginInterface.UiBuilder.Draw += fileDialog.Draw;
         }
@@ -90,11 +90,11 @@ public partial class Overlay : IOverlay, IOverlayConfig
         if (ImGui.Checkbox("Load on startup", ref startupValue))
         {
             Config.Startup = startupValue;
-            File.Save(Window.NameId, Config);
+            Save(Window.WindowName, Config);
         }
     }
 
-    public void DrawConfig()
+    public override void DrawConfiguration()
     {
         using var bar = ImRaii.TabBar("Overlay Settings Tabs");
         if (!bar) return;
@@ -114,8 +114,8 @@ public partial class Overlay : IOverlay, IOverlayConfig
     private void DrawAbout()
     {
         ImGui.Text($"Description");
-        ImGui.TextWrapped($"{Description}");
+        ImGui.TextWrapped($"{Info.Description}");
         ImGui.Text($"Autor");
-        ImGui.TextWrapped($"{Autor}");
+        ImGui.TextWrapped($"{Info.Author}");
     }
 }
