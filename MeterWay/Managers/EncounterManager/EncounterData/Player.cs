@@ -23,7 +23,7 @@ public class Player(Character character, Encounter encounter)
     public Heal HealDealt { get; set; } = new Heal();
     public Heal HealReceived { get; set; } = new Heal();
 
-    public PerSeconds PerSecounds { get; set; } = new PerSeconds();
+    public PerSeconds PerSeconds { get; set; } = new PerSeconds();
     
     public void Calculate()
     {
@@ -32,7 +32,7 @@ public class Player(Character character, Encounter encounter)
         HealDealt.Calculate();
         HealReceived.Calculate();
         
-        PerSecounds.Calculate(DamageDealt, DamageReceived, HealDealt, HealReceived, Encounter);
+        PerSeconds.Calculate(DamageDealt, DamageReceived, HealDealt, HealReceived, Encounter);
     }
 
     public bool Update()

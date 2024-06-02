@@ -1,3 +1,7 @@
+/*
+    This is may change in the future
+*/
+
 namespace MeterWay.Data;
 
 // Damage

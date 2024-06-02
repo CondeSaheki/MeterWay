@@ -41,7 +41,7 @@ public class DebugWindow : Window, IDisposable
             ImGui.Text($"DamageReceived:\n{data.DamageReceived}");
             ImGui.Text($"HealingDealt:\n{data.HealDealt}");
             ImGui.Text($"HealingReceived:\n{data.HealReceived}");
-            ImGui.Text($"DataPerSecounds:\n{data.PerSecounds}");
+            ImGui.Text($"DataPerSeconds:\n{data.PerSeconds}");
         }
 
         ImGui.Spacing();
@@ -62,7 +62,7 @@ public class DebugWindow : Window, IDisposable
                 ImGui.Text($"DamageReceived:\n{player.DamageReceived}");
                 ImGui.Text($"HealingDealt:\n{player.HealDealt}");
                 ImGui.Text($"HealingReceived:\n{player.HealReceived}");
-                ImGui.Text($"DataPerSecounds:\n{player.PerSecounds}");
+                ImGui.Text($"DataPerSeconds:\n{player.PerSeconds}");
             }
         }
     }

@@ -30,7 +30,7 @@ public class Encounter
     public Heal HealDealt { get; set; }
     public Heal HealReceived { get; set; }
 
-    public PerSeconds PerSecounds { get; set; }
+    public PerSeconds PerSeconds { get; set; }
 
     public Encounter()
     {
@@ -44,7 +44,7 @@ public class Encounter
         HealDealt = new Heal();
         HealReceived = new Heal();
 
-        PerSecounds = new PerSeconds();
+        PerSeconds = new PerSeconds();
     }
 
     public void Start()
@@ -67,7 +67,7 @@ public class Encounter
         HealDealt.Calculate();
         HealReceived.Calculate();
 
-        PerSecounds.Calculate(DamageDealt, DamageReceived, HealDealt, HealReceived, this);
+        PerSeconds.Calculate(DamageDealt, DamageReceived, HealDealt, HealReceived, this);
     }
 
     public void Parse() { foreach (var action in RawActions) LoglineParser.Parse(action, this); }

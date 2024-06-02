@@ -154,7 +154,7 @@ public partial class Overlay : BasicOverlay
             draw.AddText(position, colorWhite, text);
             line.AddMin(ImGui.CalcTextSize(text).X + Config.Appearance.Spacing, 0);
 
-            text = $"{Helpers.HumanizeNumber(player.PerSecounds.DamageDealt, 1)}/s";
+            text = $"{Helpers.HumanizeNumber(player.PerSeconds.DamageDealt, 1)}/s";
             position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
             draw.AddText(position, colorWhite, text);
             line.AddMax(-ImGui.CalcTextSize(text).X - Config.Appearance.Spacing, 0);
