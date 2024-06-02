@@ -19,7 +19,7 @@ public class Font()
 [Serializable]
 public class Appearance
 {
-    public string Format { get; set; } = "Crt {Player.DamageDealt.Count.Percent.Critical}% | Dh {Player.DamageDealt.Count.Percent.Direct}% | CrtDh {Player.DamageDealt.Count.Percent.CriticalDirect}% | {Player.DamageDealt}";
+    public string Format { get; set; } = "Crt {Player.DamageDealt.Count.Percent.Critical}% | Dh {Player.DamageDealt.Count.Percent.Direct}% | CrtDh {Player.DamageDealt.Count.Percent.CriticalDirect}% | {Player.DamageDealt.Value.Total}";
     public bool BackgroundEnable { get; set; } = false;
     public uint BackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 1f));
 }
@@ -72,7 +72,6 @@ public partial class Overlay : BasicOverlay
             PopupWindow format = new("Change Format Window", (TaskSource) =>
             {
                 string formatValue = Config.Appearance.Format;
-                int selectedItem = 0;
 
                 ImGui.Text("Enter your text below:");
 
@@ -88,57 +87,35 @@ public partial class Overlay : BasicOverlay
                 ImGui.EndChild();
 
                 ImGui.Spacing();
-                ImGui.Separator();
-                ImGui.Spacing();
-                if (ImGui.Button("Add"))
+                
+                if (ImGui.Button("Clear"))
                 {
-                    formatValue += PlaceHolders[selectedItem];
-                    Config.Appearance.Format = formatValue;
+                    Config.Appearance.Format = string.Empty;
                     Save(Window.WindowName, Config);
                 }
-                ImGui.SameLine();
-                if (ImGui.BeginCombo("##ComboBox", PlaceHolders[selectedItem]))
+                
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+                ImGui.Text("Format Builder");
+                ImGui.Spacing();
+
+                var placeHolderGenerator = new PlaceHoldersBuilder();
+                placeHolderGenerator.Draw();
+
+                if (ImGui.Button("Add Selection") && placeHolderGenerator.GetResult() != string.Empty)
                 {
-                    for (int i = 0; i < PlaceHolders.Length; i++)
-                    {
-                        bool isSelected = selectedItem == i;
-                        if (ImGui.Selectable(PlaceHolders[i], isSelected))
-                        {
-                            selectedItem = i;
-                        }
-                        if (isSelected)
-                        {
-                            ImGui.SetItemDefaultFocus();
-                        }
-                    }
-                    ImGui.EndCombo();
+                    formatValue += "{" + placeHolderGenerator.GetResult() + "}";
+                    Config.Appearance.Format = formatValue;
+                    Save(Window.WindowName, Config);
+                    placeHolderGenerator.Clear();
                 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            }, false, new(640, 360));
+                ImGui.SameLine();
+                if (ImGui.Button("Clear Selection")) placeHolderGenerator.Clear();
+            }, false, new(1280, 360));
             // {
             //     WindowFlags = ImGuiWindowFlags.no
             // }
-
         }
     }
 
