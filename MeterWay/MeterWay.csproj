@@ -5,16 +5,15 @@
   <PropertyGroup>
     <Authors>CondeSaheki</Authors>
     <Company></Company>
-    <Version>1.0.8</Version>
-    <Description>A simple dps meter.</Description>
+    <Version>1.0.9</Version>
+    <Description>"An addon that display and help you analyze combat data.</Description>
     <Copyright></Copyright>
     <PackageProjectUrl>https://github.com/CondeSaheki/MeterWay</PackageProjectUrl>
-    <PackageLicenseExpression>License</PackageLicenseExpression>
+    <PackageLicenseExpression>GLP-2.0</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="NLua" Version="1.7.2"/>
   </ItemGroup>
-
 </Project>
