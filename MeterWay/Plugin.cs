@@ -45,11 +45,11 @@ public sealed class Plugin : IDalamudPlugin
                 [
                     #if DEBUG
                         typeof(HelloWorld.Overlay),
+                        typeof(Dynamic.Overlay), // Temporarily disabled, sorry.
                     #endif
                     typeof(Mogu.Overlay),
                     typeof(Vision.Overlay),
                     typeof(Lazer.Overlay),
-                    typeof(Dynamic.Overlay)
                 ]
             );
 
