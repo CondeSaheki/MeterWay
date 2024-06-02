@@ -40,9 +40,9 @@ public partial class Overlay : BasicOverlay
         Data = EncounterManager.Inst.CurrentEncounter();
     }
 
-    public override void Remove()
+    public static void Remove(IOverlayWindow window)
     {
-        Delete(Window.WindowName);
+        Delete(window.WindowName);
     }
 
     public override void Draw()

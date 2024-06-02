@@ -195,6 +195,19 @@ public partial class Overlay : BasicOverlay
         }
     }
 
+    public override void OnOpen()
+    {
+        Window.SetSize(Config.General.Size);
+        Window.SetPosition(Config.General.Position);
+    }
+
+    public override void OnClose()
+    {
+        if (Window.CurrentPosition != null) Config.General.Position = (Vector2)Window.CurrentPosition;
+        if (Window.CurrentSize != null) Config.General.Size = (Vector2)Window.CurrentSize;
+        Save(Window.WindowName, Config);
+    }
+
     public override void Dispose()
     {
         DelayToken?.Cancel();
@@ -203,8 +216,8 @@ public partial class Overlay : BasicOverlay
         FontAtlas?.Dispose();
     }
 
-    public override void Remove()
+    public static void Remove(IOverlayWindow window)
     {
-        Delete(Window.WindowName);
+        Delete(window.WindowName);
     }
 }

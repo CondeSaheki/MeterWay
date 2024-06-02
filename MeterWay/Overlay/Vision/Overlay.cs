@@ -8,6 +8,7 @@ using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
+using System.Numerics;
 
 namespace Vision;
 
@@ -19,7 +20,7 @@ public partial class Overlay : BasicOverlay
         Author = "MeterWay",
         // Description = "",
     };
-    
+
     private IOverlayWindow Window { get; init; }
     private Configuration Config { get; set; }
 
@@ -104,6 +105,19 @@ public partial class Overlay : BasicOverlay
         FontMogu?.Pop();
     }
 
+    public override void OnOpen()
+    {
+        Window.SetSize(Config.General.Size);
+        Window.SetPosition(Config.General.Position);
+    }
+
+    public override void OnClose()
+    {
+        if (Window.CurrentPosition != null) Config.General.Position = (Vector2)Window.CurrentPosition;
+        if (Window.CurrentSize != null) Config.General.Size = (Vector2)Window.CurrentSize;
+        Save(Window.WindowName, Config);
+    }
+
     public override void OnEncounterEnd()
     {
         if (Config.Visibility.Always || !Config.Visibility.Combat) return;
@@ -132,9 +146,9 @@ public partial class Overlay : BasicOverlay
         }
     }
 
-    public override void Remove()
+    public static void Remove(IOverlayWindow window)
     {
-        Delete(Window.WindowName);
+        Delete(window.WindowName);
     }
 
     public override void Dispose()

@@ -55,10 +55,10 @@ namespace HelloWorld
             }
         }
 
-        // Method to remove any presistent resources on overlay
-        public override void Remove()
+        // Method to remove any presistent resources on overlay. This is need to be static, this may be called when overlay is not initialized
+        public static void Remove(IOverlayWindow window)
         {
-            Delete(Window.WindowName);
+            Delete(window.WindowName);
         }
 
         // DO NOT forget to dispose of any resources used

@@ -114,7 +114,7 @@ public partial class ConfigWindow : Window, IDisposable
             {
                 Plugin.OverlayManager.Remove(window.Key);
 
-                ConfigurationManager.Inst.Configuration.Overlays.RemoveAll(x => x.Id == window.Key);
+                ConfigurationManager.Inst.Configuration.Overlays = Plugin.OverlayManager.Windows.Values.Select(OverlayManager.GetSpec).ToList();
                 ConfigurationManager.Inst.Configuration.Save();
                 break;
             }

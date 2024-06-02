@@ -164,10 +164,23 @@ public partial class Overlay : BasicOverlay
             return;
         }
     }
-
-    public override void Remove()
+    
+    public override void OnOpen()
     {
-        Delete(Window.WindowName);
+        Window.SetSize(Config.General.Size);
+        Window.SetPosition(Config.General.Position);
+    }
+
+    public override void OnClose()
+    {
+        if (Window.CurrentPosition != null) Config.General.Position = (Vector2)Window.CurrentPosition;
+        if (Window.CurrentSize != null) Config.General.Size = (Vector2)Window.CurrentSize;
+        Save(Window.WindowName, Config);
+    }
+
+    public static void Remove(IOverlayWindow window)
+    {
+        Delete(window.WindowName);
     }
 
     // public string CommandHelpMessage(string? command)

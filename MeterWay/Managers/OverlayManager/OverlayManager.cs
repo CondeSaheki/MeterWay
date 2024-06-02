@@ -27,14 +27,14 @@ public class OverlayManager : IDisposable
 
     public OverlayManager(Type[] overlayTypes)
     {
-        #if DEBUG
-            Check(overlayTypes);
-        #endif
+#if DEBUG
+        Check(overlayTypes);
+#endif
 
         Types = overlayTypes;
 
         Load();
-        
+
         UniqueId = Windows.Count != 0 ? Windows.Keys.Max() + 1 : 1;
         Dalamud.PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
     }
@@ -57,17 +57,14 @@ public class OverlayManager : IDisposable
 
     public void Remove(uint id)
     {
-        if (!Windows.TryGetValue(id, out var window))
-        {
-            Dalamud.Log.Error($"OverlayManager Remove, id \'{id}\': Not found");
-            return;
-        }
         try
         {
-            WindowSystem.RemoveWindow(window);
-            Windows.Remove(id);
+            if (!Windows.TryGetValue(id, out var window)) throw new Exception($"Not found");
+            WindowSystem?.RemoveWindow(window);
             window.Remove();
             window.Dispose();
+            if (!Windows.Remove(id)) throw new Exception($"Not successfully removed");
+            window = null;
         }
         catch (Exception ex)
         {
@@ -78,12 +75,9 @@ public class OverlayManager : IDisposable
 
     public void Dispose()
     {
-        if (WindowSystem != null)
-        {
-            WindowSystem.RemoveAllWindows();
-            Dalamud.PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
-        }
-        foreach (var window in Windows) window.Value?.Dispose();
+        foreach (var id in Windows.Keys) Remove(id);
+        if (WindowSystem != null) Dalamud.PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
+        WindowSystem?.RemoveAllWindows();
         Windows?.Clear();
     }
 
@@ -103,7 +97,7 @@ public class OverlayManager : IDisposable
             IsEnabled = window.IsEnabled(),
         };
     }
-    
+
     private void Load()
     {
         var infos = Types.Select(GetInfo).ToArray();
@@ -112,13 +106,20 @@ public class OverlayManager : IDisposable
             var index = Array.FindIndex(infos, info => info.Name == spec.Name && info.Author == spec.Autor);
             if (index == -1)
             {
-                Dalamud.Log.Warning($"OverlayManager, name \'{spec.Name}\', autor \'{spec.Autor}\', id \'{spec.Id}\': Not found.");
+                Dalamud.Log.Warning($"OverlayManager Load, name \'{spec.Name}\', autor \'{spec.Autor}\', id \'{spec.Id}\': Not found.");
                 continue;
             }
 
-            var obj = new OverlayWindow(Types[index], spec);
-            WindowSystem.AddWindow(obj);
-            Windows.Add(spec.Id, obj);
+            try
+            {
+                var obj = new OverlayWindow(Types[index], spec);
+                WindowSystem.AddWindow(obj);
+                Windows.Add(spec.Id, obj);
+            }
+            catch (Exception ex)
+            {
+                Dalamud.Log.Error($"OverlayManager Load, name \'{spec.Name}\', autor \'{spec.Autor}\', id \'{spec.Id}\':\n{ex}.");
+            }
         }
     }
 

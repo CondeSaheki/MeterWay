@@ -54,7 +54,7 @@ public abstract class BasicOverlay : IDisposable
     /// <summary>
     /// Performs cleanup tasks of persistent data like configuration files associated with the overlay.
     /// </summary>
-    public virtual void Remove() { }
+    // public virtual void Remove() { }
 
     public virtual void Dispose() { }
 
@@ -74,7 +74,7 @@ public abstract class BasicOverlay : IDisposable
             try
             {
                 Dalamud.Log.Debug($"File Load, file \'{file.FullName}\': Reading");
-                var fileContent = System.IO.File.ReadAllText(file.FullName);
+                var fileContent = File.ReadAllText(file.FullName);
                 config = JsonConvert.DeserializeObject<Configuration>(fileContent)!;
                 if (config != null) return config;
             }
@@ -94,7 +94,7 @@ public abstract class BasicOverlay : IDisposable
     /// <typeparam name="Configuration"></typeparam>
     /// <param name="fileName"></param>
     /// <param name="config"></param>
-    public virtual void Save<Configuration>(string fileName, Configuration config) where Configuration : IBasicOverlayConfiguration, new()
+    public static void Save<Configuration>(string fileName, Configuration config) where Configuration : IBasicOverlayConfiguration, new()
     {
         var file = GetFile($"{fileName}.json");
         if (file == null) return;
@@ -115,7 +115,7 @@ public abstract class BasicOverlay : IDisposable
     /// Deletes the specified JSON file.
     /// </summary>
     /// <param name="fileName">The name of the file (without extension) to delete.</param>
-    public virtual void Delete(string fileName)
+    public static void Delete(string fileName)
     {
         var file = GetFile($"{fileName}.json");
         if (file == null || !file.Exists)
