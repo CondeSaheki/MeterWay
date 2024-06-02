@@ -59,8 +59,8 @@ public partial class Overlay : BasicOverlay
 
         Window.IsOpen = Config.Visibility.Enabled || Config.Visibility.Always;
 
-        Window.SetPosition(Config.General.Position);
         Window.SetSize(Config.General.Size);
+        Window.SetPosition(Config.General.Position);
 
         if (Config.Font.LazerFontSpec != null) FontLazer = Config.Font.LazerFontSpec.CreateFontHandle(FontAtlas);
     }
@@ -203,21 +203,20 @@ public partial class Overlay : BasicOverlay
 
     public override void OnClose()
     {
-        if (Window.CurrentPosition != null) Config.General.Position = (Vector2)Window.CurrentPosition;
-        if (Window.CurrentSize != null) Config.General.Size = (Vector2)Window.CurrentSize;
-        Save(Window.WindowName, Config);
-    }
-
-    public override void Dispose()
-    {
-        DelayToken?.Cancel();
-        DelayToken?.Dispose();
-        FontLazer?.Dispose();
-        FontAtlas?.Dispose();
+        SavaCurrentWindowData();
     }
 
     public static void Remove(IOverlayWindow window)
     {
         Delete(window.WindowName);
+    }
+
+    public override void Dispose()
+    {
+        SavaCurrentWindowData();
+        DelayToken?.Cancel();
+        DelayToken?.Dispose();
+        FontLazer?.Dispose();
+        FontAtlas?.Dispose();
     }
 }

@@ -68,6 +68,15 @@ public partial class Overlay : BasicOverlay
         ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
     }
 
+    private void SavaCurrentWindowData()
+    {
+        if (Window.CurrentSize != null) Config.General.Size = new(Window.CurrentSize.Value.X, Window.CurrentSize.Value.Y);
+        if (Window.CurrentPosition != null) Config.General.Position = new(Window.CurrentPosition.Value.X, Window.CurrentPosition.Value.Y);
+        MeterWay.Dalamud.Log.Info($"size {(Window.CurrentSize != null ? $"{Window.CurrentSize.Value.X}x{Window.CurrentSize.Value.Y}y" : "null")}");
+        MeterWay.Dalamud.Log.Info($"pos {(Window.CurrentPosition != null ? $"{Window.CurrentPosition.Value.X}x{Window.CurrentPosition.Value.Y}y" : "null")}");
+        Save(Window.WindowName, Config);
+    }
+
     public void _ImGuiBeginDisabled(ref bool value)
     {
         if (!value) ImGui.BeginDisabled();

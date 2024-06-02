@@ -73,6 +73,13 @@ public partial class Overlay : BasicOverlay
         rectangle.Max.X = rectangle.Min.X + ((rectangle.Max.X - rectangle.Min.X) * progress);
         ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, colorBlack, color, color, colorBlack);
     }
+    
+    private void SavaCurrentWindowData()
+    {
+        if (Window.CurrentPosition != null) Config.General.Position = (Vector2)Window.CurrentPosition;
+        if (Window.CurrentSize != null) Config.General.Size = (Vector2)Window.CurrentSize;
+        Save(Window.WindowName, Config);
+    }
 
     public void _ImGuiBeginDisabled(ref bool value)
     {

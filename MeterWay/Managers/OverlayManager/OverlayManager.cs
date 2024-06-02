@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using Dalamud.Interface.Windowing;
 
 using MeterWay.Managers;
@@ -27,9 +27,9 @@ public class OverlayManager : IDisposable
 
     public OverlayManager(Type[] overlayTypes)
     {
-#if DEBUG
-        Check(overlayTypes);
-#endif
+        #if DEBUG
+            Check(overlayTypes);
+        #endif
 
         Types = overlayTypes;
 
@@ -75,7 +75,18 @@ public class OverlayManager : IDisposable
 
     public void Dispose()
     {
-        foreach (var id in Windows.Keys) Remove(id);
+        foreach (var window in Windows)
+        {
+            try
+            {
+                WindowSystem?.RemoveWindow(window.Value);
+                window.Value.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Dalamud.Log.Error($"OverlayManager Remove, id \'{window.Key}\':\n{ex}");
+            }
+        };
         if (WindowSystem != null) Dalamud.PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         WindowSystem?.RemoveAllWindows();
         Windows?.Clear();

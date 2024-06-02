@@ -65,13 +65,13 @@ public class OverlayWindow : Window, IOverlayWindow
 
     public void SetSize(Vector2 size)
     {
-        ImGui.SetWindowSize($"{Id}", size);
+        ImGui.SetWindowSize(WindowName, size);
         CurrentSize = size;
     }
 
     public void SetPosition(Vector2 position)
     {
-        ImGui.SetWindowPos($"{Id}", position);
+        ImGui.SetWindowPos(WindowName, position);
         CurrentPosition = position;
     }
 
@@ -118,8 +118,6 @@ public class OverlayWindow : Window, IOverlayWindow
                 Dalamud.Log.Warning("OverlayWindow Disable: Overlay is null");
             }
             IsOpen = false;
-            OnClose();
-            
             Overlay?.Dispose();
         }
         catch (Exception ex)

@@ -35,7 +35,7 @@ public partial class Overlay : BasicOverlay
         ImGui.PushItemWidth(50);
         var heigthValue = (int)(Window.CurrentSize?.X ?? Config.General.Size.X);
         var widthValue = (int)(Window.CurrentSize?.Y ?? Config.General.Size.Y);
-        if (ImGui.DragInt("##heigth", ref heigthValue) && heigthValue != (int)Config.General.Size.X)
+        if (ImGui.DragInt("##heigth", ref heigthValue) && heigthValue != (int)Config.General.Size.X && Window.CurrentSize != null)
         {
             var vec = new Vector2(heigthValue, widthValue);
             Window.SetSize(vec);
@@ -43,7 +43,7 @@ public partial class Overlay : BasicOverlay
             Save(Window.WindowName, Config);
         }
         ImGui.SameLine();
-        if (ImGui.DragInt("##width", ref widthValue) && widthValue != (int)Config.General.Size.Y)
+        if (ImGui.DragInt("##width", ref widthValue) && widthValue != (int)Config.General.Size.Y && Window.CurrentSize != null)
         {
             var vec = new Vector2(heigthValue, widthValue);
             Window.SetSize(vec);
@@ -57,7 +57,7 @@ public partial class Overlay : BasicOverlay
         ImGui.PushItemWidth(50);
         var XValue = (int)(Window.CurrentPosition?.X ?? Config.General.Position.X);
         var YValue = (int)(Window.CurrentPosition?.Y ?? Config.General.Position.Y);
-        if (ImGui.DragInt("##XPos", ref XValue) && XValue != (int)Config.General.Position.X)
+        if (ImGui.DragInt("##XPos", ref XValue) && XValue != (int)Config.General.Position.X && Window.CurrentPosition != null)
         {
             var vec = new Vector2(XValue, YValue);
             Window.SetPosition(vec);
@@ -65,7 +65,7 @@ public partial class Overlay : BasicOverlay
             Save(Window.WindowName, Config);
         }
         ImGui.SameLine();
-        if (ImGui.DragInt("##YPos", ref YValue) && YValue != (int)Config.General.Position.Y)
+        if (ImGui.DragInt("##YPos", ref YValue) && YValue != (int)Config.General.Position.Y && Window.CurrentPosition != null)
         {
             var vec = new Vector2(XValue, YValue);
             Window.SetPosition(vec);
