@@ -24,6 +24,9 @@ public class OverlayWindow : Window, IOverlayWindow
 
     private BasicOverlay? Overlay { get; set; }
 
+    private bool PendingSetWindowSize { get; set; } = false;
+    private bool PendingSetWindowPosition { get; set; } = false;
+
     public OverlayWindow(Type overlay, uint id) : base($"{id}")
     {
         Type = overlay;
@@ -65,14 +68,14 @@ public class OverlayWindow : Window, IOverlayWindow
 
     public void SetSize(Vector2 size)
     {
-        ImGui.SetWindowSize(WindowName, size);
         CurrentSize = size;
+        PendingSetWindowSize = true;
     }
 
     public void SetPosition(Vector2 position)
     {
-        ImGui.SetWindowPos(WindowName, position);
         CurrentPosition = position;
+        PendingSetWindowPosition = true;
     }
 
     public Canvas GetCanvas()
@@ -139,8 +142,42 @@ public class OverlayWindow : Window, IOverlayWindow
     public override void Draw()
     {
         if (Overlay == null) return;
-        CurrentSize = ImGui.GetWindowSize();
-        CurrentPosition = ImGui.GetWindowPos();
+        if (PendingSetWindowSize)
+        {
+            ImGui.SetWindowSize(WindowName, CurrentSize ?? new(0, 0));
+
+
+            if (ImGui.GetWindowSize() != CurrentSize)
+            {
+                Dalamud.Log.Warning("OverlayWindow Draw: Size mismatch");
+            }
+            else
+            {
+                PendingSetWindowSize = false;
+            }
+        }
+        else
+        {
+            CurrentSize = ImGui.GetWindowSize();
+        }
+        if (PendingSetWindowPosition)
+        {
+            ImGui.SetWindowPos(WindowName, CurrentPosition ?? new(0, 0));
+            if (ImGui.GetWindowPos() != CurrentPosition)
+            {
+                Dalamud.Log.Warning("OverlayWindow Draw: Position mismatch");
+                CurrentPosition = ImGui.GetWindowPos();
+            }
+            else
+            {
+                PendingSetWindowPosition = false;
+            }
+        }
+        else
+        {
+            CurrentPosition = ImGui.GetWindowPos();
+        }
+
         try
         {
             Overlay.Draw();

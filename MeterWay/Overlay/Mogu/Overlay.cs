@@ -70,9 +70,6 @@ public partial class Overlay : BasicOverlay
 
     public override void Draw()
     {
-        if (Data == null) return;
-        if (Config.General.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
-
         var draw = ImGui.GetWindowDrawList();
         Canvas cursor = Window.GetCanvas();
 
@@ -81,6 +78,18 @@ public partial class Overlay : BasicOverlay
         float spacing = 2f;
         string text = "";
         Vector2 position = cursor.Min;
+        
+        if (Data == null)
+        {
+            draw.AddRect(cursor.Min, cursor.Max, Config.Font.MoguFontColor);
+            text = $"{Info.Name}, No Data.";
+            position = cursor.Align(text, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
+            draw.AddText(position, Config.Font.MoguFontColor, text); // outlined
+            FontMogu?.Pop();
+            return;
+        }
+        
+        if (Config.General.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
 
         // Background
         if (Config.Appearance.Background) draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.BackgroundColor);
@@ -163,12 +172,6 @@ public partial class Overlay : BasicOverlay
             Window.IsOpen = true;
             return;
         }
-    }
-
-    public override void OnOpen()
-    {
-        Window.SetSize(Config.General.Size);
-        Window.SetPosition(Config.General.Position);
     }
 
     public override void OnClose()

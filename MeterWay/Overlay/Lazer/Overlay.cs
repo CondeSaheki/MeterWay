@@ -82,9 +82,6 @@ public partial class Overlay : BasicOverlay
 
     public override void Draw()
     {
-        if (Data == null) return;
-        if (!Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
-
         var draw = ImGui.GetWindowDrawList();
         var sortCache = SortCache.ToList();
         Canvas cursor = Window.GetCanvas();
@@ -97,15 +94,18 @@ public partial class Overlay : BasicOverlay
         // Background
         draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.BackgroundColor);
 
-        // Empty
-        if (Data.Begin == null)
+        if (Data == null)
         {
-            text = "Empty";
+            draw.AddRect(cursor.Min, cursor.Max, Config.Font.LazerFontColor);
+            text = $"{Info.Name}, No Data.";
             position = cursor.Align(text, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
-            draw.AddText(position, colorWhite, text); // outlined
+            draw.AddText(position, Config.Font.LazerFontColor, text); // outlined
             FontLazer?.Pop();
             return;
         }
+
+        // TODO Config.General.FrameCalc
+        if (!Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
 
         // Header
         cursor.Max = new(cursor.Max.X, cursor.Min.Y + fontSize + 2 * Config.Appearance.Spacing);
@@ -143,7 +143,7 @@ public partial class Overlay : BasicOverlay
             line.AddMin(icon.Height + Config.Appearance.Spacing, 0);
 
             // Texts
-            text = $"{new Job(player.Job).Id}";
+            text = player.Job.Acronym;
             position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
             draw.AddText(position, Config.Appearance.JobNameTextColor, text); // scale 0.8
 
@@ -193,12 +193,6 @@ public partial class Overlay : BasicOverlay
             Window.IsOpen = true;
             return;
         }
-    }
-
-    public override void OnOpen()
-    {
-        Window.SetSize(Config.General.Size);
-        Window.SetPosition(Config.General.Position);
     }
 
     public override void OnClose()
