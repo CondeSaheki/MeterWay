@@ -39,44 +39,7 @@ public class Appearance
     public uint BarColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.25f));
 
     // Job colors
-    public (JobIds Job, uint Color)[] JobColors { get; set; } =
-    [
-        // tanks
-        (JobIds.PLD, ImGui.ColorConvertFloat4ToU32(new(0.6588f, 0.8235f, 0.902f, 0.25f))),
-        (JobIds.DRK, ImGui.ColorConvertFloat4ToU32(new(0.8196f, 0.149f, 0.8f, 0.25f))),
-        (JobIds.WAR, ImGui.ColorConvertFloat4ToU32(new(0.8118f, 0.149f, 0.1294f, 0.25f))),
-        (JobIds.GNB, ImGui.ColorConvertFloat4ToU32(new(0.4745f, 0.4275f, 0.1882f, 0.25f))),
-        (JobIds.GLA, ImGui.ColorConvertFloat4ToU32(new(0.6588f, 0.8235f, 0.902f, 0.25f))),
-        (JobIds.MRD, ImGui.ColorConvertFloat4ToU32(new(0.8118f, 0.149f, 0.1294f, 0.25f))),
-        // healers
-        (JobIds.SCH, ImGui.ColorConvertFloat4ToU32(new(0.5255f, 0.3412f, 1f, 0.25f))),
-        (JobIds.WHM, ImGui.ColorConvertFloat4ToU32(new(1f, 0.9412f, 0.8627f, 0.25f))),
-        (JobIds.AST, ImGui.ColorConvertFloat4ToU32(new(1f, 0.9059f, 0.2902f, 0.25f))),
-        (JobIds.SGE, ImGui.ColorConvertFloat4ToU32(new(0.5647f, 0.6902f, 1f, 0.25f))),
-        (JobIds.CNJ, ImGui.ColorConvertFloat4ToU32(new(1f, 0.9412f, 0.8627f, 0.25f))),
-        // melees
-        (JobIds.MNK, ImGui.ColorConvertFloat4ToU32(new(0.8392f, 0.6118f, 0f, 0.25f))),
-        (JobIds.NIN, ImGui.ColorConvertFloat4ToU32(new(0.6863f, 0.098f, 0.3922f, 0.25f))),
-        (JobIds.DRG, ImGui.ColorConvertFloat4ToU32(new(0.2549f, 0.3922f, 0.8039f, 0.25f))),
-        (JobIds.SAM, ImGui.ColorConvertFloat4ToU32(new(0.8941f, 0.4275f, 0.0157f, 0.25f))),
-        (JobIds.RPR, ImGui.ColorConvertFloat4ToU32(new(0.5882f, 0.3529f, 0.5647f, 0.25f))),
-        (JobIds.PGL, ImGui.ColorConvertFloat4ToU32(new(0.8392f, 0.6118f, 0f, 0.25f))),
-        (JobIds.ROG, ImGui.ColorConvertFloat4ToU32(new(0.6863f, 0.098f, 0.3922f, 0.25f))),
-        (JobIds.LNC, ImGui.ColorConvertFloat4ToU32(new(0.2549f, 0.3922f, 0.8039f, 0.25f))),
-        // physical rangeds
-        (JobIds.BRD, ImGui.ColorConvertFloat4ToU32(new(0.5686f, 0.7294f, 0.3686f, 0.25f))),
-        (JobIds.MCH, ImGui.ColorConvertFloat4ToU32(new(0.4314f, 0.8824f, 0.8392f, 0.25f))),
-        (JobIds.DNC, ImGui.ColorConvertFloat4ToU32(new(0.8863f, 0.6902f, 0.6863f, 0.25f))),
-        (JobIds.ARC, ImGui.ColorConvertFloat4ToU32(new(0.5686f, 0.7294f, 0.3686f, 0.25f))),
-        // casters
-        (JobIds.BLM, ImGui.ColorConvertFloat4ToU32(new(0.6471f, 0.4745f, 0.8392f, 0.25f))),
-        (JobIds.SMN, ImGui.ColorConvertFloat4ToU32(new(0.1765f, 0.6078f, 0.4706f, 0.25f))),
-        (JobIds.RDM, ImGui.ColorConvertFloat4ToU32(new(0.9098f, 0.4824f, 0.4824f, 0.25f))),
-        (JobIds.BLU, ImGui.ColorConvertFloat4ToU32(new(0f, 0.7255f, 0.9686f, 0.25f))),
-        (JobIds.THM, ImGui.ColorConvertFloat4ToU32(new(0.6471f, 0.4745f, 0.8392f, 0.25f))),
-        (JobIds.ACN, ImGui.ColorConvertFloat4ToU32(new(0.1765f, 0.6078f, 0.4706f, 0.25f))),
-    ];
-    public uint JobDefaultColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8549f, 0.6157f, 0.1804f, 0.25f));
+    public JobColors JobColors { get; set; } = new();
 }
 
 public partial class Overlay : BasicOverlay
@@ -90,7 +53,7 @@ public partial class Overlay : BasicOverlay
         if (!bar) return;
 
         DrawAppearanceGeralTab();
-        DrawJobColorsTab();
+        DrawRoleJobColorsTab();
         DrawFontsTab();
     }
 
@@ -203,40 +166,6 @@ public partial class Overlay : BasicOverlay
         _ImGuiEndDisabled(ref isDisabled);
     }
 
-    private void DrawJobColorsTab()
-    {
-        using var tab = ImRaii.TabItem("Job Colors");
-        if (!tab) return;
-
-        ImGui.Spacing();
-        ImGui.Text("Job Colors");
-        ImGui.Spacing();
-
-        ImGui.BeginTable("##ColorTable", 4, ImGuiTableFlags.SizingFixedFit); // ImGuiTableFlags.BordersV | ImGuiTableFlags.BordersOuter | ImGuiTableFlags.RowBg
-        for (var i = 0; i != Config.Appearance.JobColors.Length; ++i)
-        {
-            ImGui.TableNextColumn();
-            var ColorValue = ImGui.ColorConvertU32ToFloat4(Config.Appearance.JobColors[i].Color);
-            if (ImGui.ColorEdit4(Config.Appearance.JobColors[i].Job.ToString(), ref ColorValue,
-                ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
-            {
-                Config.Appearance.JobColors[i].Color = ImGui.ColorConvertFloat4ToU32(ColorValue);
-                Save(Window.WindowName, Config);
-            }
-        }
-        ImGui.EndTable();
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
-        var DefaultColorValue = ImGui.ColorConvertU32ToFloat4(Config.Appearance.JobDefaultColor);
-        if (ImGui.ColorEdit4("Job Default Color", ref DefaultColorValue,
-            ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.OptionsDefault)) // ImGuiColorEditFlags.NoLabel
-        {
-            Config.Appearance.JobDefaultColor = ImGui.ColorConvertFloat4ToU32(DefaultColorValue);
-            Save(Window.WindowName, Config);
-        }
-    }
-
     private void DrawFontsTab()
     {
         using var tab = ImRaii.TabItem("Fonts");
@@ -268,9 +197,9 @@ public partial class Overlay : BasicOverlay
             Save(Window.WindowName, Config);
         }
         ImGui.SameLine();
-        _ImGuiColorPick("##MoguFontColor", Config.Font.MoguFontColor, (value) =>
+        _ImGuiColorPick("##MoguFontColor", Config.Font.MoguFontColor, (newValue) =>
         {
-            Config.Font.MoguFontColor = value;
+            Config.Font.MoguFontColor = newValue;
             Save(Window.WindowName, Config);
         });
         ImGui.SameLine();

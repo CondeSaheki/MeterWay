@@ -15,7 +15,7 @@ public class Player(Character character, Encounter encounter)
 
     public string Name { get; set; } = character.Name.ToString();
     public uint? World { get; set; } = (character as PlayerCharacter)?.HomeWorld.Id;
-    public uint Job { get; set; } = character.ClassJob.Id;
+    public Job Job { get; set; } = Job.FromId((int)character.ClassJob.Id) ?? Job.Unknown;
 
     public Damage DamageDealt { get; set; } = new Damage();
     public Damage DamageReceived { get; set; } = new Damage();
@@ -44,12 +44,12 @@ public class Player(Character character, Encounter encounter)
 
         var tmpName = player.Name.ToString();
         var tmpWorld = player.HomeWorld.Id;
-        var tmpJob = player.ClassJob.Id;
+        var tmpJob = Job.FromId((int)player.ClassJob.Id) ?? Job.Unknown;
         if (Name != tmpName || World != tmpWorld || Job != tmpJob)
         {
-            Name = player.Name.ToString();
-            World = player.HomeWorld.Id;
-            Job = player.ClassJob.Id;
+            Name = tmpName;
+            World = tmpWorld;
+            Job = tmpJob;
             Id = Helpers.CreateId();
 
             Dalamud.Log.Info("Player Update: Done");

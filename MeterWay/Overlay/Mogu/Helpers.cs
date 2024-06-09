@@ -53,27 +53,57 @@ public partial class Overlay : BasicOverlay
         return result;
     }
 
-    private uint GetJobColor(uint rawJob)
+    private uint GetJobColor(Job job)
     {
-        var index = Array.FindIndex(Config.Appearance.JobColors, element => element.Job == new Job(rawJob).Id);
-        if (index != -1) return Config.Appearance.JobColors[index].Color;
-        return Config.Appearance.JobDefaultColor;
+        if (job == Job.Paladin || job == Job.Gladiator) return Config.Appearance.JobColors.Paladin;
+        if (job == Job.Warrior || job == Job.Marauder) return Config.Appearance.JobColors.Warrior;
+        if (job == Job.DarkKnight) return Config.Appearance.JobColors.DarkKnight;
+        if (job == Job.GunBreaker) return Config.Appearance.JobColors.GunBreaker;
+
+        if (job == Job.Monk || job == Job.Pugilist) return Config.Appearance.JobColors.Monk;
+        if (job == Job.Ninja || job == Job.Rogue) return Config.Appearance.JobColors.Ninja;
+        if (job == Job.Dragoon || job == Job.Lancer) return Config.Appearance.JobColors.Dragoon;
+        if (job == Job.Samurai) return Config.Appearance.JobColors.Samurai;
+        if (job == Job.Reaper) return Config.Appearance.JobColors.Reaper;
+
+        if (job == Job.WhiteMage || job == Job.Conjurer) return Config.Appearance.JobColors.WhiteMage;
+        if (job == Job.Scholar) return Config.Appearance.JobColors.Scholar;
+        if (job == Job.Astrologian) return Config.Appearance.JobColors.Astrologian;
+        if (job == Job.Sage) return Config.Appearance.JobColors.Sage;
+
+        if (job == Job.Bard || job == Job.Archer) return Config.Appearance.JobColors.Bard;
+        if (job == Job.Machinist) return Config.Appearance.JobColors.Machinist;
+        if (job == Job.Dancer) return Config.Appearance.JobColors.Dancer;
+
+        if (job == Job.BlackMage || job == Job.Thaumaturge) return Config.Appearance.JobColors.BlackMage;
+        if (job == Job.Summoner || job == Job.Arcanist) return Config.Appearance.JobColors.Summoner;
+        if (job == Job.RedMage) return Config.Appearance.JobColors.RedMage;
+        if (job == Job.BlueMage) return Config.Appearance.JobColors.BlueMage;
+
+        return Config.Appearance.JobColors.Default;
     }
 
-    private static void DrawJobIcon(Canvas area, uint job)
+    private uint GetRoleColor(Job job)
     {
-        var icon = MeterWay.Dalamud.Textures.GetIcon(job + 62000u, ITextureProvider.IconFlags.None);
-        if (icon == null) return;
+        if (Job.IsTank(job)) return Config.Appearance.JobColors.Tank;
+        if (Job.IsMeleeDps(job)) return Config.Appearance.JobColors.MeleeDps;
+        if (Job.IsHealer(job)) return Config.Appearance.JobColors.Healer;
+        if (Job.IsPhysicalRangedDps(job)) return Config.Appearance.JobColors.PhysicalRangedDps;
+        if (Job.IsMagicalRangedDps(job)) return Config.Appearance.JobColors.MagicalRangedDps;
+        return Config.Appearance.JobColors.Default;
+    }
 
-        ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
+    private static void DrawJobIcon(Canvas area, Job job)
+    {
+        var icon = job.Icon();
+        if (icon == null) return;
+        ImGui.GetWindowDrawList().AddImage((nint)icon, area.Min, area.Max);
     }
 
     private void SavaCurrentWindowData()
     {
         if (Window.CurrentSize != null) Config.General.Size = new(Window.CurrentSize.Value.X, Window.CurrentSize.Value.Y);
         if (Window.CurrentPosition != null) Config.General.Position = new(Window.CurrentPosition.Value.X, Window.CurrentPosition.Value.Y);
-        MeterWay.Dalamud.Log.Info($"size {(Window.CurrentSize != null ? $"{Window.CurrentSize.Value.X}x{Window.CurrentSize.Value.Y}y" : "null")}");
-        MeterWay.Dalamud.Log.Info($"pos {(Window.CurrentPosition != null ? $"{Window.CurrentPosition.Value.X}x{Window.CurrentPosition.Value.Y}y" : "null")}");
         Save(Window.WindowName, Config);
     }
 

@@ -61,11 +61,11 @@ public partial class Overlay : BasicOverlay
         Lerping.Update(updatedPlayersData);
     }
 
-    private static void DrawJobIcon(Canvas area, uint job)
+    private static void DrawJobIcon(Canvas area, Job job)
     {
-        var icon = MeterWay.Dalamud.Textures.GetIcon(job + 62000u, ITextureProvider.IconFlags.None);
+        var icon = job.Icon();
         if (icon == null) return;
-        ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
+        ImGui.GetWindowDrawList().AddImage((nint)icon, area.Min, area.Max);
     }
 
     private static void DrawProgressBar((Vector2 Min, Vector2 Max) rectangle, uint color, float progress)
