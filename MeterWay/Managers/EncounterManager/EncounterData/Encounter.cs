@@ -7,7 +7,7 @@ using MeterWay.LogParser;
 
 namespace MeterWay.Data;
 
-public class Encounter
+public class Encounter : IEncounter
 {
     public uint Id { get; set; }
     public string Name { get; set; }
@@ -21,7 +21,7 @@ public class Encounter
 
     public List<LogLineData> RawActions { get; set; }
 
-    public EncounterParty Party;
+    public Party Party;
     public Dictionary<uint, Player> Players => Party.Players;
 
     public Damage DamageDealt { get; set; }
@@ -32,11 +32,17 @@ public class Encounter
 
     public PerSeconds PerSeconds { get; set; }
 
+    public Dictionary<uint, IParty> Partys => throw new NotImplementedException();
+
+    Dictionary<uint, IPlayer> IEncounter.Players => throw new NotImplementedException();
+
+    public Dictionary<uint, IPet> Pets => throw new NotImplementedException();
+
     public Encounter()
     {
         Id = Helpers.CreateId();
         Name = GetName();
-        Party = new EncounterParty(this);
+        Party = new Party(this);
         RawActions = [];
 
         DamageDealt = new Damage();

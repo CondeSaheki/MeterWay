@@ -6,7 +6,7 @@ using MeterWay.Utils;
 
 namespace MeterWay.Data;
 
-public class Player(Character character, Encounter encounter)
+public class Player(Character character, Encounter encounter) : IPlayer
 {
     private Encounter Encounter { get; init; } = encounter;
 
@@ -24,7 +24,9 @@ public class Player(Character character, Encounter encounter)
     public Heal HealReceived { get; set; } = new Heal();
 
     public PerSeconds PerSeconds { get; set; } = new PerSeconds();
-    
+
+    public IParty? Party => throw new System.NotImplementedException();
+
     public void Calculate()
     {
         DamageDealt.Calculate();

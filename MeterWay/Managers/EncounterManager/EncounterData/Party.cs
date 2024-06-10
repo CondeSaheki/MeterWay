@@ -7,7 +7,7 @@ using MeterWay.Utils;
 
 namespace MeterWay.Data;
 
-public class EncounterParty
+public class Party : IParty
 {
     private Encounter Encounter { get; init; }
 
@@ -15,7 +15,22 @@ public class EncounterParty
     public Dictionary<uint, Player> Players { get; set; }
     public Dictionary<uint, uint> Pets { get; set; }
 
-    public EncounterParty(Encounter encounter)
+    IEncounter? IParty.Encounter => throw new System.NotImplementedException();
+
+    Dictionary<uint, IPlayer> IParty.Players => throw new System.NotImplementedException();
+
+    public Damage DamageDealt => throw new System.NotImplementedException();
+
+    public Damage DamageReceived => throw new System.NotImplementedException();
+
+    public Heal HealDealt => throw new System.NotImplementedException();
+
+    public Heal HealReceived => throw new System.NotImplementedException();
+
+    public PerSeconds PerSeconds => throw new System.NotImplementedException();
+
+
+    public Party(Encounter encounter)
     {
         Encounter = encounter;
         Id = Helpers.CreateId();
