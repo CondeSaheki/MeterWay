@@ -12,16 +12,19 @@ namespace Vision;
 [Serializable]
 public class Font()
 {
-    public uint MoguFontColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
-    public SingleFontSpec? MoguFontSpec { get; set; } = null;
+    public uint VisionFontColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
+    public SingleFontSpec? VisionFontSpec { get; set; } = null;
 }
 
 [Serializable]
 public class Appearance
 {
-    public string Format { get; set; } = "Crt {Player.DamageDealt.Count.Percent.Critical}% | Dh {Player.DamageDealt.Count.Percent.Direct}% | CrtDh {Player.DamageDealt.Count.Percent.CriticalDirect}% | {Player.DamageDealt.Value.Total}";
+    public StringFormater Format { get; set; } = new("Crt {Player.DamageDealt.Count.Percent.Critical}% | Dh {Player.DamageDealt.Count.Percent.Direct}% | CrtDh {Player.DamageDealt.Count.Percent.CriticalDirect}% | {Player.DamageDealt.Value.Total}");
     public bool BackgroundEnable { get; set; } = false;
     public uint BackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 1f));
+
+
+    public string[] SingleFormat { get; set; } = [];
 }
 
 public partial class Overlay : BasicOverlay
@@ -46,7 +49,7 @@ public partial class Overlay : BasicOverlay
         var isDisabled = false;
 
         ImGui.Spacing();
-        ImGui.Text("Customize how the Mogu looks");
+        ImGui.Text("Customize how the Vision looks");
         ImGui.Spacing();
 
         _ImguiCheckboxWithTooltip("Header Background", null, Config.Appearance.BackgroundEnable, newValue =>
@@ -67,56 +70,26 @@ public partial class Overlay : BasicOverlay
         ImGui.Unindent();
         _ImGuiEndDisabled(ref isDisabled);
 
-        if (ImGui.Button("change format"))
+        if (ImGui.Button("Format builder"))
         {
-            PopupWindow format = new("Change Format Window", (TaskSource) =>
+            var formatBuilder = new FormatBuilderDialog(Config.Appearance.Format, (newValue) =>
             {
-                string formatValue = Config.Appearance.Format;
+                Config.Appearance.Format = newValue;
+                Save(Window.WindowName, Config);
+            });
 
-                ImGui.Text("Enter your text below:");
-
-                ImGui.BeginChild("text box", new(ImGui.GetContentRegionAvail().X, 50), false, ImGuiWindowFlags.HorizontalScrollbar);
-                var boxX = Math.Max(ImGui.CalcTextSize(formatValue).X, ImGui.GetContentRegionAvail().X);
-
-                if (ImGui.InputTextMultiline("##BigTextInput", ref formatValue, 2048, new(boxX, 30), ImGuiInputTextFlags.NoHorizontalScroll))
-                {
-                    Config.Appearance.Format = formatValue;
-                    Save(Window.WindowName, Config);
-                }
-
-                ImGui.EndChild();
-
-                ImGui.Spacing();
-                
-                if (ImGui.Button("Clear"))
-                {
-                    Config.Appearance.Format = string.Empty;
-                    Save(Window.WindowName, Config);
-                }
-                
-                ImGui.Spacing();
-                ImGui.Separator();
-                ImGui.Spacing();
-                ImGui.Text("Format Builder");
-                ImGui.Spacing();
-
-                var placeHolderGenerator = new PlaceHoldersBuilder();
-                placeHolderGenerator.Draw();
-
-                if (ImGui.Button("Add Selection") && placeHolderGenerator.GetResult() != string.Empty)
-                {
-                    formatValue += "{" + placeHolderGenerator.GetResult() + "}";
-                    Config.Appearance.Format = formatValue;
-                    Save(Window.WindowName, Config);
-                    placeHolderGenerator.Clear();
-                }
-                ImGui.SameLine();
-                if (ImGui.Button("Clear Selection")) placeHolderGenerator.Clear();
-            }, false, new(1280, 360));
-            // {
-            //     WindowFlags = ImGuiWindowFlags.no
-            // }
         }
+
+        var formatchoser = new FormatChoser("Header Format", Config.Appearance.SingleFormat, (newValue) =>
+        {
+            Config.Appearance.SingleFormat = newValue.FullName;
+            Save(Window.WindowName, Config);
+        });
+        formatchoser.Draw();
+        ImGui.SameLine();
+        ImGui.Text($"> {(Config.Appearance.SingleFormat.Length == 0 ? "Empty" : string.Join(" > ", Config.Appearance.SingleFormat))}");
+
+        var asdasd = Job.IsRanged(Job.Summoner);
     }
 
     private void DrawFontsTab()
@@ -132,33 +105,33 @@ public partial class Overlay : BasicOverlay
         ImGui.Spacing();
 
         ImGui.Text("Geral Font");
-        if (ImGui.Button("Change")) _SingleFontChooserDialog(null, Config.Font.MoguFontSpec, (result) =>
+        if (ImGui.Button("Change")) _SingleFontChooserDialog(null, Config.Font.VisionFontSpec, (result) =>
         {
-            FontMogu?.Dispose();
-            FontMogu = result.CreateFontHandle(FontAtlas);
+            FontVision?.Dispose();
+            FontVision = result.CreateFontHandle(FontAtlas);
 
-            Config.Font.MoguFontSpec = result;
+            Config.Font.VisionFontSpec = result;
             Save(Window.WindowName, Config);
         });
         ImGui.SameLine();
         if (ImGui.Button("Default"))
         {
-            FontMogu?.Dispose();
-            FontMogu = DefaultFont;
+            FontVision?.Dispose();
+            FontVision = DefaultFont;
 
-            Config.Font.MoguFontSpec = null;
+            Config.Font.VisionFontSpec = null;
             Save(Window.WindowName, Config);
         }
         ImGui.SameLine();
-        _ImGuiColorPick("##MoguFontColor", Config.Font.MoguFontColor, (value) =>
+        _ImGuiColorPick("##VisionFontColor", Config.Font.VisionFontColor, (value) =>
         {
-            Config.Font.MoguFontColor = value;
+            Config.Font.VisionFontColor = value;
             Save(Window.WindowName, Config);
         });
         ImGui.SameLine();
         ImGui.Text("-->");
         ImGui.SameLine();
-        ImGui.Text($"{Config.Font.MoguFontSpec?.ToLocalizedString("en") ?? "Default"}");
+        ImGui.Text($"{Config.Font.VisionFontSpec?.ToLocalizedString("en") ?? "Default"}");
 
         ImGui.EndDisabled();
     }

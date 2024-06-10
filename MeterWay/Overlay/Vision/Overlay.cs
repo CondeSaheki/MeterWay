@@ -25,7 +25,7 @@ public partial class Overlay : BasicOverlay
     private Configuration Config { get; set; }
 
     private IFontAtlas FontAtlas { get; init; } = MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async);
-    private IFontHandle FontMogu { get; set; }
+    private IFontHandle FontVision { get; set; }
     private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
 
     private Encounter? Data;
@@ -40,7 +40,7 @@ public partial class Overlay : BasicOverlay
         Config = Load<Configuration>(Window.WindowName);
 
         Init();
-        FontMogu ??= DefaultFont;
+        FontVision ??= DefaultFont;
     }
 
     void Init()
@@ -54,7 +54,7 @@ public partial class Overlay : BasicOverlay
         Window.SetSize(Config.General.Size);
         Window.SetPosition(Config.General.Position);
 
-        if (Config.Font.MoguFontSpec != null) FontMogu = Config.Font.MoguFontSpec.CreateFontHandle(FontAtlas);
+        if (Config.Font.VisionFontSpec != null) FontVision = Config.Font.VisionFontSpec.CreateFontHandle(FontAtlas);
     }
 
     public override void OnEncounterUpdate()
@@ -70,30 +70,49 @@ public partial class Overlay : BasicOverlay
 
     public override void Draw()
     {
-        if (Data == null) return;
-        if (Config.General.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
-
-        if (PlayerId == null) { UpdatePlayerId(); return; }
-        if (!Data.Players.TryGetValue((uint)PlayerId, out Player? player)) return;
-
         var draw = ImGui.GetWindowDrawList();
         Canvas cursor = Window.GetCanvas();
-        FontMogu?.Push();
+        FontVision?.Push();
 
-        var text = ReplacePlaceholders(Config.Appearance.Format, player, Data, (obj) =>
+        if (Data == null)
         {
-            return obj switch
-            {
-                string stringValue => stringValue,
-                uint uintValue => $"{Helpers.HumanizeNumber(uintValue, 2)}",
-                int intValue => $"{Helpers.HumanizeNumber(intValue, 2)}",
-                double doubleValue => $"{doubleValue.ToString("F2", CultureInfo.InvariantCulture)}",
-                float floatValue => $"{floatValue.ToString("F2", CultureInfo.InvariantCulture)}",
-                DateTime dateTimeValue => $"{dateTimeValue}",
-                TimeSpan dateTimeValue => $"{dateTimeValue.ToString(@"mm\:ss")}",
-                _ => "Empty"
-            };
-        });
+            draw.AddRect(cursor.Min, cursor.Max, Config.Font.VisionFontColor);
+            var dataText = $"{Info.Name}, No Data.";
+            var dataPosition = cursor.Align(dataText, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
+            draw.AddText(dataPosition, Config.Font.VisionFontColor, dataText); // outlined
+            FontVision?.Pop();
+            return;
+        }
+        if (PlayerId == null)
+        {
+            UpdatePlayerId();
+            FontVision?.Pop();
+            return;
+        }
+        if (!Data.Players.TryGetValue((uint)PlayerId, out Player? player))
+        {
+            FontVision?.Pop();
+            return;
+        }
+
+        if (Config.General.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
+
+        var text = Config.Appearance.Format.Original;
+        
+        // {
+        //     return obj switch
+        //     {
+        //         string stringValue => stringValue,
+        //         uint uintValue => $"{Helpers.HumanizeNumber(uintValue, 2)}",
+        //         int intValue => $"{Helpers.HumanizeNumber(intValue, 2)}",
+        //         double doubleValue => $"{doubleValue.ToString("F2", CultureInfo.InvariantCulture)}",
+        //         float floatValue => $"{floatValue.ToString("F2", CultureInfo.InvariantCulture)}",
+        //         DateTime dateTimeValue => $"{dateTimeValue}",
+        //         TimeSpan dateTimeValue => $"{dateTimeValue.ToString(@"mm\:ss")}",
+        //         _ => "Empty"
+        //     };
+        // });
+        
         var textsize = ImGui.CalcTextSize(text);
         cursor = new Canvas((cursor.Min, new(cursor.Min.X + textsize.X, cursor.Min.Y + textsize.Y)));
         cursor.Padding(-2f);
@@ -101,8 +120,8 @@ public partial class Overlay : BasicOverlay
         if (Config.Appearance.BackgroundEnable) draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.BackgroundColor);
 
         var position = cursor.Padding((6f, 4f)).Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
-        draw.AddText(position, Config.Font.MoguFontColor, text);
-        FontMogu?.Pop();
+        draw.AddText(position, Config.Font.VisionFontColor, text);
+        FontVision?.Pop();
     }
 
     public override void OnEncounterEnd()
@@ -132,12 +151,6 @@ public partial class Overlay : BasicOverlay
             return;
         }
     }
-    
-    public override void OnOpen()
-    {
-        Window.SetSize(Config.General.Size);
-        Window.SetPosition(Config.General.Position);
-    }
 
     public override void OnClose()
     {
@@ -155,7 +168,7 @@ public partial class Overlay : BasicOverlay
 
         DelayToken?.Cancel();
         DelayToken?.Dispose();
-        FontMogu?.Dispose();
+        FontVision?.Dispose();
         FontAtlas?.Dispose();
     }
 }
