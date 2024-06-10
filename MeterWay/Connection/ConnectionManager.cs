@@ -9,14 +9,23 @@ using MeterWay.Managers;
 
 namespace MeterWay.Connection;
 
+/// <summary>
+/// Enumeration representing the types of clients that can be used to connect.
+/// </summary>
 public enum ClientType
 {
-    Iinact = 0,
-    Act = 1
+    Iinact,
+    Act
 }
 
+/// <summary>
+/// Manages the connection.
+/// </summary>
 public class ConnectionManager : IDisposable
 {
+    /// <summary>
+    /// Types of subscriptions that can be made.
+    /// </summary>
     public enum SubscriptionType
     {
         LogLine,
@@ -28,20 +37,41 @@ public class ConnectionManager : IDisposable
         BroadcastMessage
     }
 
+    /// <summary>
+    /// Types of subscriptions that are currently active.
+    /// </summary>
     public HashSet<SubscriptionType> Subscriptions { get; set; } = [];
 
+    /// <summary>
+    /// Event that is triggered when data is received.
+    /// </summary>
     public event EventHandler<JObject> OnDataReceived = delegate { };
 
+    /// <summary>
+    /// The client used to communicate with the server.
+    /// </summary>
     public IClient? Client { get; private set; }
 
-    public ConnectionManager()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConnectionManager"/> class.
+    /// </summary>
+    /// <param name="subscriptions">The types of subscriptions to make.</param>
+    public ConnectionManager(HashSet<SubscriptionType>? subscriptions = null)
     {
+        Subscriptions = subscriptions ?? [];
         Init();
         if (ConfigurationManager.Inst.Configuration.AutoConnect) AutoConnect();
     }
 
+    /// <summary>
+    /// Gets the current status of the connection.
+    /// </summary>
+    /// <returns>The current status of the connection.</returns>
     public ClientStatus Status() => Client?.GetStatus() ?? ClientStatus.NotInitialized;
 
+    /// <summary>
+    /// Connects.
+    /// </summary>
     public void Connect() => Task.Run(() =>
     {
         if (Client == null || Client.GetStatus() == ClientStatus.Connected) return;
@@ -58,6 +88,9 @@ public class ConnectionManager : IDisposable
         Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is connected."), new UIForegroundPayload(0)));
     });
 
+    /// <summary>
+    /// Disconnects.
+    /// </summary>
     public void Disconnect() => Task.Run(() =>
     {
         if (Client == null || Client.GetStatus() == ClientStatus.Disconnected) return;
@@ -72,6 +105,9 @@ public class ConnectionManager : IDisposable
         Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is disconnected."), new UIForegroundPayload(0)));
     });
 
+    /// <summary>
+    /// Reconnects.
+    /// </summary>
     public void Reconnect() => Task.Run(() =>
     {
         if (Client == null || Client.GetStatus() != ClientStatus.Connected) return;
@@ -86,6 +122,9 @@ public class ConnectionManager : IDisposable
         Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is reconnected."), new UIForegroundPayload(0)));
     });
 
+    /// <summary>
+    /// Disposes of the connection manager.
+    /// </summary>
     public void Dispose()
     {
         Client?.Dispose();
@@ -106,6 +145,9 @@ public class ConnectionManager : IDisposable
         else Dalamud.Framework.Update += OnLogin;
     }
 
+    /// <summary>
+    /// Initializes the connection manager.
+    /// </summary>
     public void Init()
     {
         try
@@ -126,14 +168,14 @@ public class ConnectionManager : IDisposable
                 {
                     Uri = new(ConfigurationManager.Inst.Configuration.Address)
                 },
-                _ => null
+                _ => throw new Exception("Client is null")
             };
-
-            if (Client == null) throw new Exception("Client is null");
         }
         catch (Exception ex)
         {
             Dalamud.Log.Error($"ConnectionManager Init:\n{ex}");
+            Client?.Dispose();
+            Client = null;
         }
     }
 
@@ -149,6 +191,9 @@ public class ConnectionManager : IDisposable
         }
     }
 
+    /// <summary>
+    /// Subscribes with the current list of subscriptions.
+    /// </summary>
     private void Subscribe()
     {
         if (Subscriptions.Count == 0)

@@ -37,7 +37,7 @@ public sealed class Plugin : IDalamudPlugin
 
             configurationManager = new();
             encounterManager = new();
-            ConnectionManager = new() { Subscriptions = [ConnectionManager.SubscriptionType.LogLine] };
+            ConnectionManager = new([ConnectionManager.SubscriptionType.LogLine]);
             ConnectionManager.OnDataReceived += EncounterManager.Receiver;
 
             // register your overlay here

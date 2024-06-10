@@ -12,9 +12,16 @@ public interface IClient : IDisposable
     public void Send(JObject message);
 }
 
+/// <summary>
+/// Represents the status of the client.
+/// </summary>
 public enum ClientStatus
 {
-    NotInitialized, // do not use, exclusive to ConnectionManager Status
+    /// <summary>
+    /// Do not use, exclusive to ConnectionManager Status
+    /// </summary>
+    NotInitialized,
+    
     Connected,
     Disconnected,
     Error,

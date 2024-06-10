@@ -6,7 +6,6 @@ using System.Net.WebSockets;
 using Newtonsoft.Json.Linq;
 
 using MeterWay.Utils;
-using Dalamud.Utility;
 
 namespace MeterWay.Connection;
 
