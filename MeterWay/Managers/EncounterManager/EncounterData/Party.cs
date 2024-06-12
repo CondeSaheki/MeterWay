@@ -13,7 +13,7 @@ public class Party : IParty
 
     public uint Id { get; set; }
     public Dictionary<uint, Player> Players { get; set; }
-    public Dictionary<uint, uint> Pets { get; set; }
+    public Dictionary<uint, IPet> Pets { get; set; }
 
     IEncounter? IParty.Encounter => throw new System.NotImplementedException();
 

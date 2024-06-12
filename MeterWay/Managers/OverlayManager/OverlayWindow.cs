@@ -146,7 +146,6 @@ public class OverlayWindow : Window, IOverlayWindow
         {
             ImGui.SetWindowSize(WindowName, CurrentSize ?? new(0, 0));
 
-
             if (ImGui.GetWindowSize() != CurrentSize)
             {
                 Dalamud.Log.Warning("OverlayWindow Draw: Size mismatch");
@@ -166,7 +165,6 @@ public class OverlayWindow : Window, IOverlayWindow
             if (ImGui.GetWindowPos() != CurrentPosition)
             {
                 Dalamud.Log.Warning("OverlayWindow Draw: Position mismatch");
-                CurrentPosition = ImGui.GetWindowPos();
             }
             else
             {

@@ -8,5 +8,5 @@ public interface IParty : IData
     public uint Id { get; }
 
     public Dictionary<uint, IPlayer> Players { get; }
-    public Dictionary<uint, uint> Pets { get; }
+    public Dictionary<uint, IPet> Pets { get; }
 }
