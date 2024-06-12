@@ -4,21 +4,21 @@ using ImGuiNET;
 namespace MeterWay.Utils;
 
 /// <summary>
-/// A class for choosing a format from a tree-like button.
+/// A class for choosing a PlaceHolder with tree-like button.
 /// </summary>
-public class FormatChoser
+public class PlaceHolderChoser
 {
-    private Action<Node> Setter { get; set; }
+    private Action<PlaceHolder> Setter { get; set; }
     private string[] Current { get; set; }
     private string Label { get; set; }
 
     /// <summary>
-    /// Create a new FormatChoser.
+    /// Create a new PlaceHolderChoser.
     /// </summary>
     /// <param name="label">The label of the button to open the menu.</param>
     /// <param name="current">The current format.</param>
     /// <param name="setter">The action to set the selected format.</param>
-    public FormatChoser(string label, string[] current, Action<Node> setter)
+    public PlaceHolderChoser(string label, string[] current, Action<PlaceHolder> setter)
     {
         Label = label;
         Current = current;
@@ -26,11 +26,11 @@ public class FormatChoser
     }
 
     /// <summary>
-    /// Create a new FormatChoser with the default label.
+    /// Create a new PlaceHolderChoser with the default label.
     /// </summary>
     /// <param name="current">The current format.</param>
     /// <param name="setter">The action to set the selected format.</param>
-    public FormatChoser(string[] current, Action<Node> setter) : this("Change format", current, setter) { }
+    public PlaceHolderChoser(string[] current, Action<PlaceHolder> setter) : this("Change format", current, setter) { }
 
     /// <summary>
     /// Draw the menu.
@@ -45,19 +45,19 @@ public class FormatChoser
         }
     }
     
-    private void DrawMenu(Node node)
+    private void DrawMenu(PlaceHolder node)
     {
         foreach (var child in node.Children)
         {
             if (child.Children.Length > 0)
             {
-                if (ImGui.BeginMenu(child.Name))
+                if (ImGui.BeginMenu(child.FirstName))
                 {
                     DrawMenu(child);
                     ImGui.EndMenu();
                 }
             }
-            else if (ImGui.MenuItem(child.Name) && Current != child.FullName) Setter(child);
+            else if (ImGui.MenuItem(child.FirstName) && Current != child.FullName) Setter(child);
         }
     }
 }

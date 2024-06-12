@@ -1,76 +1,80 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MeterWay.Utils;
 
 /// <summary>
-/// A class to represent a single placeholder in a string.
+/// Contains information about the placeholder and its position in the original string.
 /// </summary>
-[Serializable]
-public class SinglePlaceHolder(int begin, int end, Node node) : Node(node)
+public class FormatInfo(PlaceHolder? placeHolder, (int Begin, int End) position, Format format)
 {
-    public int Begin { get; set; } = begin;
-    public int End { get; set; } = end;
+    public PlaceHolder? PlaceHolder { get; set; } = placeHolder;
+    public (int Begin, int End) Position { get; set; } = position;
+    
+    private readonly Format Format = format;
+
+    /// <summary>
+    /// Returns the target string of the format placeholder.
+    /// </summary>
+    /// <param name="info">The format placeholder information.</param>
+    /// <returns>The target string of the format placeholder.</returns>
+    public string Target => Format.Original[Position.Begin..Position.End];
+
 }
 
 /// <summary>
 /// A class to format a string with placeholders and replace them with values.
 /// </summary>
-[Serializable]
-public class StringFormater
+public class Format
 {
     public string Original { get; private set; }
-    public SinglePlaceHolder[] PlaceHolders { get; private set; }
+    public FormatInfo[] Infos { get; private set; }
 
-    public StringFormater(string original, SinglePlaceHolder[] placeHolders)
-    {
-        Original = original;
-        PlaceHolders = placeHolders;
-    }
-
-    public StringFormater(string format)
+    public Format(string format)
     {
         Original = format;
 
-        List<SinglePlaceHolder> result = [];
-        int startIndex = 0;
+        List<FormatInfo> result = [];
+        var isFound = false;
+        var beginIndex = -1;
 
-        while (true)
+        for (var index = 0; index != format.Length; ++index)
         {
-            int openIndex = format.IndexOf('{', startIndex);
-            if (openIndex == -1) break;
-
-            int closeIndex = format.IndexOf('}', openIndex);
-            if (closeIndex == -1) break;
-            startIndex = closeIndex;
-
-            var node = PlaceHolder.Get(format[openIndex..closeIndex].Split('.'));
-            if (node != null) result.Add(new(openIndex, closeIndex, node));
+            if (format[index] == '{' && !isFound)
+            {
+                isFound = true;
+                beginIndex = index;
+            }
+            else if (format[index] == '}' && isFound)
+            {
+                isFound = false;
+                result.Add(new(PlaceHolder.Find(format[(beginIndex + 1)..index].Split('.')), (beginIndex, index + 1), this));
+            }
         }
-
-        PlaceHolders = [.. result];
+        Infos = [.. result];
     }
 
     /// <summary>Replace the placeholders in the string with the given replacements.</summary>
-    /// <param name="replaces">The values to replace the placeholders with.</param>
+    /// <param name="replacements">The values to replace the placeholders with.</param>
     /// <returns>The string with the placeholders replaced.</returns>
     /// <exception cref="Exception">Thrown if the number of replacements does not match the number of placeholders.</exception>
-    public string Build(IEnumerable<string> replaces)
+    public string Build(List<string> replacements)
     {
-        if (replaces.Count() != PlaceHolders.Length) throw new Exception("StringFormater Build: replaces size does not match PlaceHolders size");
+        if (Infos.Length != replacements.Count) throw new Exception("Replacements and placeholders length do not match.");
 
-        StringBuilder sb = new(Original);
+        StringBuilder result = new();
+        int currentIndex = 0;
 
-        int index = 0;
-        foreach (var placeHolder in PlaceHolders)
+        for (var index = 0; index != Infos.Length; ++index)
         {
-            sb.Remove(placeHolder.Begin, placeHolder.End - placeHolder.Begin + 1);
-            sb.Insert(placeHolder.Begin, replaces.ElementAt(index));
-            index++;
+            result.Append(Original[currentIndex..Infos[index].Position.Begin]);
+            result.Append(replacements[index]);
+            currentIndex = Infos[index].Position.End;
         }
 
-        return sb.ToString();
+        if (currentIndex < Original.Length) result.Append(Original[currentIndex..]);
+
+        return result.ToString();
     }
 }

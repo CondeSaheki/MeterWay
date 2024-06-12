@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using ImGuiNET;
@@ -15,15 +14,14 @@ public class FormatBuilderDialog
     private TaskCompletionSource TaskSource { get; init; } = new();
     private bool FirstDraw { get; set; } = true;
 
-    private Action<StringFormater> Setter { get; init; }
-    private string OriginalString { get; init; }
-    private StringFormater Format { get; set; }
+    private Action<Format> Setter { get; init; }
+    private string Original { get; init; }
+    private Format Format { get; set; }
 
-
-    public FormatBuilderDialog(StringFormater currentFormat, Action<StringFormater> setter)
+    public FormatBuilderDialog(Format currentFormat, Action<Format> setter)
     {
         Setter = setter;
-        OriginalString = currentFormat.Original;
+        Original = currentFormat.Original;
         Format = currentFormat;
 
         Dalamud.PluginInterface.UiBuilder.Draw += Draw;
@@ -75,7 +73,7 @@ public class FormatBuilderDialog
 
         if (ImGui.Button("Clear")) Format = new(string.Empty);
         ImGui.SameLine();
-        if (ImGui.Button("Reset")) Format = new(OriginalString);
+        if (ImGui.Button("Reset")) Format = new(Original);
         ImGui.SameLine();
         if (ImGui.Button("Save"))
         {
@@ -83,7 +81,7 @@ public class FormatBuilderDialog
             TaskSource.SetResult();
         }
         ImGui.SameLine();
-        var formatchoser = new FormatChoser($"Add", [], (newValue) =>
+        var formatchoser = new PlaceHolderChoser($"Add", [], (newValue) =>
         {
             Format = new($"{Format.Original}{{{string.Join('.', newValue.FullName)}}}");
         });
