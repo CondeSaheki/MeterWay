@@ -19,12 +19,12 @@ public class Font()
 [Serializable]
 public class Appearance
 {
-    public StringFormater Format { get; set; } = new("Crt {Player.DamageDealt.Count.Percent.Critical}% | Dh {Player.DamageDealt.Count.Percent.Direct}% | CrtDh {Player.DamageDealt.Count.Percent.CriticalDirect}% | {Player.DamageDealt.Value.Total}");
     public bool BackgroundEnable { get; set; } = false;
     public uint BackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 1f));
 
 
     public string[] SingleFormat { get; set; } = [];
+    public string FormatString { get; set; } = new("Crt {Player.DamageDealt.Count.Percent.Critical}% | Dh {Player.DamageDealt.Count.Percent.Direct}% | CrtDh {Player.DamageDealt.Count.Percent.CriticalDirect}% | {Player.DamageDealt.Value.Total}");
 }
 
 public partial class Overlay : BasicOverlay
@@ -72,15 +72,15 @@ public partial class Overlay : BasicOverlay
 
         if (ImGui.Button("Format builder"))
         {
-            var formatBuilder = new FormatBuilderDialog(Config.Appearance.Format, (newValue) =>
+            var formatBuilder = new FormatBuilderDialog(VisionFormat, (newValue) =>
             {
-                Config.Appearance.Format = newValue;
+                Config.Appearance.FormatString = newValue.Original;
+                VisionFormat = newValue;
                 Save(Window.WindowName, Config);
             });
-
         }
 
-        var formatchoser = new FormatChoser("Header Format", Config.Appearance.SingleFormat, (newValue) =>
+        var formatchoser = new PlaceHolderChoser("Header Format", Config.Appearance.SingleFormat, (newValue) =>
         {
             Config.Appearance.SingleFormat = newValue.FullName;
             Save(Window.WindowName, Config);
@@ -88,8 +88,6 @@ public partial class Overlay : BasicOverlay
         formatchoser.Draw();
         ImGui.SameLine();
         ImGui.Text($"> {(Config.Appearance.SingleFormat.Length == 0 ? "Empty" : string.Join(" > ", Config.Appearance.SingleFormat))}");
-
-        var asdasd = Job.IsRanged(Job.Summoner);
     }
 
     private void DrawFontsTab()

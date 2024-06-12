@@ -1,6 +1,4 @@
-using System;
 using System.Threading;
-using System.Globalization;
 using ImGuiNET;
 using Dalamud.Interface.ManagedFontAtlas;
 
@@ -8,7 +6,10 @@ using MeterWay.Utils;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
-using System.Numerics;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+using System.Globalization;
 
 namespace Vision;
 
@@ -34,6 +35,8 @@ public partial class Overlay : BasicOverlay
 
     private CancellationTokenSource? DelayToken { get; set; }
 
+    private Format VisionFormat { get; set; }
+
     public Overlay(IOverlayWindow overlayWindow)
     {
         Window = overlayWindow;
@@ -41,6 +44,8 @@ public partial class Overlay : BasicOverlay
 
         Init();
         FontVision ??= DefaultFont;
+
+        VisionFormat = new(Config.Appearance.FormatString);
     }
 
     void Init()
@@ -97,22 +102,41 @@ public partial class Overlay : BasicOverlay
 
         if (Config.General.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
 
-        var text = Config.Appearance.Format.Original;
-        
-        // {
-        //     return obj switch
-        //     {
-        //         string stringValue => stringValue,
-        //         uint uintValue => $"{Helpers.HumanizeNumber(uintValue, 2)}",
-        //         int intValue => $"{Helpers.HumanizeNumber(intValue, 2)}",
-        //         double doubleValue => $"{doubleValue.ToString("F2", CultureInfo.InvariantCulture)}",
-        //         float floatValue => $"{floatValue.ToString("F2", CultureInfo.InvariantCulture)}",
-        //         DateTime dateTimeValue => $"{dateTimeValue}",
-        //         TimeSpan dateTimeValue => $"{dateTimeValue.ToString(@"mm\:ss")}",
-        //         _ => "Empty"
-        //     };
-        // });
-        
+        var text = VisionFormat.Original;
+        List<string> replaces = [];
+
+        foreach (var info in VisionFormat.Infos)
+        {
+            if (info.PlaceHolder == null || info.PlaceHolder?.Function == null)
+            {
+                replaces.Add(info.Target);
+                continue;
+            }
+
+            object? returnObject = info.PlaceHolder.ArgumentType?.Name switch
+            {
+                "IEncounter" => info.PlaceHolder.Get(Data),
+                // IParty => Data,
+                "IPlayer" => info.PlaceHolder.Get(player),
+                // IPet => Data,
+                _ => "{Not Supported by Overlay}"
+            };
+
+            string result = returnObject switch
+            {
+                string returnString => returnString,
+                uint returnUint => Helpers.HumanizeNumber(returnUint, 2),
+                float returnFloat => returnFloat.ToString("F2", CultureInfo.InvariantCulture),
+                double returnDouble => Helpers.HumanizeNumber(returnDouble, 2),
+                DateTime returnDateTime => returnDateTime.ToString(),
+                TimeSpan returnTimeSpan => returnTimeSpan.ToString(@"mm\:ss"),
+                _ => string.Empty
+            };
+            replaces.Add(result);
+        }
+        text = VisionFormat.Build(replaces);
+
+
         var textsize = ImGui.CalcTextSize(text);
         cursor = new Canvas((cursor.Min, new(cursor.Min.X + textsize.X, cursor.Min.Y + textsize.Y)));
         cursor.Padding(-2f);
