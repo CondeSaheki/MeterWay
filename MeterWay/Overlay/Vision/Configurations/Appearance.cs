@@ -5,7 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 
 using MeterWay.Overlay;
-using MeterWay.Utils;
+using MeterWay.Utils.Format;
 
 namespace Vision;
 
@@ -80,14 +80,11 @@ public partial class Overlay : BasicOverlay
             });
         }
 
-        var formatchoser = new PlaceHolderChoser("Header Format", Config.Appearance.SingleFormat, (newValue) =>
+        FormatHelpers.PlaceHolderChoser(Config.Appearance.SingleFormat, (newValue) =>
         {
             Config.Appearance.SingleFormat = newValue.FullName;
             Save(Window.WindowName, Config);
-        });
-        formatchoser.Draw();
-        ImGui.SameLine();
-        ImGui.Text($"> {(Config.Appearance.SingleFormat.Length == 0 ? "Empty" : string.Join(" > ", Config.Appearance.SingleFormat))}");
+        }, "Header Format");
     }
 
     private void DrawFontsTab()

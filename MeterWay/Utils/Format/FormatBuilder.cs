@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using ImGuiNET;
 
-namespace MeterWay.Utils;
+namespace MeterWay.Utils.Format;
 
 public class FormatBuilderDialog
 {
@@ -31,7 +31,7 @@ public class FormatBuilderDialog
             Dalamud.PluginInterface.UiBuilder.Draw -= Draw;
         });
     }
-    
+
     private void Draw()
     {
         if (FirstDraw)
@@ -81,12 +81,10 @@ public class FormatBuilderDialog
             TaskSource.SetResult();
         }
         ImGui.SameLine();
-        var formatchoser = new PlaceHolderChoser($"Add", [], (newValue) =>
+        FormatHelpers.PlaceHolderChoser([], (newValue) =>
         {
             Format = new($"{Format.Original}{{{string.Join('.', newValue.FullName)}}}");
-        });
-        formatchoser.Draw();
-
+        }, $"Add");
 
         // ImGui.Spacing();
         // ImGui.Separator();

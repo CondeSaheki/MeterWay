@@ -274,7 +274,6 @@ public partial class Overlay : BasicOverlay
             Config.Appearance.JobColors.Default = newValue;
             Save(Window.WindowName, Config);
         });
-
         
         _ImguiCheckboxWithTooltip("Override", "Replace the opacity value for all colors, jobs or roles.", Config.Appearance.JobColors.Override, (newValue) =>
         {

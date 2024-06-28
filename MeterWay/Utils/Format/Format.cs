@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MeterWay.Utils;
+namespace MeterWay.Utils.Format;
 
 /// <summary>
 /// Contains information about the placeholder and its position in the original string.
@@ -20,7 +20,6 @@ public class FormatInfo(PlaceHolder? placeHolder, (int Begin, int End) position,
     /// <param name="info">The format placeholder information.</param>
     /// <returns>The target string of the format placeholder.</returns>
     public string Target => Format.Original[Position.Begin..Position.End];
-
 }
 
 /// <summary>

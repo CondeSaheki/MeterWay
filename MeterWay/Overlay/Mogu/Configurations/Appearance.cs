@@ -42,6 +42,15 @@ public class Appearance
     public JobColors JobColors { get; set; } = new();
 }
 
+[Serializable]
+public class Header
+{
+    public string Format { get; set; } = string.Empty;
+    
+    public bool Background { get; set; } = true;
+    public uint BackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.25f));
+}
+
 public partial class Overlay : BasicOverlay
 {
     private void DrawAppearanceTab()

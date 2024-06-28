@@ -1,15 +1,15 @@
+using System;
 using System.Threading;
+using System.Globalization;
+using System.Collections.Generic;
 using ImGuiNET;
 using Dalamud.Interface.ManagedFontAtlas;
 
 using MeterWay.Utils;
+using MeterWay.Utils.Format;
 using MeterWay.Data;
 using MeterWay.Managers;
 using MeterWay.Overlay;
-using System.Collections.Generic;
-using System.Linq;
-using System;
-using System.Globalization;
 
 namespace Vision;
 

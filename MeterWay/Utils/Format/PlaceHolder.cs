@@ -1,8 +1,12 @@
+/*
+    This is may change in the future
+*/
+
 using System;
 using System.Linq;
 using MeterWay.Data;
 
-namespace MeterWay.Utils;
+namespace MeterWay.Utils.Format;
 
 /// <summary>
 /// Represents a node in a tree structure. Each node has a name, a list of children nodes,
