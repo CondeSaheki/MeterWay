@@ -100,4 +100,16 @@ public static class Helpers
         _ = Delay(cancelSource);
         return cancelSource;
     }
+
+    /// <summary>
+    /// Overrides the alpha value of a given color with a new alpha value.
+    /// </summary>
+    /// <param name="color">The original color with alpha value.</param>
+    /// <param name="newAlpha">The new alpha value to be applied.</param>
+    /// <returns>The new color with the overridden alpha value.</returns>
+    public static uint ColorU32AlphaOverride(uint color, float newAlpha)
+    {
+        newAlpha = Math.Clamp(newAlpha, 0.0f, 1.0f); // unneeded ? 
+        return (color & 0x00FFFFFF) | ((uint)(newAlpha * 255.0f) << 24);
+    }
 }
