@@ -37,6 +37,10 @@ public static class LoglineParser
         handler.Invoke(line, encounter);
 
         if (line.Parsed) EncounterManager.Inst.ClientsNotifier.Notify();
+
+        #if DEBUG
+            Dalamud.Log.Debug($"{line}");
+        #endif
     }
 
     // parse encounter later
@@ -60,12 +64,12 @@ public static class LoglineParser
 
     private static void MsgActionEffect(LogLineData logLineData, Encounter encounter)
     {
-        if (logLineData.Parsed) return; // todo ignore parsing
+        if (logLineData.Parsed) return;
         logLineData.Parse();
         ActionEffect parsed = (ActionEffect)logLineData.Value!;
 
         bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
-        bool targetIsPlayer = parsed.TargetId == null ? false : encounter.Players.ContainsKey((uint)parsed.TargetId);
+        bool targetIsPlayer = parsed.TargetId != null && encounter.Players.ContainsKey((uint)parsed.TargetId);
         bool ActionFromPet = false; // ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
@@ -89,7 +93,7 @@ public static class LoglineParser
                     encounter.DamageDealt.Value.Total += actionValue;
                     encounter.DamageDealt.Count.Total += 1;
 
-                    if(ActionEffectFlag.IsDirectCrit((int)attribute.Key))
+                    if (ActionEffectFlag.IsDirectCrit((int)attribute.Key))
                     {
                         player.DamageDealt.Value.CriticalDirect += actionValue;
                         player.DamageDealt.Count.CriticalDirect += 1;
@@ -98,14 +102,14 @@ public static class LoglineParser
                     }
                     else
                     {
-                        if(ActionEffectFlag.IsCrit((int)attribute.Key))
+                        if (ActionEffectFlag.IsCrit((int)attribute.Key))
                         {
                             player.DamageDealt.Value.Critical += actionValue;
                             player.DamageDealt.Count.Critical += 1;
                             encounter.DamageDealt.Value.Critical += actionValue;
                             encounter.DamageDealt.Count.Critical += 1;
                         }
-                        if(ActionEffectFlag.IsDirect((int)attribute.Key))
+                        if (ActionEffectFlag.IsDirect((int)attribute.Key))
                         {
                             player.DamageDealt.Value.Direct += actionValue;
                             player.DamageDealt.Count.Direct += 1;
@@ -146,7 +150,7 @@ public static class LoglineParser
                     encounter.DamageReceived.Value.Total += actionValue;
                     encounter.DamageReceived.Count.Total += 1;
 
-                    if(ActionEffectFlag.IsDirectCrit((int)attribute.Key))
+                    if (ActionEffectFlag.IsDirectCrit((int)attribute.Key))
                     {
                         player.DamageReceived.Value.CriticalDirect += actionValue;
                         player.DamageReceived.Count.CriticalDirect += 1;
@@ -155,14 +159,14 @@ public static class LoglineParser
                     }
                     else
                     {
-                        if(ActionEffectFlag.IsCrit((int)attribute.Key))
+                        if (ActionEffectFlag.IsCrit((int)attribute.Key))
                         {
                             player.DamageReceived.Value.Critical += actionValue;
                             player.DamageReceived.Count.Critical += 1;
                             encounter.DamageReceived.Value.Critical += actionValue;
                             encounter.DamageReceived.Count.Critical += 1;
                         }
-                        if(ActionEffectFlag.IsDirect((int)attribute.Key))
+                        if (ActionEffectFlag.IsDirect((int)attribute.Key))
                         {
                             player.DamageReceived.Value.Direct += actionValue;
                             player.DamageReceived.Count.Direct += 1;
@@ -171,13 +175,13 @@ public static class LoglineParser
                         }
                     }
 
-                    if(ActionEffectFlag.IsParriedDamage((int)attribute.Key))
+                    if (ActionEffectFlag.IsParriedDamage((int)attribute.Key))
                     {
                         player.DamageReceived.Count.Parry += 1;
                         encounter.DamageReceived.Count.Parry += 1;
                     }
 
-                    if(ActionEffectFlag.IsMiss((int)attribute.Key))
+                    if (ActionEffectFlag.IsMiss((int)attribute.Key))
                     {
                         player.DamageReceived.Count.Miss += 1;
                         encounter.DamageReceived.Count.Miss += 1;
@@ -232,51 +236,44 @@ public static class LoglineParser
         // dots are calculated even if the player is deactivated, pet actions should probably do the same #for analyzing the data later
         // or add a flag to the damaged saying it was ignored idk
 
-        if (!encounter.Finished || logLineData.Parsed) return;
+        if (logLineData.Parsed) return;
         logLineData.Parse();
         var parsed = (DoTHoT)logLineData.Value!;
 
         bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
-        bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
+        bool targetIsPlayer = encounter.Players.ContainsKey(parsed.TargetId);
         bool ActionFromPet = false; // ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
         if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
 
-        var player = encounter.Players[(uint)parsed.TargetId!];
         if (sourceIsPlayer)
         {
-            //if (!thisEnconter.Players[parsed.SourceId].IsActive) return;
+            var player = encounter.Players[parsed.SourceId!];
+
             if (!parsed.IsHeal) // IsDamage
             {
                 player.DamageDealt.Value.Total += parsed.Value;
-                player.DamageDealt.Count.Total += 1;
                 encounter.DamageDealt.Value.Total += parsed.Value;
-                encounter.DamageDealt.Count.Total += 1;
             }
             else
             {
                 player.HealDealt.Value.Total += parsed.Value;
-                player.HealDealt.Count.Total += 1;
                 encounter.HealDealt.Value.Total += parsed.Value;
-                encounter.HealDealt.Count.Total += 1;
-
             }
         }
 
         if (targetIsPlayer)
         {
+            var player = encounter.Players[parsed.TargetId!];
+            
             if (!parsed.IsHeal) // IsDamage
             {
                 player.DamageReceived.Value.Total += parsed.Value;
-                player.DamageReceived.Count.Total += 1;
                 encounter.DamageReceived.Value.Total += parsed.Value;
-                encounter.DamageReceived.Count.Total += 1;
             }
             else
             {
                 player.HealReceived.Value.Total += parsed.Value;
-                player.HealReceived.Count.Total += 1;
                 encounter.HealReceived.Value.Total += parsed.Value;
-                encounter.HealReceived.Count.Total += 1;
             }
         }
 

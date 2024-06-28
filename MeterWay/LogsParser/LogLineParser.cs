@@ -13,10 +13,10 @@ public class LogLineData
 {
     public bool Parsed { get; private set; }
     public LogLine? Value { get; private set; }
-    public Type? ValueType { get; init; }
-    public LogLineType MsgType { get; init; }
-    public DateTime TimePoint { get; init; }
-    public string RawLine { get; init; }
+    public Type? ValueType { get; private init; }
+    public LogLineType MsgType { get; private init; }
+    public DateTime TimePoint { get; private init; }
+    public string RawLine { get; private init; }
 
     public LogLineData(string rawLine)
     {
@@ -45,19 +45,19 @@ public class LogLineData
 
     public void Parse()
     {
-        if (!Parsed && ValueType != null)
+        if (Parsed || ValueType == null) return;
+        try
         {
-            try
-            {
-                Value = (LogLine?)Activator.CreateInstance(ValueType, Helpers.SplitStringAsMemory(RawLine, '|'));
-                Parsed = true;
-            }
-            catch (Exception ex)
-            {
-                Dalamud.Log.Warning($"LogLineData Parse, type \'{MsgType}\', id \'{((uint)MsgType).ToString()}\', rawLine \'{RawLine}\':\n{ex}");
-            }
+            Value = (LogLine?)Activator.CreateInstance(ValueType, Helpers.SplitStringAsMemory(RawLine, '|'));
+            Parsed = true;
+        }
+        catch (Exception ex)
+        {
+            Dalamud.Log.Warning($"LogLineData Parse, type \'{MsgType}\', id \'{((uint)MsgType).ToString()}\', rawLine \'{RawLine}\':\n{ex}");
         }
     }
+
+    public override string ToString() => Value == null ? $"MsgType: {MsgType},\nRawLine: {RawLine}" : $"MsgType: {MsgType},\n{Value},\nRawLine: {RawLine}";
 }
 
 public class ActionEffect : LogLine
@@ -115,6 +115,8 @@ public class ActionEffect : LogLine
         MultiMessageCount = uint.Parse(data[46].Span);
         // criptoid = data[47]
     }
+
+    public override string ToString() => $"SourceId: {SourceId},\nSourceName: {SourceName},\nId: {Id},\nName: {Name},\nTargetId: {TargetId},\nTargetName: {TargetName},\nTargetHp: {TargetHp},\nTargetMaxHp: {TargetMaxHp},\nActionAttributes: {string.Join(", ", ActionAttributes)},\nTargetPos: {TargetPos},\nSourceMp: {SourceMp},\nPos: {Pos},\nMultiMessageIndex: {MultiMessageIndex},\nMultiMessageCount: {MultiMessageCount}";
 }
 
 public class PlayerStats : LogLine
@@ -158,6 +160,8 @@ public class PlayerStats : LogLine
         LocalContentId = UInt64.Parse(data[18].Span);
         // criptoid = data[19]
     }
+
+    public override string ToString() => $"JobID: {JobID},\nStr: {Str},\nDex: {Dex},\nVit: {Vit},\nIntel: {Intel},\nMind: {Mind},\nPiety: {Piety},\nAttack: {Attack},\nDirectHit: {DirectHit},\nCrit: {Crit},\nAttackMagicPotency: {AttackMagicPotency},\nHealMagicPotency: {HealMagicPotency},\nDet: {Det},\nSkillSpeed: {SkillSpeed},\nSpellSpeed: {SpellSpeed},\nTenacity: {Tenacity},\nLocalContentId: {LocalContentId}";
 }
 
 public class StartsCasting : LogLine
@@ -183,6 +187,8 @@ public class StartsCasting : LogLine
         TargetPos = Helpers.Vec4Parse(data, 9, 10, 11, 12);
         // criptoid = data[13]
     }
+
+    public override string ToString() => $"SourceId: {SourceId},\nSourceName: {SourceName},\nActionId: {ActionId},\nActionName: {ActionName},\nTargetId: {TargetId},\nTargetName: {TargetName},\nCastTime: {CastTime},\nTargetPos: {TargetPos}";
 }
 
 public class StatusApply : LogLine
@@ -211,6 +217,8 @@ public class StatusApply : LogLine
         TargetMaxHP = uint.Parse(data[10].Span);
         SourceMaxHP = uint.Parse(data[11].Span);
     }
+
+    public override string ToString() => $"Id: {Id},\nName: {Name},\nDuration: {Duration},\nSourceId: {SourceId},\nSourceName: {SourceName},\nTargetID: {TargetID},\nTargetName: {TargetName},\nUnknown: {Unknown},\nTargetMaxHP: {TargetMaxHP},\nSourceMaxHP: {SourceMaxHP}";
 }
 
 public class StatusRemove : LogLine
@@ -239,6 +247,9 @@ public class StatusRemove : LogLine
         TargetMaxHP = uint.Parse(data[10].Span);
         SourceMaxHP = uint.Parse(data[11].Span);
     }
+
+    public override string ToString() => $"Id: {Id},\nName: {Name},\nDuration: {Duration},\nSourceId: {SourceId},\nSourceName: {SourceName},\nTargetID: {TargetID},\nTargetName: {TargetName},\nUnknown: {Unknown},\nTargetMaxHP: {TargetMaxHP},\nSourceMaxHP: {SourceMaxHP}";
+
 }
 
 public class Death : LogLine
@@ -256,6 +267,8 @@ public class Death : LogLine
         sourceId = uint.Parse(data[4].Span, NumberStyles.HexNumber);
         sourceName = data[4].IsEmpty ? null : data[4].Span.ToString();
     }
+
+    public override string ToString() => $"targetId: {targetId},\ntargetName: {targetName},\nsourceId: {sourceId},\nsourceName: {sourceName}";
 }
 
 public class DoTHoT : LogLine
@@ -305,6 +318,8 @@ public class DoTHoT : LogLine
         TargetPos = Helpers.Vec4Parse(data, 26, 27, 28, 29);
         // data[30] = criptoid
     }
+
+    public override string ToString() => $"TargetId: {TargetId},\nTargetName: {TargetName},\nIsHeal: {IsHeal},\nBuffId: {BuffId},\nValue: {Value},\nTargetHp: {TargetHp},\nTargetMaxHp: {TargetMaxHp},\nTargetMp: {TargetMp},\nTargetMaxMp: {TargetMaxMp},\nTargetPos: {TargetPos},\nSourceId: {SourceId},\nSourceName: {SourceName},\nSourceHp: {SourceHp},\nSourceMaxHp: {SourceMaxHp},\nSourceMp: {SourceMp},\nSourceMaxMp: {SourceMaxMp},\nSourcePos: {SourcePos}";
 }
 
 public class AddCombatant : LogLine
@@ -348,4 +363,6 @@ public class AddCombatant : LogLine
         Pos = Helpers.Vec4Parse(data, 17, 18, 19, 20);
         IsPet = OwnerId != 0 && ((Id >> 24) & 0xFF) == 64;
     }
+
+    public override string ToString() => $"Id: {Id},\nName: {Name},\nJob: {Job},\nLevel: {Level},\nOwnerId: {OwnerId},\nWorldId: {WorldId},\nWorld: {World},\nNpcNameId: {NpcNameId},\nNpcBaseId: {NpcBaseId},\nCurrentHp: {CurrentHp},\nHp: {Hp},\nCurrentMp: {CurrentMp},\nMp: {Mp},\nUnknown1: {Unknown1},\nUnknown2: {Unknown2},\nPos: {Pos}";
 }
