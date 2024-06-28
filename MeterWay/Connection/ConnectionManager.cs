@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Interface.Internal.Notifications;
 using Newtonsoft.Json.Linq;
 
 using MeterWay.Managers;
@@ -40,7 +41,7 @@ public class ConnectionManager : IDisposable
     /// <summary>
     /// Types of subscriptions that are currently active.
     /// </summary>
-    public HashSet<SubscriptionType> Subscriptions { get; set; } = [];
+    public HashSet<SubscriptionType> Subscriptions { get; private set; } = [];
 
     /// <summary>
     /// Event that is triggered when data is received.
@@ -80,12 +81,12 @@ public class ConnectionManager : IDisposable
 
         if (Client.GetStatus() != ClientStatus.Connected)
         {
-            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload("Meterway could not connect."), new UIForegroundPayload(0)));
+            ReportFailure("Meterway could not connect.");
             return;
         }
 
         Subscribe();
-        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is connected."), new UIForegroundPayload(0)));
+        ReportSuccess("Meterway is connected.");
     });
 
     /// <summary>
@@ -99,10 +100,10 @@ public class ConnectionManager : IDisposable
 
         if (Client.GetStatus() != ClientStatus.Disconnected)
         {
-            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload("Meterway could not disconnect."), new UIForegroundPayload(0)));
+            ReportFailure("Meterway could not disconnect.");
             return;
         }
-        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is disconnected."), new UIForegroundPayload(0)));
+        ReportSuccess("Meterway is disconnected.");
     });
 
     /// <summary>
@@ -115,11 +116,11 @@ public class ConnectionManager : IDisposable
 
         if (Client.GetStatus() != ClientStatus.Connected)
         {
-            Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload("Meterway could not reconnect."), new UIForegroundPayload(0)));
+            ReportFailure("Meterway could not reconnect.");
             return;
         }
         Subscribe();
-        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload("Meterway is reconnected."), new UIForegroundPayload(0)));
+        ReportSuccess("Meterway is reconnected.");
     });
 
     /// <summary>
@@ -128,21 +129,6 @@ public class ConnectionManager : IDisposable
     public void Dispose()
     {
         Client?.Dispose();
-    }
-
-    private void Send(JObject message) => Task.Run(() => Client?.Send(message));
-
-    private void AutoConnect()
-    {
-        void OnLogin(object? _)
-        {
-            if (!Dalamud.ClientState.IsLoggedIn) return;
-            Dalamud.Framework.Update -= OnLogin;
-            Connect();
-        }
-
-        if (Dalamud.ClientState.IsLoggedIn) Connect();
-        else Dalamud.Framework.Update += OnLogin;
     }
 
     /// <summary>
@@ -179,6 +165,21 @@ public class ConnectionManager : IDisposable
         }
     }
 
+    private void Send(JObject message) => Task.Run(() => Client?.Send(message));
+
+    private void AutoConnect()
+    {
+        void OnLogin(object? _)
+        {
+            if (!Dalamud.ClientState.IsLoggedIn) return;
+            Dalamud.Framework.Update -= OnLogin;
+            Connect();
+        }
+
+        if (Dalamud.ClientState.IsLoggedIn) Connect();
+        else Dalamud.Framework.Update += OnLogin;
+    }
+
     private void NotifyAll(JObject json)
     {
         try
@@ -191,9 +192,6 @@ public class ConnectionManager : IDisposable
         }
     }
 
-    /// <summary>
-    /// Subscribes with the current list of subscriptions.
-    /// </summary>
     private void Subscribe()
     {
         if (Subscriptions.Count == 0)
@@ -211,5 +209,27 @@ public class ConnectionManager : IDisposable
             Send(CreateMessage(sub));
         }
         Dalamud.Log.Info($"ConnectionManager is Subscribed to [{string.Join(", ", Subscriptions)}]");
+    }
+
+    private static void ReportSuccess(string message)
+    {
+        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload(message), new UIForegroundPayload(0)));
+        Dalamud.Notifications.AddNotification(new()
+        {
+            Title = message,
+            InitialDuration = TimeSpan.FromSeconds(30),
+            Type = NotificationType.Success
+        });
+    }
+
+    private static void ReportFailure(string message)
+    {
+        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload(message), new UIForegroundPayload(0)));
+        Dalamud.Notifications.AddNotification(new()
+        {
+            Title = message,
+            InitialDuration = TimeSpan.FromSeconds(30),
+            Type = NotificationType.Error
+        });
     }
 }

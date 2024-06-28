@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using System.Reflection;
+using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
@@ -106,8 +107,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow Enable, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("Enable", ex);
             Disable();
         }
     }
@@ -125,8 +125,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow Disable, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("Disable", ex);
         }
         finally
         {
@@ -182,8 +181,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow Draw, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("Draw", ex);
             Disable();
         }
     }
@@ -196,8 +194,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow Update, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("Update", ex);
             Disable();
         }
     }
@@ -210,8 +207,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow OnOpen, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("OnOpen", ex);
             Disable();
         }
     }
@@ -224,8 +220,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow OnClose, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("OnClose", ex);
             Disable();
         }
     }
@@ -238,8 +233,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow OnEncounterUpdate, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("OnEncounterUpdate", ex);
             Disable();
         }
     }
@@ -252,8 +246,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow OnEncounterBegin, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("OnEncounterBegin", ex);
             Disable();
         }
     }
@@ -266,8 +259,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow OnEncounterEnd, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("OnEncounterEnd", ex);
             Disable();
         }
     }
@@ -280,8 +272,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow DrawConfig, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("DrawConfiguration", ex);
             Disable();
         }
     }
@@ -296,8 +287,7 @@ public class OverlayWindow : Window, IOverlayWindow
         }
         catch (Exception ex)
         {
-            Dalamud.Log.Error($"OverlayWindow Remove, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
-            Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+            ReportException("Remove", ex);
             Disable();
         }
     }
@@ -306,5 +296,18 @@ public class OverlayWindow : Window, IOverlayWindow
     {
         IsOpen = false;
         if (IsEnabled()) Disable();
+    }
+
+    private void ReportException(string origin, Exception ex)
+    {
+        Dalamud.Log.Error($"OverlayWindow {origin}, overlay \'{Info.Name}\', id \'{Id}\':\n{ex}");
+        Dalamud.Chat.Print($"[Meterway] \'{Info.Name}\' encountered an error. Contact \'{Info.Author}\' for support.");
+        Dalamud.Notifications.AddNotification(new()
+        {
+            Title = $"[Meterway] Error in {Info.Name}",
+            Content = $"An error occurred in the overlay '{Info.Name}' (ID: {Id}) during {origin}. Please contact '{Info.Author}' for support.",
+            InitialDuration = TimeSpan.FromSeconds(30),
+            Type = NotificationType.Error
+        });
     }
 }

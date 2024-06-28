@@ -17,6 +17,7 @@ public class Dalamud
     [PluginService][RequiredVersion("1.0")] public static IPartyList PartyList { get; private set; } = null!;
     [PluginService][RequiredVersion("1.0")] public static IDutyState Duty { get; private set; } = null!;
     [PluginService][RequiredVersion("1.0")] public static IFramework Framework { get; private set; } = null!;
+    [PluginService][RequiredVersion("1.0")] public static INotificationManager Notifications { get; private set; } = null!;
     //[PluginService][RequiredVersion("1.0")] public static ISigScanner SigScanner { get; private set; } = null!;
     //[PluginService][RequiredVersion("1.0")] public static IKeyState Keys { get; private set; } = null!;
     //[PluginService][RequiredVersion("1.0")] public static IGameGui GameGui { get; private set; } = null!;
