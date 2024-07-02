@@ -9,6 +9,7 @@ using Dalamud.Interface.FontIdentifier;
 
 using MeterWay.Utils;
 using MeterWay.Overlay;
+using Dalamud.Interface;
 
 namespace Lazer;
 
@@ -119,7 +120,7 @@ public partial class Overlay : BasicOverlay
 
     private void _SingleFontChooserDialog(string? label, SingleFontSpec? current, Action<SingleFontSpec> setter)
     {
-        SingleFontChooserDialog chooser = new(MeterWay.Dalamud.PluginInterface.UiBuilder, false, null)
+        SingleFontChooserDialog chooser = new((UiBuilder)MeterWay.Dalamud.PluginInterface.UiBuilder, false, null)
         {
             Title = label ?? "Font Chooser",
             PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",

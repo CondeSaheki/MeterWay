@@ -98,7 +98,7 @@ public class EncounterManager : IDisposable
         foreach (var player in Dalamud.PartyList)
         {
             if (player.GameObject == null) continue;
-            if ((((Character)player.GameObject).StatusFlags & StatusFlags.InCombat) !=  StatusFlags.None) return true;
+            if ((((ICharacter)player.GameObject).StatusFlags & StatusFlags.InCombat) !=  StatusFlags.None) return true;
         }
         return false;
     }

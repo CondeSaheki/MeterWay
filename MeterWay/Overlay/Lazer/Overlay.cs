@@ -128,7 +128,7 @@ public partial class Overlay : BasicOverlay
             draw.AddRectFilled(line.Min, line.Max, Config.Appearance.HeaderBackgroundColor);
 
             // Bar
-            var barColor = player.Id == MeterWay.Dalamud.ClientState.LocalPlayer?.ObjectId ? Config.Appearance.YourBarColor : Config.Appearance.BarColor;
+            var barColor = player.Id == MeterWay.Dalamud.ClientState.LocalPlayer?.EntityId ? Config.Appearance.YourBarColor : Config.Appearance.BarColor;
             float progress = (float)(playerLerped?.Progress ?? 1);
             DrawProgressBar(line.Area, barColor, progress);
             draw.AddRect(line.Min, line.Max, Config.Appearance.BarBorderColor);

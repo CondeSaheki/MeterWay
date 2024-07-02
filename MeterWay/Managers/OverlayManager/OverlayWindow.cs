@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using System.Reflection;
-using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 

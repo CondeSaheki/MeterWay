@@ -49,8 +49,8 @@ public class Party : IParty
             {
                 if (player.GameObject == null) continue;
 
-                var character = (Character)player.GameObject;
-                tmpPlayers.Add(character.ObjectId, new Player(character, Encounter));
+                var character = (ICharacter)player.GameObject;
+                tmpPlayers.Add(character.EntityId, new Player(character, Encounter));
             }
         }
         else
@@ -58,8 +58,8 @@ public class Party : IParty
             var localPlayer = Dalamud.ClientState.LocalPlayer;
             if (localPlayer != null)
             {
-                var character = (Character)localPlayer;
-                tmpPlayers.Add(character.ObjectId, new Player(character, Encounter));
+                var character = (ICharacter)localPlayer;
+                tmpPlayers.Add(character.EntityId, new Player(character, Encounter));
             }
         }
         return tmpPlayers;
@@ -78,7 +78,7 @@ public class Party : IParty
             return; // done
         }
 
-        List<PartyMember> newPlayers = [];
+        List<IPartyMember> newPlayers = [];
         List<uint> commonPlayers = [];
 
         // fill commonPlayers & newPlayers
@@ -123,19 +123,19 @@ public class Party : IParty
         // add new players 
         foreach (var player in newPlayers)
         {
-            var character = player.GameObject as Character;
+            var character = player.GameObject as ICharacter;
             if (character == null) continue; // error could not retrieve player
 
-            Players.Add(character.ObjectId, new Player(character, Encounter));
+            Players.Add(character.EntityId, new Player(character, Encounter));
         }
 
         Id = Helpers.CreateId();
         Dalamud.Log.Info("Party Update, Done");
     }
 
-    private uint? GetOrRecoverPlayer(PartyMember player)
+    private uint? GetOrRecoverPlayer(IPartyMember player)
     {
-        if (player.GameObject != null) return player.GameObject.ObjectId; // no recover
+        if (player.GameObject != null) return player.GameObject.EntityId; // no recover
 
         // attempt recover
         uint? recovered = null;
@@ -157,7 +157,7 @@ public class Party : IParty
 
         foreach (var player in Players)
         {
-            if (player.Key != you.ObjectId)
+            if (player.Key != you.EntityId)
             {
                 if (!Encounter.Active) Players.Remove(player.Key);
                 else player.Value.IsActive = false;

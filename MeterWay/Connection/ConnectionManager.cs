@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Interface.Internal.Notifications;
 using Newtonsoft.Json.Linq;
 
 using MeterWay.Managers;
+using Dalamud.Interface.ImGuiNotification;
 
 namespace MeterWay.Connection;
 

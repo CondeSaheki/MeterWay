@@ -25,7 +25,7 @@ public class Job
     public static readonly Job Warrior = new(21, "WAR", "Warrior");
     public static readonly Job DarkKnight = new(32, "DRK", "Dark Knight");
     public static readonly Job GunBreaker = new(37, "GNB", "GunBreaker");
-    
+
     // Melee Dps
 
     public static readonly Job Pugilist = new(2, "PGL", "Pugilist");
@@ -36,7 +36,8 @@ public class Job
     public static readonly Job Ninja = new(30, "NIN", "Ninja");
     public static readonly Job Samurai = new(34, "SAM", "Samurai");
     public static readonly Job Reaper = new(39, "RPR", "Reaper");
-    
+    public static readonly Job Viper = new(41, "VPR", "Viper");
+
     // Healer
 
     public static readonly Job Conjurer = new(6, "CNJ", "Conjurer");
@@ -51,7 +52,7 @@ public class Job
     public static readonly Job Bard = new(23, "BRD", "Bard");
     public static readonly Job Machinist = new(31, "MCH", "Machinist");
     public static readonly Job Dancer = new(38, "DNC", "Dancer");
-    
+
     // Magical Ranged Dps
 
     public static readonly Job Thaumaturge = new(7, "THM", "Thaumaturge");
@@ -59,8 +60,9 @@ public class Job
     public static readonly Job Arcanist = new(26, "ACN", "Arcanist");
     public static readonly Job Summoner = new(27, "SMN", "Summoner");
     public static readonly Job RedMage = new(35, "RDM", "Red Mage");
+    public static readonly Job Pictomancer = new(42, "PCT", "Pictomancer");
     public static readonly Job BlueMage = new(36, "BLU", "Blue Mage"); // no included in any "Job.Is..." -> Job.IsBlueMage
-    
+
     // Disciples of the Hand
 
     public static readonly Job Carpenter = new(8, "CRP", "Carpenter");
@@ -71,7 +73,7 @@ public class Job
     public static readonly Job Weaver = new(13, "WVR", "Weaver");
     public static readonly Job Alchemist = new(14, "ALC", "Alchemist");
     public static readonly Job Culinarian = new(15, "CUL", "Culinarian");
-    
+
     // Disciples of the Land
 
     public static readonly Job Miner = new(16, "MIN", "Miner");
@@ -121,7 +123,9 @@ public class Job
         GunBreaker,
         Dancer,
         Reaper,
-        Sage
+        Sage,
+        Viper,
+        Pictomancer
     ];
 
     private Job(int id, string name, string acronym)
@@ -138,7 +142,10 @@ public class Job
     /// <returns>The icon handle if the job is special, otherwise null.</returns>
     public nint? Icon()
     {
-        return IsEspecial(this) ? Dalamud.Textures.GetIcon((uint)Id + 62000u, ITextureProvider.IconFlags.None)?.ImGuiHandle : null;
+        if (IsEspecial(this)) return null;
+        if (!Dalamud.Textures.TryGetFromGameIcon((uint)Id + 62000u, out var icon)) return null;
+        if (!icon.TryGetWrap(out var wrap, out _)) return null;
+        return wrap.ImGuiHandle;
     }
 
     /// <summary>
@@ -203,7 +210,8 @@ public class Job
             job.Id == 29 ||
             job.Id == 30 ||
             job.Id == 34 ||
-            job.Id == 39;
+            job.Id == 39 ||
+            job.Id == 41;
     }
 
     /// <summary>
@@ -244,7 +252,8 @@ public class Job
             job.Id == 25 ||
             job.Id == 26 ||
             job.Id == 27 ||
-            job.Id == 35;
+            job.Id == 35 ||
+            job.Id == 42;
     }
 
     /// <summary>
@@ -424,4 +433,6 @@ public class Job
     }
 
     public override int GetHashCode() => HashCode.Combine(Id);
+
+    public override string ToString() => $"Id: {Id}, Acronym: {Acronym}, Name: {Name}";
 }

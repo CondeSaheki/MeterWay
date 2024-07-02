@@ -1,12 +1,12 @@
 using System;
 using System.Numerics;
 using ImGuiNET;
-using Dalamud.Plugin.Services;
 using Dalamud.Interface.ImGuiFontChooserDialog;
 using Dalamud.Interface.FontIdentifier;
 
 using MeterWay.Utils;
 using MeterWay.Overlay;
+using Dalamud.Interface;
 
 namespace Vision;
 
@@ -55,12 +55,11 @@ public partial class Overlay : BasicOverlay
 
     private static void DrawJobIcon(Canvas area, uint job)
     {
-        var icon = MeterWay.Dalamud.Textures.GetIcon(job + 62000u, ITextureProvider.IconFlags.None);
-        if (icon == null) return;
-
-        ImGui.GetWindowDrawList().AddImage(icon.ImGuiHandle, area.Min, area.Max);
+        if (!MeterWay.Dalamud.Textures.TryGetFromGameIcon(job + 62000u, out var icon)) return;
+        if (!icon.TryGetWrap(out var wrap, out _)) return;
+        ImGui.GetWindowDrawList().AddImage(wrap.ImGuiHandle, area.Min, area.Max);
     }
-    
+
     private void SavaCurrentWindowData()
     {
         if (Window.CurrentPosition != null) Config.General.Position = (Vector2)Window.CurrentPosition;
@@ -106,7 +105,7 @@ public partial class Overlay : BasicOverlay
 
     private void _SingleFontChooserDialog(string? label, SingleFontSpec? current, Action<SingleFontSpec> setter)
     {
-        SingleFontChooserDialog chooser = new(MeterWay.Dalamud.PluginInterface.UiBuilder, false, null)
+        SingleFontChooserDialog chooser = new((UiBuilder)MeterWay.Dalamud.PluginInterface.UiBuilder, false, null)
         {
             Title = label ?? "Font Chooser",
             PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",

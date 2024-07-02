@@ -70,7 +70,7 @@ public partial class Overlay : BasicOverlay
 
     private void UpdatePlayerId()
     {
-        if (MeterWay.Dalamud.ClientState.LocalPlayer != null) PlayerId = MeterWay.Dalamud.ClientState.LocalPlayer.ObjectId;
+        if (MeterWay.Dalamud.ClientState.LocalPlayer != null) PlayerId = MeterWay.Dalamud.ClientState.LocalPlayer.EntityId;
     }
 
     public override void Draw()

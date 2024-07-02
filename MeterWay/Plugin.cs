@@ -28,7 +28,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly EncounterManager encounterManager;
     private readonly ConfigurationManager configurationManager;
 
-    public Plugin(DalamudPluginInterface pluginInterface)
+    public Plugin(IDalamudPluginInterface pluginInterface)
     {
         try
         {

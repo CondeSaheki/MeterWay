@@ -6,15 +6,15 @@ using MeterWay.Utils;
 
 namespace MeterWay.Data;
 
-public class Player(Character character, Encounter encounter) : IPlayer
+public class Player(ICharacter character, Encounter encounter) : IPlayer
 {
     private Encounter Encounter { get; init; } = encounter;
 
-    public uint Id { get; set; } = character.ObjectId;
+    public uint Id { get; set; } = character.EntityId;
     public bool IsActive { get; set; } = true;
 
     public string Name { get; set; } = character.Name.ToString();
-    public uint? World { get; set; } = (character as PlayerCharacter)?.HomeWorld.Id;
+    public uint? World { get; set; } = (character as IPlayerCharacter)?.HomeWorld.Id;
     public Job Job { get; set; } = Job.FromId((int)character.ClassJob.Id) ?? Job.Unknown;
 
     public Damage DamageDealt { get; set; } = new Damage();
@@ -60,16 +60,16 @@ public class Player(Character character, Encounter encounter) : IPlayer
         return false;
     }
 
-    private PlayerCharacter? GetPlayer()
+    private IPlayerCharacter? GetPlayer()
     {
         var partyList = Dalamud.PartyList;
         if (partyList.Length == 0)
         {
             var you = Dalamud.ClientState.LocalPlayer;
-            if (you?.ObjectId == Id) return you;
+            if (you?.EntityId == Id) return you;
         }
 
-        var player = Dalamud.PartyList.FirstOrDefault(x => x?.ObjectId == Id, null)?.GameObject as PlayerCharacter;
+        var player = Dalamud.PartyList.FirstOrDefault(x => x?.ObjectId == Id, null)?.GameObject as IPlayerCharacter;
         return player;
     }
 
