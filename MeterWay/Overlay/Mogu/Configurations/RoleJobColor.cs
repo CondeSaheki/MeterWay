@@ -35,6 +35,7 @@ public class JobColors
     public uint Ninja { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.6863f, 0.098f, 0.3922f, 0.25f));
     public uint Samurai { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8941f, 0.4275f, 0.0157f, 0.25f));
     public uint Reaper { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5882f, 0.3529f, 0.5647f, 0.25f));
+    public uint Viper { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.0627f, 0.5098f, 0.0627f, 0.25f));
 
     // Healer
 
@@ -54,7 +55,9 @@ public class JobColors
     public uint BlackMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.6471f, 0.4745f, 0.8392f, 0.25f));
     public uint Summoner { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.1765f, 0.6078f, 0.4706f, 0.25f));
     public uint RedMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.9098f, 0.4824f, 0.4824f, 0.25f));
+    public uint Pictomancer { get; set; } = ImGui.ColorConvertFloat4ToU32(new(1f, 0.6353f, 0.9451f, 0.25f));
     public uint BlueMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0f, 0.7255f, 0.9686f, 0.25f));
+
 }
 public partial class Overlay : BasicOverlay
 {
@@ -171,6 +174,12 @@ public partial class Overlay : BasicOverlay
                 Save(Window.WindowName, Config);
             });
 
+            _ImGuiColorPick("Viper", Config.Appearance.JobColors.Viper, (newValue) =>
+            {
+                Config.Appearance.JobColors.Viper = newValue;
+                Save(Window.WindowName, Config);
+            });
+
             ImGui.Spacing();
             ImGui.Separator();
         }
@@ -255,6 +264,12 @@ public partial class Overlay : BasicOverlay
                 Save(Window.WindowName, Config);
             });
 
+            _ImGuiColorPick("Pictomancer", Config.Appearance.JobColors.Pictomancer, (newValue) =>
+            {
+                Config.Appearance.JobColors.Pictomancer = newValue;
+                Save(Window.WindowName, Config);
+            });
+
             _ImGuiColorPick("Blue Mage", Config.Appearance.JobColors.BlueMage, (newValue) =>
             {
                 Config.Appearance.JobColors.BlueMage = newValue;
@@ -274,7 +289,7 @@ public partial class Overlay : BasicOverlay
             Config.Appearance.JobColors.Default = newValue;
             Save(Window.WindowName, Config);
         });
-        
+
         _ImguiCheckboxWithTooltip("Override", "Replace the opacity value for all colors, jobs or roles.", Config.Appearance.JobColors.Override, (newValue) =>
         {
             Config.Appearance.JobColors.Override = newValue;
@@ -282,8 +297,8 @@ public partial class Overlay : BasicOverlay
         });
 
         bool isDisabled = false;
-        if(!Config.Appearance.JobColors.Override) _ImGuiBeginDisabled(ref isDisabled);
-        
+        if (!Config.Appearance.JobColors.Override) _ImGuiBeginDisabled(ref isDisabled);
+
         ImGui.SameLine();
         ImGui.PushItemWidth(150);
         var opacityValue = (int)(Config.Appearance.JobColors.Opacity * 100);
@@ -293,7 +308,7 @@ public partial class Overlay : BasicOverlay
             Save(Window.WindowName, Config);
         }
         ImGui.PopItemWidth();
-        
+
         _ImGuiEndDisabled(ref isDisabled);
     }
 }

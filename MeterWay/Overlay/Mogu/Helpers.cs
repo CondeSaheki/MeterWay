@@ -66,6 +66,7 @@ public partial class Overlay : BasicOverlay
         if (job == Job.Dragoon || job == Job.Lancer) return Config.Appearance.JobColors.Dragoon;
         if (job == Job.Samurai) return Config.Appearance.JobColors.Samurai;
         if (job == Job.Reaper) return Config.Appearance.JobColors.Reaper;
+        if (job == Job.Viper) return Config.Appearance.JobColors.Viper;
 
         if (job == Job.WhiteMage || job == Job.Conjurer) return Config.Appearance.JobColors.WhiteMage;
         if (job == Job.Scholar) return Config.Appearance.JobColors.Scholar;
@@ -79,6 +80,7 @@ public partial class Overlay : BasicOverlay
         if (job == Job.BlackMage || job == Job.Thaumaturge) return Config.Appearance.JobColors.BlackMage;
         if (job == Job.Summoner || job == Job.Arcanist) return Config.Appearance.JobColors.Summoner;
         if (job == Job.RedMage) return Config.Appearance.JobColors.RedMage;
+        if (job == Job.Pictomancer) return Config.Appearance.JobColors.Pictomancer;
         if (job == Job.BlueMage) return Config.Appearance.JobColors.BlueMage;
 
         return Config.Appearance.JobColors.Default;

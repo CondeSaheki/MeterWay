@@ -22,9 +22,7 @@ public class Appearance
     public bool BackgroundEnable { get; set; } = false;
     public uint BackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 1f));
 
-
-    public string[] SingleFormat { get; set; } = [];
-    public string FormatString { get; set; } = new("Crt {Player.DamageDealt.Count.Percent.Critical}% | Dh {Player.DamageDealt.Count.Percent.Direct}% | CrtDh {Player.DamageDealt.Count.Percent.CriticalDirect}% | {Player.DamageDealt.Value.Total}");
+    public string FormatString { get; set; } = new("Crt {Player.DamageDealt.Count.Percent.Critical}% | Dh {Player.DamageDealt.Count.Percent.Direct}% | CrtDh {Player.DamageDealt.Count.Percent.CriticalDirect}% | DPS {Player.PerSeconds.DamageDealt}");
 }
 
 public partial class Overlay : BasicOverlay
@@ -79,12 +77,6 @@ public partial class Overlay : BasicOverlay
                 Save(Window.WindowName, Config);
             });
         }
-
-        FormatHelpers.PlaceHolderChoser(Config.Appearance.SingleFormat, (newValue) =>
-        {
-            Config.Appearance.SingleFormat = newValue.FullName;
-            Save(Window.WindowName, Config);
-        }, "Header Format");
     }
 
     private void DrawFontsTab()
