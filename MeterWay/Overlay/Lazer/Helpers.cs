@@ -31,6 +31,8 @@ public partial class Overlay : BasicOverlay
                 result[key] = new PlayerData
                 {
                     Progress = Lerping.Begin.Value.Data[key].Progress + M * (Lerping.End.Value.Data[key].Progress - Lerping.Begin.Value.Data[key].Progress),
+                    Damage = Lerping.Begin.Value.Data[key].Damage + M * (Lerping.End.Value.Data[key].Damage - Lerping.Begin.Value.Data[key].Damage),
+                    CurrentPosition = Lerping.Begin.Value.Data[key].CurrentPosition + M * (Lerping.End.Value.Data[key].CurrentPosition - Lerping.Begin.Value.Data[key].CurrentPosition)
                 };
             }
             return result;
@@ -40,9 +42,14 @@ public partial class Overlay : BasicOverlay
             foreach (var elem in left)
             {
                 if (elem.Value.Progress != right[elem.Key].Progress) return false;
+                if (elem.Value.Damage != right[elem.Key].Damage) return false;
+                if (elem.Value.CurrentPosition != right[elem.Key].CurrentPosition) return false;
             }
             return true;
-        });
+        })
+        {
+            Interval = TimeSpan.FromSeconds(0.75)
+        };
     }
 
     private void UpdateLerping()
@@ -56,6 +63,8 @@ public partial class Overlay : BasicOverlay
             updatedPlayersData.Add(id, new()
             {
                 Progress = (float)Data.Players[id].DamageDealt.Value.Total / topDamage,
+                Damage = Data.Players[id].DamageDealt.Value.Total,
+                CurrentPosition = SortCache.IndexOf(id)
             });
         }
         if (!(Lerping.End != null && Lerping.End.Value.Data.Keys.ToHashSet().SetEquals([.. updatedPlayersData.Keys]))) Lerping.Reset(); // must contain same content
@@ -74,7 +83,7 @@ public partial class Overlay : BasicOverlay
         rectangle.Max.X = rectangle.Min.X + ((rectangle.Max.X - rectangle.Min.X) * progress);
         ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, colorBlack, color, color, colorBlack);
     }
-    
+
     private void SavaCurrentWindowData()
     {
         if (Window.CurrentPosition != null) Config.General.Position = (Vector2)Window.CurrentPosition;

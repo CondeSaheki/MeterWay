@@ -27,7 +27,7 @@ public partial class Overlay : BasicOverlay
 
     private IFontAtlas FontAtlas { get; init; } = MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async);
     private IFontHandle FontLazer { get; set; }
-    private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
+    private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(18)));
 
     private Encounter? Data;
     private List<uint> SortCache = [];
@@ -39,6 +39,8 @@ public partial class Overlay : BasicOverlay
     public struct PlayerData
     {
         public double Progress { get; set; }
+        public double Damage { get; set; }
+        public double CurrentPosition { get; set; }
     }
 
     public Overlay(IOverlayWindow overlayWindow)
@@ -118,11 +120,19 @@ public partial class Overlay : BasicOverlay
 
         // Players
         var dataLerped = Lerping.Now();
+
+        var lineHeight = cursor.Height;
+
         foreach (var id in sortCache)
         {
             Player player = Data.Players[id];
             var playerLerped = dataLerped?[id];
-            Canvas line = new(cursor.Area);
+            float currentPosition = (float)(playerLerped?.CurrentPosition ?? 0);
+
+            Canvas line = new((
+                    new(cursor.Min.X, cursor.Min.Y + currentPosition * lineHeight),
+                    new(cursor.Max.X, cursor.Min.Y + (currentPosition + 1) * lineHeight)
+                ));
 
             // Background
             draw.AddRectFilled(line.Min, line.Max, Config.Appearance.HeaderBackgroundColor);
@@ -154,17 +164,16 @@ public partial class Overlay : BasicOverlay
             draw.AddText(position, colorWhite, text);
             line.AddMin(ImGui.CalcTextSize(text).X + Config.Appearance.Spacing, 0);
 
-            text = $"{Helpers.HumanizeNumber(player.PerSeconds.DamageDealt, 1)}/s";
+            text = $"{Helpers.HumanizeNumber(player.PerSeconds.DamageDealt, 2)}/s";
             position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
             draw.AddText(position, colorWhite, text);
             line.AddMax(-ImGui.CalcTextSize(text).X - Config.Appearance.Spacing, 0);
 
-            text = $"{Helpers.HumanizeNumber(player.DamageDealt.Value.Total, 1)}";
+            text = $"{Helpers.HumanizeNumber(playerLerped?.Damage ?? 0, 2)}";
             position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
             draw.AddText(position, Config.Appearance.TotalDamageTextColor, text); // scale 0.8
-
-            cursor.Move((0, cursor.Height));
         }
+
         FontLazer?.Pop();
     }
 

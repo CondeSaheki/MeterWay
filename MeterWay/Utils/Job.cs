@@ -128,7 +128,7 @@ public class Job
         Pictomancer
     ];
 
-    private Job(int id, string name, string acronym)
+    private Job(int id, string acronym, string name)
     {
         Id = id;
         Name = name;

@@ -23,7 +23,7 @@ public partial class Overlay : BasicOverlay
         if (!tab) return;
 
         ImGui.TextColored(new Vector4(1, 0, 0, 1), "Temporarily disabled, sorry.");
-        ImGui.BeginDisabled();
+        //ImGui.BeginDisabled();
 
         ImGui.Spacing();
         ImGui.Text("Change the fonts used in the overlay");
@@ -58,6 +58,6 @@ public partial class Overlay : BasicOverlay
         ImGui.SameLine();
         ImGui.Text($"{Config.Font.LazerFontSpec?.ToLocalizedString("en") ?? "Default"}");
 
-        ImGui.EndDisabled();
+        //ImGui.EndDisabled();
     }
 }
