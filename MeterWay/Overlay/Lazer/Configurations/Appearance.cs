@@ -10,17 +10,22 @@ namespace Lazer;
 [Serializable]
 public class Appearance()
 {
-    public float Spacing { get; set; } = 2f;
+    public float Spacing { get; set; } = 3.5f;
 
+    public float Rounding { get; set; } = 8f;
     public uint BackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.25f));
+
+    public uint BorderColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(77f / 255f, 77f / 255f, 77f / 255f, 0.25f));
     public uint HeaderBackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(26f / 255f, 26f / 255f, 26f / 255f, 192f / 255f));
-    public uint YourBarColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(128f / 255f, 170f / 255f, 128f / 255f, 255f / 255f));
+    public uint YourBarColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(128f / 255f, 170f / 255f, 128f / 255f, 100f / 255f));
     public uint BarColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0.5f, 0.5f, 170f / 255f, 1f));
     public uint BarBorderColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(26f / 255f, 26f / 255f, 26f / 255f, 222f / 255f));
     public uint JobIconBorderColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(30f / 255f, 30f / 255f, 30f / 255f, 190f / 255f));
     public uint JobNameTextColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(144f / 255f, 144f / 255f, 144f / 255f, 1f));
     public uint TotalDamageTextColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(210f / 255f, 210f / 255f, 210f / 255f, 1f));
 
+    // Job colors
+    public JobColors JobColors { get; set; } = new();
     // color lost during refactor, sory
     // public uint Color8 { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(80f / 255f, 80f / 255f, 80f / 255f, 194f / 255f));
 }
@@ -37,6 +42,7 @@ public partial class Overlay : BasicOverlay
 
         DrawAppearanceGeralTab();
         DrawFontsTab();
+        DrawRoleJobColorsTab();
     }
 
     private void DrawAppearanceGeralTab()
@@ -56,6 +62,14 @@ public partial class Overlay : BasicOverlay
             Save(Window.WindowName, Config);
         }
         ImGui.PopItemWidth();
+        ImGui.PushItemWidth(70);
+        float RoundingValue = Config.Appearance.Rounding;
+        if (ImGui.DragFloat("Corner Rounding", ref RoundingValue, 1f, 0f, 50f))
+        {
+            Config.Appearance.Rounding = RoundingValue;
+            Save(Window.WindowName, Config);
+        }
+        ImGui.PopItemWidth();
 
         ImGui.Spacing();
         ImGui.Separator();
@@ -64,6 +78,12 @@ public partial class Overlay : BasicOverlay
         _ImGuiColorPick("Background", Config.Appearance.BackgroundColor, (value) =>
         {
             Config.Appearance.BackgroundColor = value;
+            Save(Window.WindowName, Config);
+        });
+
+        _ImGuiColorPick("Border", Config.Appearance.BorderColor, (value) =>
+        {
+            Config.Appearance.BorderColor = value;
             Save(Window.WindowName, Config);
         });
 
@@ -76,12 +96,6 @@ public partial class Overlay : BasicOverlay
         _ImGuiColorPick("Your Bar", Config.Appearance.YourBarColor, (value) =>
         {
             Config.Appearance.YourBarColor = value;
-            Save(Window.WindowName, Config);
-        });
-
-        _ImGuiColorPick("Bar", Config.Appearance.BarColor, (value) =>
-        {
-            Config.Appearance.BarColor = value;
             Save(Window.WindowName, Config);
         });
 

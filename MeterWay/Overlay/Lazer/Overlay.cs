@@ -94,15 +94,21 @@ public partial class Overlay : BasicOverlay
         Vector2 position = new();
 
         // Background
-        draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.BackgroundColor);
+        draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.BackgroundColor, Config.Appearance.Rounding);
+
+        // Set up the clip rect
+        ImGui.PushClipRect(cursor.Min, cursor.Max, true);
 
         if (Data == null)
         {
-            draw.AddRect(cursor.Min, cursor.Max, Config.Font.LazerFontColor);
+            draw.AddRect(cursor.Min, cursor.Max, Config.Font.LazerFontColor, Config.Appearance.Rounding);
             text = $"{Info.Name}, No Data.";
             position = cursor.Align(text, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
             draw.AddText(position, Config.Font.LazerFontColor, text); // outlined
             FontLazer?.Pop();
+
+            // Restore the previous clip rect
+            ImGui.PopClipRect();
             return;
         }
 
@@ -111,7 +117,7 @@ public partial class Overlay : BasicOverlay
 
         // Header
         cursor.Max = new(cursor.Max.X, cursor.Min.Y + fontSize + 2 * Config.Appearance.Spacing);
-        draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.HeaderBackgroundColor);
+        draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.HeaderBackgroundColor, Config.Appearance.Rounding, ImDrawFlags.RoundCornersTop);
 
         text = $"{Data.Name} - ({(!Data.Active ? "Completed in " : "")}{Data.Duration.ToString(@"mm\:ss")})";
         position = cursor.Align(text, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
@@ -138,9 +144,10 @@ public partial class Overlay : BasicOverlay
             draw.AddRectFilled(line.Min, line.Max, Config.Appearance.HeaderBackgroundColor);
 
             // Bar
-            var barColor = player.Id == MeterWay.Dalamud.ClientState.LocalPlayer?.EntityId ? Config.Appearance.YourBarColor : Config.Appearance.BarColor;
+            var barColor = GetJobColor(player.Job);
             float progress = (float)(playerLerped?.Progress ?? 1);
-            DrawProgressBar(line.Area, barColor, progress);
+            line.Padding(0);
+            DrawProgressBar(line.Area, barColor, progress, player.Id == MeterWay.Dalamud.ClientState.LocalPlayer?.EntityId);
             draw.AddRect(line.Min, line.Max, Config.Appearance.BarBorderColor);
 
             // icon
@@ -174,6 +181,11 @@ public partial class Overlay : BasicOverlay
             draw.AddText(position, Config.Appearance.TotalDamageTextColor, text); // scale 0.8
         }
 
+        draw.AddRect(Window.GetCanvas().Min, Window.GetCanvas().Max, Config.Appearance.BorderColor, Config.Appearance.Rounding);
+
+        // Restore the previous clip rect
+        ImGui.PopClipRect();
+
         FontLazer?.Pop();
     }
 
@@ -206,7 +218,7 @@ public partial class Overlay : BasicOverlay
 
     public override void OnClose()
     {
-        SavaCurrentWindowData();
+        SaveCurrentWindowData();
     }
 
     public static void Remove(IOverlayWindow window)
@@ -216,7 +228,7 @@ public partial class Overlay : BasicOverlay
 
     public override void Dispose()
     {
-        SavaCurrentWindowData();
+        SaveCurrentWindowData();
         DelayToken?.Cancel();
         DelayToken?.Dispose();
         FontLazer?.Dispose();

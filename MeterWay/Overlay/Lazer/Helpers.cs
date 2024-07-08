@@ -83,8 +83,56 @@ public partial class Overlay : BasicOverlay
         rectangle.Max.X = rectangle.Min.X + ((rectangle.Max.X - rectangle.Min.X) * progress);
         ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, colorBlack, color, color, colorBlack);
     }
+    private void DrawProgressBar((Vector2 Min, Vector2 Max) rectangle, uint color, float progress, bool usePlayerColor)
+    {
+        rectangle.Max.X = rectangle.Min.X + ((rectangle.Max.X - rectangle.Min.X) * progress);
+        ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, usePlayerColor ? Config.Appearance.YourBarColor : colorBlack, color, color, usePlayerColor ? Config.Appearance.YourBarColor : colorBlack);
+    }
 
-    private void SavaCurrentWindowData()
+
+    private uint GetJobColor(Job job)
+    {
+        if (job == Job.Paladin || job == Job.Gladiator) return Config.Appearance.JobColors.Paladin;
+        if (job == Job.Warrior || job == Job.Marauder) return Config.Appearance.JobColors.Warrior;
+        if (job == Job.DarkKnight) return Config.Appearance.JobColors.DarkKnight;
+        if (job == Job.GunBreaker) return Config.Appearance.JobColors.GunBreaker;
+
+        if (job == Job.Monk || job == Job.Pugilist) return Config.Appearance.JobColors.Monk;
+        if (job == Job.Ninja || job == Job.Rogue) return Config.Appearance.JobColors.Ninja;
+        if (job == Job.Dragoon || job == Job.Lancer) return Config.Appearance.JobColors.Dragoon;
+        if (job == Job.Samurai) return Config.Appearance.JobColors.Samurai;
+        if (job == Job.Reaper) return Config.Appearance.JobColors.Reaper;
+        if (job == Job.Viper) return Config.Appearance.JobColors.Viper;
+
+        if (job == Job.WhiteMage || job == Job.Conjurer) return Config.Appearance.JobColors.WhiteMage;
+        if (job == Job.Scholar) return Config.Appearance.JobColors.Scholar;
+        if (job == Job.Astrologian) return Config.Appearance.JobColors.Astrologian;
+        if (job == Job.Sage) return Config.Appearance.JobColors.Sage;
+
+        if (job == Job.Bard || job == Job.Archer) return Config.Appearance.JobColors.Bard;
+        if (job == Job.Machinist) return Config.Appearance.JobColors.Machinist;
+        if (job == Job.Dancer) return Config.Appearance.JobColors.Dancer;
+
+        if (job == Job.BlackMage || job == Job.Thaumaturge) return Config.Appearance.JobColors.BlackMage;
+        if (job == Job.Summoner || job == Job.Arcanist) return Config.Appearance.JobColors.Summoner;
+        if (job == Job.RedMage) return Config.Appearance.JobColors.RedMage;
+        if (job == Job.Pictomancer) return Config.Appearance.JobColors.Pictomancer;
+        if (job == Job.BlueMage) return Config.Appearance.JobColors.BlueMage;
+
+        return Config.Appearance.JobColors.Default;
+    }
+
+    private uint GetRoleColor(Job job)
+    {
+        if (Job.IsTank(job)) return Config.Appearance.JobColors.Tank;
+        if (Job.IsMeleeDps(job)) return Config.Appearance.JobColors.MeleeDps;
+        if (Job.IsHealer(job)) return Config.Appearance.JobColors.Healer;
+        if (Job.IsPhysicalRangedDps(job)) return Config.Appearance.JobColors.PhysicalRangedDps;
+        if (Job.IsMagicalRangedDps(job)) return Config.Appearance.JobColors.MagicalRangedDps;
+        return Config.Appearance.JobColors.Default;
+    }
+
+    private void SaveCurrentWindowData()
     {
         if (Window.CurrentPosition != null) Config.General.Position = (Vector2)Window.CurrentPosition;
         if (Window.CurrentSize != null) Config.General.Size = (Vector2)Window.CurrentSize;
