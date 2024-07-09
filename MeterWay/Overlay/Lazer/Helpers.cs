@@ -20,12 +20,13 @@ public partial class Overlay : BasicOverlay
 
     private Lerp<Dictionary<uint, PlayerData>> CreateLerping()
     {
-        return new(() => // Linear Interpolation
+        return new(() =>
         {
             var now = DateTime.Now;
-            double M = (now - Lerping!.Begin!.Value.Time).TotalMilliseconds / (Lerping.End!.Value.Time - Lerping.Begin!.Value.Time).TotalMilliseconds;
+            double t = (now - Lerping!.Begin!.Value.Time).TotalMilliseconds / (Lerping.End!.Value.Time - Lerping.Begin!.Value.Time).TotalMilliseconds;
+            double M = Easings.OutSine(t);
 
-            Dictionary<uint, PlayerData> result = [];
+            Dictionary<uint, PlayerData> result = new();
             foreach (var key in Lerping.End.Value.Data.Keys)
             {
                 result[key] = new PlayerData
@@ -48,7 +49,7 @@ public partial class Overlay : BasicOverlay
             return true;
         })
         {
-            Interval = TimeSpan.FromSeconds(0.75)
+            Interval = TimeSpan.FromSeconds(0.5)
         };
     }
 
