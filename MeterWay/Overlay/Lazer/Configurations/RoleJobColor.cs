@@ -10,53 +10,53 @@ namespace Lazer;
 [Serializable]
 public class JobColors
 {
-    public uint Default { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8549f, 0.6157f, 0.1804f, 0.25f));
+    public uint Default { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8549f, 0.6157f, 0.1804f, 0.75f));
 
     public bool Override { get; set; } = false;
-    public float Opacity { get; set; } = 0.25f;
+    public float Opacity { get; set; } = 0.75f;
 
-    public uint Tank { get; set; } = ImGui.ColorConvertFloat4ToU32(new(48f / 255f, 58f / 255f, 124f / 255f, 0.25f));
-    public uint Healer { get; set; } = ImGui.ColorConvertFloat4ToU32(new(64f / 255f, 101f / 255f, 45f / 255f, 0.25f));
-    public uint MeleeDps { get; set; } = ImGui.ColorConvertFloat4ToU32(new(106f / 255f, 45f / 255f, 43f / 255f, 0.25f));
-    public uint PhysicalRangedDps { get; set; } = ImGui.ColorConvertFloat4ToU32(new(106f / 255f, 45f / 255f, 43f / 255f, 0.25f));
-    public uint MagicalRangedDps { get; set; } = ImGui.ColorConvertFloat4ToU32(new(106f / 255f, 45f / 255f, 43f / 255f, 0.25f));
+    public uint Tank { get; set; } = ImGui.ColorConvertFloat4ToU32(new(48f / 255f, 58f / 255f, 124f / 255f, 0.75f));
+    public uint Healer { get; set; } = ImGui.ColorConvertFloat4ToU32(new(64f / 255f, 101f / 255f, 45f / 255f, 0.75f));
+    public uint MeleeDps { get; set; } = ImGui.ColorConvertFloat4ToU32(new(106f / 255f, 45f / 255f, 43f / 255f, 0.75f));
+    public uint PhysicalRangedDps { get; set; } = ImGui.ColorConvertFloat4ToU32(new(106f / 255f, 45f / 255f, 43f / 255f, 0.75f));
+    public uint MagicalRangedDps { get; set; } = ImGui.ColorConvertFloat4ToU32(new(106f / 255f, 45f / 255f, 43f / 255f, 0.75f));
 
     // Tank
 
-    public uint Paladin { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.6588f, 0.8235f, 0.902f, 0.25f));
-    public uint Warrior { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8118f, 0.149f, 0.1294f, 0.25f));
-    public uint DarkKnight { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8196f, 0.149f, 0.8f, 0.25f));
-    public uint GunBreaker { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.4745f, 0.4275f, 0.1882f, 0.25f));
+    public uint Paladin { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.6588f, 0.8235f, 0.902f, 0.75f));
+    public uint Warrior { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8118f, 0.149f, 0.1294f, 0.75f));
+    public uint DarkKnight { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8196f, 0.149f, 0.8f, 0.75f));
+    public uint GunBreaker { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.4745f, 0.4275f, 0.1882f, 0.75f));
 
     // MeleeDPS
 
-    public uint Monk { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8392f, 0.6118f, 0f, 0.25f));
-    public uint Dragoon { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.2549f, 0.3922f, 0.8039f, 0.25f));
-    public uint Ninja { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.6863f, 0.098f, 0.3922f, 0.25f));
-    public uint Samurai { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8941f, 0.4275f, 0.0157f, 0.25f));
-    public uint Reaper { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5882f, 0.3529f, 0.5647f, 0.25f));
-    public uint Viper { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.0627f, 0.5098f, 0.0627f, 0.25f));
+    public uint Monk { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8392f, 0.6118f, 0f, 0.75f));
+    public uint Dragoon { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.2549f, 0.3922f, 0.8039f, 0.75f));
+    public uint Ninja { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.6863f, 0.098f, 0.3922f, 0.75f));
+    public uint Samurai { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8941f, 0.4275f, 0.0157f, 0.75f));
+    public uint Reaper { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5882f, 0.3529f, 0.5647f, 0.75f));
+    public uint Viper { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.0627f, 0.5098f, 0.0627f, 0.75f));
 
     // Healer
 
-    public uint WhiteMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(1f, 0.9412f, 0.8627f, 0.25f));
-    public uint Scholar { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5255f, 0.3412f, 1f, 0.25f));
-    public uint Astrologian { get; set; } = ImGui.ColorConvertFloat4ToU32(new(1f, 0.9059f, 0.2902f, 0.25f));
-    public uint Sage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5647f, 0.6902f, 1f, 0.25f));
+    public uint WhiteMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(1f, 0.9412f, 0.8627f, 0.75f));
+    public uint Scholar { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5255f, 0.3412f, 1f, 0.75f));
+    public uint Astrologian { get; set; } = ImGui.ColorConvertFloat4ToU32(new(1f, 0.9059f, 0.2902f, 0.75f));
+    public uint Sage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5647f, 0.6902f, 1f, 0.75f));
 
     // PhysicalRangedDps
 
-    public uint Bard { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5686f, 0.7294f, 0.3686f, 0.25f));
-    public uint Machinist { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.4314f, 0.8824f, 0.8392f, 0.25f));
-    public uint Dancer { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8863f, 0.6902f, 0.6863f, 0.25f));
+    public uint Bard { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.5686f, 0.7294f, 0.3686f, 0.75f));
+    public uint Machinist { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.4314f, 0.8824f, 0.8392f, 0.75f));
+    public uint Dancer { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.8863f, 0.6902f, 0.6863f, 0.75f));
 
     // MagicalRangedDps
 
-    public uint BlackMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.6471f, 0.4745f, 0.8392f, 0.25f));
-    public uint Summoner { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.1765f, 0.6078f, 0.4706f, 0.25f));
-    public uint RedMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.9098f, 0.4824f, 0.4824f, 0.25f));
-    public uint Pictomancer { get; set; } = ImGui.ColorConvertFloat4ToU32(new(1f, 0.6353f, 0.9451f, 0.25f));
-    public uint BlueMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0f, 0.7255f, 0.9686f, 0.25f));
+    public uint BlackMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.6471f, 0.4745f, 0.8392f, 0.75f));
+    public uint Summoner { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.1765f, 0.6078f, 0.4706f, 0.75f));
+    public uint RedMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0.9098f, 0.4824f, 0.4824f, 0.75f));
+    public uint Pictomancer { get; set; } = ImGui.ColorConvertFloat4ToU32(new(1f, 0.6353f, 0.9451f, 0.75f));
+    public uint BlueMage { get; set; } = ImGui.ColorConvertFloat4ToU32(new(0f, 0.7255f, 0.9686f, 0.75f));
 
 }
 public partial class Overlay : BasicOverlay

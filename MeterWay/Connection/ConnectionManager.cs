@@ -213,22 +213,24 @@ public class ConnectionManager : IDisposable
 
     private static void ReportSuccess(string message)
     {
-        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload(message), new UIForegroundPayload(0)));
+        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload(message), new UIForegroundPayload(0)));
         Dalamud.Notifications.AddNotification(new()
         {
+            MinimizedText = message,
             Title = message,
-            InitialDuration = TimeSpan.FromSeconds(30),
+            InitialDuration = TimeSpan.FromSeconds(15),
             Type = NotificationType.Success
         });
     }
 
     private static void ReportFailure(string message)
     {
-        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(60), new TextPayload(message), new UIForegroundPayload(0)));
+        Dalamud.Chat.Print(new SeString(new UIForegroundPayload(73), new TextPayload(message), new UIForegroundPayload(0)));
         Dalamud.Notifications.AddNotification(new()
         {
+            MinimizedText = message,
             Title = message,
-            InitialDuration = TimeSpan.FromSeconds(30),
+            InitialDuration = TimeSpan.FromSeconds(15),
             Type = NotificationType.Error
         });
     }

@@ -10,7 +10,7 @@ namespace Lazer;
 [Serializable]
 public class General()
 {
-    public Vector2 Size { get; set; } = new(320f, 180f);
+    public Vector2 Size { get; set; } = new(450f, 230f);
     public Vector2 Position { get; set; } = new(192, 108f);
 
     public bool NoInput { get; set; } = false;

@@ -23,7 +23,9 @@ public class Appearance()
     public uint JobIconBorderColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(30f / 255f, 30f / 255f, 30f / 255f, 190f / 255f));
     public uint JobNameTextColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(144f / 255f, 144f / 255f, 144f / 255f, 1f));
     public uint TotalDamageTextColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(210f / 255f, 210f / 255f, 210f / 255f, 1f));
-
+    
+    public Layout Layout { get; set; } = new();
+    
     // Job colors
     public JobColors JobColors { get; set; } = new();
     // color lost during refactor, sory
@@ -41,6 +43,7 @@ public partial class Overlay : BasicOverlay
         if (!bar) return;
 
         DrawAppearanceGeralTab();
+        DrawAppearanceLayoutTab();
         DrawFontsTab();
         DrawRoleJobColorsTab();
     }
