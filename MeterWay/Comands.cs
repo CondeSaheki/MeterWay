@@ -20,6 +20,10 @@ public class Commands : IDisposable
         {
             HelpMessage = $"Display {Plugin.Name} main window.\nAditional help with the command \'{CommandName} help\'."
         });
+        Dalamud.Commands.AddHandler("/mw", new CommandInfo((string command, string arg) => { OnCommand(arg); })
+        {
+            HelpMessage = $"Display {Plugin.Name} main window.\nAditional help with the command \'{CommandName} help\'."
+        });
     }
 
     private static string HelpMessage() 
