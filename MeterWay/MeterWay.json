@@ -3,6 +3,7 @@
   "Name": "MeterWay",
   "Punchline": "A simple dps meter.",
   "Description": "A gamer description.",
+  "RepoUrl": "https://github.com/CondeSaheki/MeterWay",
   "ApplicableVersion": "any",
   "Tags": [
     "dps",

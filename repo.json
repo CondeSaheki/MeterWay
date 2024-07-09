@@ -14,6 +14,7 @@
     "IsTestingExclusive": false,
     "DownloadLinkTesting": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.11/latest.zip",
     "DownloadLinkUpdate": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.11/latest.zip",
-    "DownloadCount": 0
+    "DownloadCount": 0,
+    "IconUrl": "https://raw.githubusercontent.com/CondeSaheki/MeterWay/main/images/icon.png"
   }
 ]
