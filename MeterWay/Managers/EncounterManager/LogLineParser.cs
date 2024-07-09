@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-
+using System.Linq;
 using MeterWay.Managers;
 using MeterWay.LogParser;
 
@@ -19,6 +19,7 @@ public static class LoglineParser
             LogLineType.DoTHoT => MsgDoTHoT,
             LogLineType.PartyList => MsgPartyList,
             LogLineType.AddCombatant => MsgAddCombatant,
+            LogLineType.RemoveCombatant => MsgRemoveCombatant,
             LogLineType.PlayerStats => MsgPlayerStats,
             LogLineType.StatusApply => MsgStatusApply,
             LogLineType.StatusRemove => MsgStatusRemove,
@@ -70,12 +71,10 @@ public static class LoglineParser
 
         bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
         bool targetIsPlayer = parsed.TargetId != null && encounter.Players.ContainsKey((uint)parsed.TargetId);
-        bool ActionFromPet = false; // ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
-        if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
+        bool actionFromPet = encounter.Pets.ContainsKey(parsed.SourceId);
+        if (!sourceIsPlayer && !targetIsPlayer && !actionFromPet) return;
 
-        static uint DamageHealCalc(uint val) => (val >> 16 | val << 16) & 0x0FFFFFFF;
-
-        foreach (KeyValuePair<uint, uint> attribute in parsed.ActionAttributes)
+        foreach (var attribute in parsed.ActionAttributes)
         {
             if (ActionEffectFlag.IsNothing((int)attribute.Key)) break;
             if (ActionEffectFlag.IsSpecial((int)attribute.Key)) { }; // TODO
@@ -207,14 +206,69 @@ public static class LoglineParser
                 }
             }
 
-            // TODO Pets
-            if (ActionFromPet)
+            // Pet, account damage for pets (add it to the owner)
+            if (actionFromPet && encounter.Pets[parsed.SourceId].Owner is Player { IsActive: true } p && encounter.Players.ContainsKey(p.Id))
             {
-                Dalamud.Log.Info("LoglineParser ActionEffect: Not implemented pet action.");
+                var player = encounter.Players[p.Id];
+
+                if (ActionEffectFlag.IsDamage((int)attribute.Key))
+                {
+                    var actionValue = DamageHealCalc(attribute.Value);
+
+                    player.DamageDealt.Value.Total += actionValue;
+                    player.DamageDealt.Count.Total += 1;
+                    encounter.DamageDealt.Value.Total += actionValue;
+                    encounter.DamageDealt.Count.Total += 1;
+
+                    if (ActionEffectFlag.IsDirectCrit((int)attribute.Key))
+                    {
+                        player.DamageDealt.Value.CriticalDirect += actionValue;
+                        player.DamageDealt.Count.CriticalDirect += 1;
+                        encounter.DamageDealt.Value.CriticalDirect += actionValue;
+                        encounter.DamageDealt.Count.CriticalDirect += 1;
+                    }
+                    else
+                    {
+                        if (ActionEffectFlag.IsCrit((int)attribute.Key))
+                        {
+                            player.DamageDealt.Value.Critical += actionValue;
+                            player.DamageDealt.Count.Critical += 1;
+                            encounter.DamageDealt.Value.Critical += actionValue;
+                            encounter.DamageDealt.Count.Critical += 1;
+                        }
+
+                        if (ActionEffectFlag.IsDirect((int)attribute.Key))
+                        {
+                            player.DamageDealt.Value.Direct += actionValue;
+                            player.DamageDealt.Count.Direct += 1;
+                            encounter.DamageDealt.Value.Direct += actionValue;
+                            encounter.DamageDealt.Count.Direct += 1;
+                        }
+                    }
+                }
+                else if (ActionEffectFlag.IsHeal((int)attribute.Key))
+                {
+                    var actionValue = DamageHealCalc(attribute.Value);
+
+                    player.HealDealt.Value.Total += actionValue;
+                    player.HealDealt.Count.Total += 1;
+                    encounter.HealDealt.Value.Total += actionValue;
+                    encounter.HealDealt.Count.Total += 1;
+
+                    if (ActionEffectFlag.IsCritHeal((int)attribute.Key))
+                    {
+                        player.HealDealt.Count.Critical += 1;
+                        player.HealDealt.Value.Critical += actionValue;
+                        encounter.HealDealt.Value.Critical += actionValue;
+                        encounter.HealDealt.Count.Critical += 1;
+                    }
+                }
             }
 
             break;
         }
+
+        static uint DamageHealCalc(uint val) => (val >> 16 | val << 16) & 0x0FFFFFFF;
     }
 
     private static void MsgAOEActionEffect(LogLineData logLineData, Encounter encounter)
@@ -242,8 +296,9 @@ public static class LoglineParser
 
         bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
         bool targetIsPlayer = encounter.Players.ContainsKey(parsed.TargetId);
-        bool ActionFromPet = false; // ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
-        if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
+        bool actionFromPet = encounter.Pets.ContainsKey(parsed.SourceId);
+
+        if (!sourceIsPlayer && !targetIsPlayer && !actionFromPet) return;
 
         if (sourceIsPlayer)
         {
@@ -264,7 +319,7 @@ public static class LoglineParser
         if (targetIsPlayer)
         {
             var player = encounter.Players[parsed.TargetId!];
-            
+
             if (!parsed.IsHeal) // IsDamage
             {
                 player.DamageReceived.Value.Total += parsed.Value;
@@ -277,10 +332,20 @@ public static class LoglineParser
             }
         }
 
-        // TODO Pets
-        if (ActionFromPet)
+        if (actionFromPet && encounter.Pets[parsed.SourceId].Owner is Player { IsActive: true } p)
         {
-            Dalamud.Log.Info("LoglineParser MsgDoTHoT: Not implemented pet action.");
+            var player = encounter.Players[p.Id];
+
+            if (parsed.IsHeal)
+            {
+                player.HealDealt.Value.Total += parsed.Value;
+                encounter.HealDealt.Value.Total += parsed.Value;
+            }
+            else
+            {
+                player.DamageDealt.Value.Total += parsed.Value;
+                encounter.DamageDealt.Value.Total += parsed.Value;
+            }
         }
     }
 
@@ -293,22 +358,48 @@ public static class LoglineParser
     // this will be used to make sure summoners have their pets damage accounted
     private static void MsgAddCombatant(LogLineData logLineData, Encounter encounter)
     {
-        if (!encounter.Finished || logLineData.Parsed) return;
+        if (encounter.Finished || logLineData.Parsed) return;
         logLineData.Parse();
         var parsed = (AddCombatant)logLineData.Value!;
-
-        // bool sourceIsPlayer = encounter.Players.ContainsKey(parsed.SourceId);
-        // bool targetIsPlayer = encounter.Players.ContainsKey((uint)parsed.TargetId);
-        // bool ActionFromPet = ((parsed.SourceId >> 24) & 0xFF) == 64 && encounter.Pets.ContainsKey(parsed.SourceId);
-        // if (!sourceIsPlayer && !targetIsPlayer && !ActionFromPet) return;
-
-        // todo
-
+        
+        bool ownerIsPlayer = encounter.Players.ContainsKey(parsed.OwnerId);
+        
+        if (!ownerIsPlayer) return;
+        
         if (parsed.IsPet)
         {
-            Dalamud.Log.Info("LoglineParser MsgAddCombatant: Not implemented pet action.");
+            var owner = encounter.Players[parsed.OwnerId];
+            Dalamud.Log.Info($"New pet added for {owner.Name} with id {parsed.Id} and name {parsed.Name}");
+            var pet = new Pet()
+            {
+                Owner = owner,
+                Id = parsed.Id,
+                Name = parsed.Name,
+            };
+            
+            encounter.Pets.Add(pet.Id, pet);
         }
-        Dalamud.Log.Info("LoglineParser MsgAddCombatant: Not implemented");
+    }
+
+    private static void MsgRemoveCombatant(LogLineData logLineData, Encounter encounter)
+    {
+        if (encounter.Finished || logLineData.Parsed) return;
+        logLineData.Parse();
+        var parsed = (RemoveCombatant)logLineData.Value!;
+        
+        bool ownerIsPlayer = encounter.Players.ContainsKey(parsed.OwnerId);
+        bool petIsInEncounter = encounter.Pets.ContainsKey(parsed.Id);
+        
+        if (!ownerIsPlayer || !petIsInEncounter) return;
+        
+        if (parsed.IsPet)
+        {
+            var owner = encounter.Players[parsed.OwnerId];
+            Dalamud.Log.Info($"Pet from {owner.Name} with id {parsed.Id} and name {parsed.Name} was removed.");
+            encounter.Pets.Remove(parsed.Id);
+            
+            Dalamud.Log.Debug($"Removed pet {parsed.Id} from {owner.Name}");
+        }
     }
 
     private static void MsgPlayerStats(LogLineData logLineData, Encounter encounter)

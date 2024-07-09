@@ -9,21 +9,21 @@ namespace MeterWay.Data;
 
 public class Pet : IPet
 {
-    public IPlayer? Owner => throw new System.NotImplementedException();
+    public IPlayer? Owner {get;set;}
 
-    public uint Id => throw new System.NotImplementedException();
+    public uint Id {get;set;}
 
-    public string Name => throw new System.NotImplementedException();
+    public string Name {get;set;}
 
-    public Damage DamageDealt => throw new System.NotImplementedException();
+    public Damage DamageDealt {get;set;}
 
-    public Damage DamageReceived => throw new System.NotImplementedException();
+    public Damage DamageReceived {get;set;}
 
-    public Heal HealDealt => throw new System.NotImplementedException();
+    public Heal HealDealt {get;set;}
 
-    public Heal HealReceived => throw new System.NotImplementedException();
+    public Heal HealReceived {get;set;}
 
-    public PerSeconds PerSeconds => throw new System.NotImplementedException();
+    public PerSeconds PerSeconds {get;set;}
 
     public void Calculate()
     {

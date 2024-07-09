@@ -36,7 +36,7 @@ public class Encounter : IEncounter
 
     Dictionary<uint, IPlayer> IEncounter.Players => throw new NotImplementedException();
 
-    public Dictionary<uint, IPet> Pets => throw new NotImplementedException();
+    public Dictionary<uint, IPet> Pets { get; set; } = [];
 
     public Encounter()
     {

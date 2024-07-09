@@ -17,5 +17,5 @@ public interface IEncounter : IData
 
     public Dictionary<uint, IParty> Partys { get; }
     public Dictionary<uint, IPlayer> Players { get; }
-    public Dictionary<uint, IPet> Pets { get; }
+    public Dictionary<uint, IPet> Pets { get; set; }
 }

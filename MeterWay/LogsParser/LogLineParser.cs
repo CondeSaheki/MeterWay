@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 
 using MeterWay.Utils;
@@ -35,6 +36,7 @@ public class LogLineData
             LogLineType.StartsCasting => typeof(StartsCasting),
             LogLineType.DoTHoT => typeof(DoTHoT),
             LogLineType.AddCombatant => typeof(AddCombatant),
+            LogLineType.RemoveCombatant => typeof(RemoveCombatant),
             LogLineType.PlayerStats => typeof(PlayerStats),
             LogLineType.StatusApply => typeof(StatusApply),
             LogLineType.StatusRemove => typeof(StatusRemove),
@@ -329,7 +331,8 @@ public class AddCombatant : LogLine
     public string Job { get; set; }
     public uint Level { get; set; }
     public uint OwnerId { get; set; }
-    public uint WorldId { get; set; }
+    
+    public string Unknown { get; set; }
     public string World { get; set; }
     public uint NpcNameId { get; set; }
     public uint NpcBaseId { get; set; }
@@ -350,6 +353,52 @@ public class AddCombatant : LogLine
         Job = data[4].Span.ToString();
         Level = uint.Parse(data[5].Span, NumberStyles.HexNumber);
         OwnerId = uint.Parse(data[6].Span, NumberStyles.HexNumber);
+        Unknown = data[7].Span.ToString();
+        World = data[8].Span.ToString();
+        NpcNameId = uint.Parse(data[9].Span, NumberStyles.HexNumber);
+        NpcBaseId = uint.Parse(data[10].Span, NumberStyles.HexNumber);
+        CurrentHp = uint.Parse(data[11].Span, NumberStyles.HexNumber);
+        Hp = uint.Parse(data[12].Span, NumberStyles.HexNumber);
+        CurrentMp = uint.Parse(data[13].Span, NumberStyles.HexNumber);
+        Mp = uint.Parse(data[14].Span, NumberStyles.HexNumber);
+        Unknown1 = data[15].Span.ToString();
+        Unknown2 = data[16].Span.ToString();
+        Pos = Helpers.Vec4Parse(data, 17, 18, 19, 20);
+        IsPet = (Id & 0xFF000000) == 0x40000000 && OwnerId != 0;
+    }
+
+    public override string ToString() => $"Id: {Id},\nName: {Name},\nJob: {Job},\nLevel: {Level},\nOwnerId: {OwnerId},\nUnknown: {Unknown},\nWorld: {World},\nNpcNameId: {NpcNameId},\nNpcBaseId: {NpcBaseId},\nCurrentHp: {CurrentHp},\nHp: {Hp},\nCurrentMp: {CurrentMp},\nMp: {Mp},\nUnknown1: {Unknown1},\nUnknown2: {Unknown2},\nPos: {Pos}";
+}
+
+
+public class RemoveCombatant : LogLine
+{
+    public uint Id { get; set; }
+    public string Name { get; set; }
+    public string Job { get; set; }
+    public uint Level { get; set; }
+    public uint OwnerId { get; set; }
+    public uint WorldId { get; set; }
+    public string World { get; set; }
+    public uint NpcNameId { get; set; }
+    public uint NpcBaseId { get; set; }
+    public uint CurrentHp { get; set; }
+    public uint Hp { get; set; }
+    public uint CurrentMp { get; set; }
+    public uint Mp { get; set; }
+    public string Unknown1 { get; set; }
+    public string Unknown2 { get; set; }
+    public Vector4? Pos { get; set; }
+
+    public bool IsPet { get; }
+
+    public RemoveCombatant(List<ReadOnlyMemory<char>> data)
+    {
+        Id = uint.Parse(data[2].Span, NumberStyles.HexNumber);
+        Name = data[3].Span.ToString();
+        Job = data[4].Span.ToString();
+        Level = uint.Parse(data[5].Span, NumberStyles.HexNumber);
+        OwnerId = uint.Parse(data[6].Span, NumberStyles.HexNumber);
         WorldId = uint.Parse(data[7].Span, NumberStyles.HexNumber);
         World = data[8].Span.ToString();
         NpcNameId = uint.Parse(data[9].Span, NumberStyles.HexNumber);
@@ -361,7 +410,7 @@ public class AddCombatant : LogLine
         Unknown1 = data[15].Span.ToString();
         Unknown2 = data[16].Span.ToString();
         Pos = Helpers.Vec4Parse(data, 17, 18, 19, 20);
-        IsPet = OwnerId != 0 && ((Id >> 24) & 0xFF) == 64;
+        IsPet = (Id & 0xFF000000) == 0x40000000 && OwnerId != 0;
     }
 
     public override string ToString() => $"Id: {Id},\nName: {Name},\nJob: {Job},\nLevel: {Level},\nOwnerId: {OwnerId},\nWorldId: {WorldId},\nWorld: {World},\nNpcNameId: {NpcNameId},\nNpcBaseId: {NpcBaseId},\nCurrentHp: {CurrentHp},\nHp: {Hp},\nCurrentMp: {CurrentMp},\nMp: {Mp},\nUnknown1: {Unknown1},\nUnknown2: {Unknown2},\nPos: {Pos}";

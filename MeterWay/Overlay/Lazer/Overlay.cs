@@ -121,7 +121,7 @@ public partial class Overlay : BasicOverlay
 
         text = $"{Data.Name} - ({(!Data.Active ? "Completed in " : "")}{Data.Duration.ToString(@"mm\:ss")})";
         position = cursor.Align(text, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
-        draw.AddText(position, colorWhite, text);
+        draw.AddText(position, ColorWhite, text);
         cursor.Move((0, cursor.Height));
 
         // Players
@@ -154,7 +154,7 @@ public partial class Overlay : BasicOverlay
             Canvas icon = new(line.Area);
             icon.Max = icon.Min + new Vector2(icon.Height, icon.Height);
             icon.Padding(Config.Appearance.Spacing + 1);
-            draw.AddRectFilled(icon.Min, icon.Max, colorBlack);
+            draw.AddRectFilled(icon.Min, icon.Max, ColorBlack);
             draw.AddRect(icon.Min, icon.Max, Config.Appearance.JobIconBorderColor);
             DrawJobIcon(icon, player.Job);
             line.AddMin(icon.Height + Config.Appearance.Spacing, 0);
@@ -168,12 +168,12 @@ public partial class Overlay : BasicOverlay
 
             text = player.Name;
             position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
-            draw.AddText(position, colorWhite, text);
+            draw.AddText(position, ColorWhite, text);
             line.AddMin(ImGui.CalcTextSize(text).X + Config.Appearance.Spacing, 0);
 
             text = $"{Helpers.HumanizeNumber(player.PerSeconds.DamageDealt, 2)}/s";
             position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);
-            draw.AddText(position, colorWhite, text);
+            draw.AddText(position, ColorWhite, text);
             line.AddMax(-ImGui.CalcTextSize(text).X - Config.Appearance.Spacing, 0);
 
             text = $"{Helpers.HumanizeNumber(playerLerped?.Damage ?? 0, 2)}";

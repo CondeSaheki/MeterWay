@@ -3,37 +3,34 @@ using System.Linq;
 using System.Numerics;
 using System.Collections.Generic;
 using ImGuiNET;
-using Dalamud.Plugin.Services;
 using Dalamud.Interface.ImGuiFontChooserDialog;
 using Dalamud.Interface.FontIdentifier;
 
 using MeterWay.Utils;
-using MeterWay.Overlay;
 using Dalamud.Interface;
 
 namespace Lazer;
 
-public partial class Overlay : BasicOverlay
+public partial class Overlay
 {
-    private static readonly uint colorWhite = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
-    private static readonly uint colorBlack = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 1f));
+    private static readonly uint ColorWhite = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
+    private static readonly uint ColorBlack = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 1f));
 
     private Lerp<Dictionary<uint, PlayerData>> CreateLerping()
     {
-        return new(() =>
+        return new Lerp<Dictionary<uint, PlayerData>>(() =>
         {
             var now = DateTime.Now;
-            double t = (now - Lerping!.Begin!.Value.Time).TotalMilliseconds / (Lerping.End!.Value.Time - Lerping.Begin!.Value.Time).TotalMilliseconds;
-            double M = Easings.OutSine(t);
+            var coefficient = Easings.OutSine((now - Lerping.Begin!.Value.Time).TotalMilliseconds / (Lerping.End!.Value.Time - Lerping.Begin!.Value.Time).TotalMilliseconds);
 
             Dictionary<uint, PlayerData> result = new();
             foreach (var key in Lerping.End.Value.Data.Keys)
             {
                 result[key] = new PlayerData
                 {
-                    Progress = Lerping.Begin.Value.Data[key].Progress + M * (Lerping.End.Value.Data[key].Progress - Lerping.Begin.Value.Data[key].Progress),
-                    Damage = Lerping.Begin.Value.Data[key].Damage + M * (Lerping.End.Value.Data[key].Damage - Lerping.Begin.Value.Data[key].Damage),
-                    CurrentPosition = Lerping.Begin.Value.Data[key].CurrentPosition + M * (Lerping.End.Value.Data[key].CurrentPosition - Lerping.Begin.Value.Data[key].CurrentPosition)
+                    Progress = Lerping.Begin.Value.Data[key].Progress + coefficient * (Lerping.End.Value.Data[key].Progress - Lerping.Begin.Value.Data[key].Progress),
+                    Damage = Lerping.Begin.Value.Data[key].Damage + coefficient * (Lerping.End.Value.Data[key].Damage - Lerping.Begin.Value.Data[key].Damage),
+                    CurrentPosition = Lerping.Begin.Value.Data[key].CurrentPosition + coefficient * (Lerping.End.Value.Data[key].CurrentPosition - Lerping.Begin.Value.Data[key].CurrentPosition)
                 };
             }
             return result;
@@ -42,9 +39,9 @@ public partial class Overlay : BasicOverlay
         {
             foreach (var elem in left)
             {
-                if (elem.Value.Progress != right[elem.Key].Progress) return false;
-                if (elem.Value.Damage != right[elem.Key].Damage) return false;
-                if (elem.Value.CurrentPosition != right[elem.Key].CurrentPosition) return false;
+                if (Math.Abs(elem.Value.Progress - right[elem.Key].Progress) > 0.001) return false;
+                if (Math.Abs(elem.Value.Damage - right[elem.Key].Damage) >  0.001) return false;
+                if (Math.Abs(elem.Value.CurrentPosition - right[elem.Key].CurrentPosition) > 0.001) return false;
             }
             return true;
         })
@@ -61,7 +58,7 @@ public partial class Overlay : BasicOverlay
         Dictionary<uint, PlayerData> updatedPlayersData = [];
         foreach (var id in SortCache)
         {
-            updatedPlayersData.Add(id, new()
+            updatedPlayersData.Add(id, new PlayerData
             {
                 Progress = (float)Data.Players[id].DamageDealt.Value.Total / topDamage,
                 Damage = Data.Players[id].DamageDealt.Value.Total,
@@ -82,12 +79,12 @@ public partial class Overlay : BasicOverlay
     private static void DrawProgressBar((Vector2 Min, Vector2 Max) rectangle, uint color, float progress)
     {
         rectangle.Max.X = rectangle.Min.X + ((rectangle.Max.X - rectangle.Min.X) * progress);
-        ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, colorBlack, color, color, colorBlack);
+        ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, ColorBlack, color, color, ColorBlack);
     }
     private void DrawProgressBar((Vector2 Min, Vector2 Max) rectangle, uint color, float progress, bool usePlayerColor)
     {
         rectangle.Max.X = rectangle.Min.X + ((rectangle.Max.X - rectangle.Min.X) * progress);
-        ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, usePlayerColor ? Config.Appearance.YourBarColor : colorBlack, color, color, usePlayerColor ? Config.Appearance.YourBarColor : colorBlack);
+        ImGui.GetWindowDrawList().AddRectFilledMultiColor(rectangle.Min, rectangle.Max, usePlayerColor ? Config.Appearance.YourBarColor : ColorBlack, color, color, usePlayerColor ? Config.Appearance.YourBarColor : ColorBlack);
     }
 
 
