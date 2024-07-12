@@ -78,7 +78,7 @@ public partial class Overlay : BasicOverlay
         float spacing = 2f;
         string text = "";
         Vector2 position = cursor.Min;
-        
+
         if (Data == null)
         {
             draw.AddRect(cursor.Min, cursor.Max, Config.Font.MoguFontColor);
@@ -88,7 +88,7 @@ public partial class Overlay : BasicOverlay
             FontMogu?.Pop();
             return;
         }
-        
+
         if (Config.General.FrameCalc && !Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
 
         // Background
@@ -123,20 +123,36 @@ public partial class Overlay : BasicOverlay
 
             if (Config.Appearance.Bar)
             {
-                var barColor = Config.Appearance.BarColorJob ? GetJobColor(player.Job) : Config.Appearance.BarColor;
+                var barColor = Config.Appearance.BarColor switch
+                {
+                    ColorSelected.Job => Config.Appearance.JobColors.Override ? Helpers.ColorU32AlphaOverride(GetJobColor(player.Job), Config.Appearance.JobColors.Opacity) : GetJobColor(player.Job),
+                    ColorSelected.Role => Config.Appearance.JobColors.Override ? Helpers.ColorU32AlphaOverride(GetRoleColor(player.Job), Config.Appearance.JobColors.Opacity) : GetRoleColor(player.Job),
+                    ColorSelected.Custom => Config.Appearance.BarCustomColor,
+                    ColorSelected.Default => Config.Appearance.JobColors.Default,
+                    _ => throw new NotImplementedException(),
+                };
                 DrawProgressBar(cursor.Area, progress, barColor);
             }
 
-            position = cursor.Padding((spacing, 0)).Align(player.Name, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
+            var formatedName = DisplayName(player.Name, Config.Appearance.PlayerNameDisplay);
+            var NameColor = Config.Appearance.PlayerNameColor switch
+            {
+                ColorSelected.Job => Config.Appearance.JobColors.Override ? Helpers.ColorU32AlphaOverride(GetJobColor(player.Job), Config.Appearance.JobColors.Opacity) : GetJobColor(player.Job),
+                ColorSelected.Role => Config.Appearance.JobColors.Override ? Helpers.ColorU32AlphaOverride(GetRoleColor(player.Job), Config.Appearance.JobColors.Opacity) : GetRoleColor(player.Job),
+                ColorSelected.Custom => Config.Appearance.PlayerNameCustomColor,
+                ColorSelected.Default => Config.Font.MoguFontColor,
+                _ => throw new NotImplementedException(),
+            };
+            position = cursor.Padding((spacing, 0)).Align(formatedName, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
             if (Config.Appearance.PlayerJobIcon)
             {
                 Canvas iconArea = new(cursor.Area);
                 iconArea.Max = iconArea.Min + new Vector2(iconArea.Height, iconArea.Height);
                 iconArea.Padding(spacing + 1);
                 DrawJobIcon(iconArea, player.Job);
-                draw.AddText(position + new Vector2(iconArea.Width + 2 * spacing, 0), Config.Font.MoguFontColor, player.Name);
+                draw.AddText(position + new Vector2(iconArea.Width + 2 * spacing, 0), NameColor, formatedName);
             }
-            else draw.AddText(position, Config.Font.MoguFontColor, player.Name);
+            else draw.AddText(position, NameColor, formatedName);
 
             var damageinfo = $"{Helpers.HumanizeNumber(player.PerSeconds.DamageDealt, 2)} {Math.Round(pct * 100, 2).ToString(CultureInfo.InvariantCulture)}%";
             position = cursor.Padding((spacing, 0)).Align(damageinfo, Canvas.HorizontalAlign.Right, Canvas.VerticalAlign.Center);

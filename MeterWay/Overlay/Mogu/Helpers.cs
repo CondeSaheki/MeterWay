@@ -54,6 +54,70 @@ public partial class Overlay : BasicOverlay
         return result;
     }
 
+    public enum JobDisplay
+    {
+        Acronym,
+        FullName
+    }
+
+    public enum ColorSelected
+    {
+        Default,
+        Job,
+        Role,
+        Custom,
+    }
+
+    public static void DrawColorSelected(string Label, ColorSelected colorSelected, Action<ColorSelected> setter)
+    {
+        string[] options =
+        [
+            "Default",
+            "Job",
+            "Role",
+            "Custom",
+        ];
+
+        var colorSelectedValue = (int)colorSelected;
+        if (ImGui.Combo(Label, ref colorSelectedValue, options, options.Length) && colorSelected != (ColorSelected)colorSelectedValue)
+        {
+            setter.Invoke((ColorSelected)colorSelectedValue);
+        }
+    }
+
+    public enum NameDisplay
+    {
+        NoName,
+        FullName,
+        Surname,
+        SurnameAbbreviated,
+        ForenameAbbreviatedAndSurname,
+        Forename,
+        ForenameAbbreviated,
+        ForenameAndSurnameAbbreviated,
+        Initials
+    }
+
+    public static string DisplayName(string fullName, NameDisplay display)
+    {
+        if (display == NameDisplay.NoName) return string.Empty;
+        if (display == NameDisplay.FullName) return fullName;
+
+        var names = fullName.Split(' ');
+        return display switch
+        {
+            NameDisplay.Surname => names[^1],
+            NameDisplay.Forename => names[0],
+            NameDisplay.SurnameAbbreviated => $"{names[^1][0]}.",
+            NameDisplay.ForenameAbbreviated => $"{names[0][0]}.",
+            NameDisplay.ForenameAndSurnameAbbreviated => $"{names[0]} {names[^1][0]}.",
+            NameDisplay.ForenameAbbreviatedAndSurname => $"{names[0][0]}. {names[^1]}",
+            NameDisplay.Initials => $"{names[0][0]}. {names[1][0]}.",
+            _ => throw new NotImplementedException(),
+        };
+    }
+
+
     private uint GetJobColor(Job job)
     {
         if (job == Job.Paladin || job == Job.Gladiator) return Config.Appearance.JobColors.Paladin;
@@ -146,13 +210,13 @@ public partial class Overlay : BasicOverlay
         }
     }
 
-    private void _SingleFontChooserDialog(string? label, SingleFontSpec? current, Action<SingleFontSpec> setter)
+    private void _SingleFontChooserDialog(string? label, IFontSpec? current, Action<SingleFontSpec> setter)
     {
         SingleFontChooserDialog chooser = new((UiBuilder)MeterWay.Dalamud.PluginInterface.UiBuilder, false, null)
         {
             Title = label ?? "Font Chooser",
             PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",
-            SelectedFont = current ?? new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance },
+            SelectedFont = (SingleFontSpec?)current ?? new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance },
             IsModal = false,
         };
         chooser.ResultTask.ContinueWith(chooserTask =>

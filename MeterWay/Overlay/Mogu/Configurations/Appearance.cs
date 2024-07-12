@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.FontIdentifier;
 using Dalamud.Interface.Utility.Raii;
@@ -13,7 +14,7 @@ namespace Mogu;
 public class Font()
 {
     public uint MoguFontColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
-    public SingleFontSpec? MoguFontSpec { get; set; } = null;
+    public IFontSpec? MoguFontSpec { get; set; } = null;
 }
 
 [Serializable]
@@ -31,13 +32,16 @@ public class Appearance
 
     // Appearance Players
     public bool PlayerJobIcon { get; set; } = true;
-    public bool PlayerNameColorJob { get; set; } = true;
-    public uint PlayerNameColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
+    public bool PlayerJobName { get; set; } = true;
+    public Overlay.JobDisplay PlayerJobNameDisplay { get; set; } = Overlay.JobDisplay.Acronym;
+
+    public Overlay.NameDisplay PlayerNameDisplay { get; set; } = Overlay.NameDisplay.FullName;
+    public Overlay.ColorSelected PlayerNameColor { get; set; } = Overlay.ColorSelected.Default;
+    public uint PlayerNameCustomColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.25f));
 
     public bool Bar { get; set; } = true;
-    public bool BarColorJob { get; set; } = true;
-    public uint BarColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.25f));
-
+    public Overlay.ColorSelected BarColor { get; set; } = Overlay.ColorSelected.Job;
+    public uint BarCustomColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.25f));
     // Job colors
     public JobColors JobColors { get; set; } = new();
 }
@@ -46,13 +50,15 @@ public class Appearance
 public class Header
 {
     public string Format { get; set; } = string.Empty;
-    
+
     public bool Background { get; set; } = true;
     public uint BackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.25f));
 }
 
 public partial class Overlay : BasicOverlay
 {
+
+
     private void DrawAppearanceTab()
     {
         using var tab = ImRaii.TabItem("Appearance");
@@ -149,6 +155,67 @@ public partial class Overlay : BasicOverlay
             Save(Window.WindowName, Config);
         });
 
+        // _ImguiCheckboxWithTooltip("Job Name", null, Config.Appearance.PlayerJobName, newValue =>
+        // {
+        //     Config.Appearance.PlayerJobName = newValue;
+        //     Save(Window.WindowName, Config);
+        // });
+        
+        // if (!Config.Appearance.PlayerJobName) _ImGuiBeginDisabled(ref isDisabled);
+        // ImGui.Indent();
+
+        // string[] JobDisplays =
+        // [   
+        //     "Acroyn",
+        //     "Full Name",
+        // ];
+        // var PlayerJobNameDisplayValue = (int)Config.Appearance.PlayerJobNameDisplay;
+        // if (ImGui.Combo("Job Display", ref PlayerJobNameDisplayValue, JobDisplays, JobDisplays.Length) && Config.Appearance.PlayerJobNameDisplay != (JobDisplay)PlayerJobNameDisplayValue)
+        // {
+        //     Config.Appearance.PlayerJobNameDisplay = (JobDisplay)PlayerJobNameDisplayValue;
+        //     Save(Window.WindowName, Config);
+        // }
+
+        // ImGui.Unindent();
+        // _ImGuiEndDisabled(ref isDisabled);
+
+        string[] NameDisplays =
+        [
+            "No Name",
+            "Full Name",
+            "Surname",
+            "Surname Abbreviated",
+            "Forename Abbreviated And Surname",
+            "Forename",
+            "Forename Abbreviated",
+            "Forename And SurnameAbbreviated",
+            "Initials"
+
+        ];
+        var NameDisplayValue = (int)Config.Appearance.PlayerNameDisplay;
+        if (ImGui.Combo("Name Display", ref NameDisplayValue, NameDisplays, NameDisplays.Length) && Config.Appearance.PlayerNameDisplay != (NameDisplay)NameDisplayValue)
+        {
+            Config.Appearance.PlayerNameDisplay = (NameDisplay)NameDisplayValue;
+            Save(Window.WindowName, Config);
+        }
+
+        DrawColorSelected("Name Color", Config.Appearance.PlayerNameColor, (newValue) =>
+        {
+            Config.Appearance.PlayerNameColor = newValue;
+            Save(Window.WindowName, Config);
+        });
+
+        if (Config.Appearance.PlayerNameColor != ColorSelected.Custom) _ImGuiBeginDisabled(ref isDisabled);
+        ImGui.Indent();
+        _ImGuiColorPick("Name Custom Color", Config.Appearance.PlayerNameCustomColor, newValue =>
+        {
+            Config.Appearance.PlayerNameCustomColor = newValue;
+            Save(Window.WindowName, Config);
+        });
+        ImGui.Unindent();
+        _ImGuiEndDisabled(ref isDisabled);
+
+
         _ImguiCheckboxWithTooltip("Bar", null, Config.Appearance.Bar, newValue =>
         {
             Config.Appearance.Bar = newValue;
@@ -157,21 +224,22 @@ public partial class Overlay : BasicOverlay
 
         if (!Config.Appearance.Bar) _ImGuiBeginDisabled(ref isDisabled);
         ImGui.Indent();
-        _ImguiCheckboxWithTooltip("job colors", null, Config.Appearance.BarColorJob, newValue =>
-        {
-            Config.Appearance.BarColorJob = newValue;
-            Save(Window.WindowName, Config);
-        });
-
-        if (Config.Appearance.BarColorJob) _ImGuiBeginDisabled(ref isDisabled);
-        ImGui.Indent();
-        _ImGuiColorPick("Color", Config.Appearance.BarColor, newValue =>
+        DrawColorSelected("Bar Color", Config.Appearance.BarColor, (newValue) =>
         {
             Config.Appearance.BarColor = newValue;
             Save(Window.WindowName, Config);
         });
+        
+        if (Config.Appearance.BarColor != ColorSelected.Custom) _ImGuiBeginDisabled(ref isDisabled);
+        ImGui.Indent();
+        _ImGuiColorPick("Bar Custom Color", Config.Appearance.BarCustomColor, newValue =>
+        {
+            Config.Appearance.BarCustomColor = newValue;
+            Save(Window.WindowName, Config);
+        });
         ImGui.Unindent();
         ImGui.Unindent();
+        
         _ImGuiEndDisabled(ref isDisabled);
     }
 
@@ -179,9 +247,6 @@ public partial class Overlay : BasicOverlay
     {
         using var tab = ImRaii.TabItem("Fonts");
         if (!tab) return;
-
-        ImGui.TextColored(new Vector4(1, 0, 0, 1), "Temporarily disabled, sorry.");
-        ImGui.BeginDisabled();
 
         ImGui.Spacing();
         ImGui.Text("Change the fonts used in the overlay");
@@ -215,7 +280,5 @@ public partial class Overlay : BasicOverlay
         ImGui.Text("-->");
         ImGui.SameLine();
         ImGui.Text($"{Config.Font.MoguFontSpec?.ToLocalizedString("en") ?? "Default"}");
-
-        ImGui.EndDisabled();
     }
 }
