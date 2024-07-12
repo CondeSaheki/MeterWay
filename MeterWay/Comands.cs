@@ -22,11 +22,11 @@ public class Commands : IDisposable
         });
         Dalamud.Commands.AddHandler("/mw", new CommandInfo((string command, string arg) => { OnCommand(arg); })
         {
-            HelpMessage = $"Display {Plugin.Name} main window.\nAditional help with the command \'{CommandName} help\'."
+            HelpMessage = $"\'{CommandName}\' Alias."
         });
     }
 
-    private static string HelpMessage() 
+    private static string HelpMessage()
     {
         StringBuilder Message = new();
         void helpMessageBuilder(string arg, string help) => Message.Append($"{CommandName}{(arg != "" ? " " : "")}{arg} -> {help}\n");
@@ -43,7 +43,7 @@ public class Commands : IDisposable
         helpMessageBuilder("help", "This help message");
 
         Message.Remove(Message.Length - 1, 1);
-        
+
         return Message.ToString();
     }
 
@@ -52,29 +52,37 @@ public class Commands : IDisposable
         List<string> args = [.. arg.Split(' ')];
         Action handler = args[0] switch
         {
-            "" when args.Count == 1 => () => { Plugin.MainWindow.IsOpen = true; },
-            "config" when args.Count == 1 => () => { Plugin.ConfigWindow.IsOpen = true; },
+            "" when args.Count == 1 => () => { Plugin.MainWindow.IsOpen = true; }
+            ,
+            "config" when args.Count == 1 => () => { Plugin.ConfigWindow.IsOpen = true; }
+            ,
             "connect" when args.Count == 1 => Plugin.ConnectionManager.Connect,
-            "disconnect" when args.Count == 1 =>  Plugin.ConnectionManager.Disconnect,
-            "reconnect" when args.Count == 1 =>  Plugin.ConnectionManager.Reconnect,
-            "status" when args.Count == 1 => () => { Dalamud.Chat.Print($"MeterWay connection status: {Plugin.ConnectionManager.Status()}"); },
+            "disconnect" when args.Count == 1 => Plugin.ConnectionManager.Disconnect,
+            "reconnect" when args.Count == 1 => Plugin.ConnectionManager.Reconnect,
+            "status" when args.Count == 1 => () => { Dalamud.Chat.Print($"MeterWay connection status: {Plugin.ConnectionManager.Status()}"); }
+            ,
 
             // "overlay" => () => { Dalamud.Log.Info($"wip => run with args: {args}"); },
 
-            "help" when args.Count == 1 => () => { Dalamud.Chat.Print(HelpMessage()); },
+            "help" when args.Count == 1 => () => { Dalamud.Chat.Print(HelpMessage()); }
+            ,
 
-            #if DEBUG
+#if DEBUG
 
-            "_debug" when args.Count == 1 => () => { Plugin.DebugWindow.IsOpen = true; },
-            "_start" when args.Count == 1 => () => { EncounterManager.Start(); },
-            "_stop" when args.Count == 1 => () => { EncounterManager.Stop(); },
+            "_debug" when args.Count == 1 => () => { Plugin.DebugWindow.IsOpen = true; }
+            ,
+            "_start" when args.Count == 1 => () => { EncounterManager.Start(); }
+            ,
+            "_stop" when args.Count == 1 => () => { EncounterManager.Stop(); }
+            ,
             "_clear" when args.Count == 1 => () =>
             {
                 EncounterManager.Inst.encounters.Clear();
                 EncounterManager.Inst.encounters.Add(new Data.Encounter());
-            },  
-            
-            #endif
+            }
+            ,
+
+#endif
 
             _ => () =>
             {

@@ -64,7 +64,7 @@ public sealed class Plugin : IDalamudPlugin
 
             Commands = new(this);
 
-            Dalamud.PluginInterface.UiBuilder.OpenMainUi += MainWindow.Toggle;
+            Dalamud.PluginInterface.UiBuilder.OpenMainUi += ConfigWindow.Toggle;
             Dalamud.PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
             Dalamud.PluginInterface.UiBuilder.OpenConfigUi += ConfigWindow.Toggle;
 

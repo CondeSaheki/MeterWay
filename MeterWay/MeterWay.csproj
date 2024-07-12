@@ -5,8 +5,8 @@
   <PropertyGroup>
     <Authors>CondeSaheki</Authors>
     <Company></Company>
-    <Version>1.0.11</Version>
-    <Description>"An addon that display and help you analyze combat data.</Description>
+    <Version>1.0.12</Version>
+    <Description>"An plugin that display and help you analyze combat data.</Description>
     <Copyright></Copyright>
     <PackageProjectUrl>https://github.com/CondeSaheki/MeterWay</PackageProjectUrl>
     <PackageLicenseExpression>GLP-2.0</PackageLicenseExpression>

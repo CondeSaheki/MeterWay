@@ -1,8 +1,8 @@
 {
   "Author": "Saheki",
   "Name": "MeterWay",
-  "Punchline": "A simple dps meter.",
-  "Description": "A gamer description.",
+  "Punchline": "A tool to make you nerdier.",
+  "Description": "MeterWay is designed to be used in conjunction with IINACT or Act and has the ability acts as a real-time log parser alowing to get and display elaborated statistics and data even during combat.",
   "RepoUrl": "https://github.com/CondeSaheki/MeterWay",
   "ApplicableVersion": "any",
   "Tags": [
