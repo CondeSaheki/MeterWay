@@ -1,6 +1,7 @@
 
 using System;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using ImGuiNET;
 
@@ -16,11 +17,16 @@ public class PopupWindow
 
     private TaskCompletionSource TaskSource { get; set; } = new();
     private bool FirstDraw { get; set; } = true;
+    
+    private static int counterStatic;
+    private readonly int counter;
 
     public PopupWindow(string label, Action<TaskCompletionSource> content, bool isModal = false, Vector2? size = null)
     {
+        counter = Interlocked.Increment(ref counterStatic);
+
         Content = content;
-        Label = label;
+        Label = $"{label}##{counter}";
         Size = size ?? new(533, 300);
         IsModal = isModal;
 
