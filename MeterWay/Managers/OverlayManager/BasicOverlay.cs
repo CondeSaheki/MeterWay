@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using Newtonsoft.Json;
 
 namespace MeterWay.Overlay;
@@ -49,8 +50,8 @@ public abstract class BasicOverlay : IDisposable
     /// Code to be executed every time the configuration window renders.
     /// In this method, implement your drawing code. You do NOT need to ImGui.Begin your window
     /// </summary>
-    public virtual void DrawConfiguration() {}
-    
+    public virtual void DrawConfiguration() { }
+
     /// <summary>
     /// Performs cleanup tasks of persistent data like configuration files associated with the overlay.
     /// </summary>
@@ -75,7 +76,14 @@ public abstract class BasicOverlay : IDisposable
             {
                 Dalamud.Log.Debug($"File Load, file \'{file.FullName}\': Reading");
                 var fileContent = File.ReadAllText(file.FullName);
-                config = JsonConvert.DeserializeObject<Configuration>(fileContent)!;
+                config = JsonConvert.DeserializeObject<Configuration>(fileContent, new JsonSerializerSettings
+                {
+                    Converters =
+                    [
+                        DalamudAssemblyTypeNameForcingJsonConverter.Instance,
+                    ],
+                })!;
+
                 if (config != null) return config;
             }
             catch (Exception ex)
@@ -86,6 +94,38 @@ public abstract class BasicOverlay : IDisposable
         config = new();
         Save(fileName, config);
         return config;
+    }
+
+    /// <summary>
+    /// from Dalamud/Configuration/PluginConfigurations.cs
+    /// </summary>
+    private class DalamudAssemblyTypeNameForcingJsonConverter : JsonConverter
+    {
+        public static readonly DalamudAssemblyTypeNameForcingJsonConverter Instance = new();
+
+        private static readonly Assembly DalamudAssembly = typeof(DalamudAssemblyTypeNameForcingJsonConverter).Assembly;
+
+        private static readonly JsonSerializer TypeNameForcingJsonConverterDefaultSerializer = new()
+        {
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+            TypeNameHandling = TypeNameHandling.Objects,
+        };
+
+        private DalamudAssemblyTypeNameForcingJsonConverter()
+        {
+        }
+
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) =>
+            TypeNameForcingJsonConverterDefaultSerializer.Serialize(writer, value);
+
+        public override object? ReadJson(
+            JsonReader reader,
+            Type objectType,
+            object? existingValue,
+            JsonSerializer serializer) =>
+            TypeNameForcingJsonConverterDefaultSerializer.Deserialize(reader, objectType);
+
+        public override bool CanConvert(Type objectType) => objectType.Assembly == DalamudAssembly;
     }
 
     /// <summary>
@@ -102,7 +142,10 @@ public abstract class BasicOverlay : IDisposable
         try
         {
             Dalamud.Log.Debug($"File Save, file \'{file.FullName}\': Writing");
-            var fileContent = JsonConvert.SerializeObject(config, Formatting.Indented);
+            var fileContent = JsonConvert.SerializeObject(config, Formatting.Indented, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
             File.WriteAllText(file.FullName, fileContent);
         }
         catch (Exception ex)

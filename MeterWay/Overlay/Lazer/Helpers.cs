@@ -173,13 +173,13 @@ public partial class Overlay
         }
     }
 
-    private void _SingleFontChooserDialog(string? label, SingleFontSpec? current, Action<SingleFontSpec> setter)
+    private void _SingleFontChooserDialog(string? label, IFontSpec? current, Action<SingleFontSpec> setter)
     {
         SingleFontChooserDialog chooser = new((UiBuilder)MeterWay.Dalamud.PluginInterface.UiBuilder, false, null)
         {
             Title = label ?? "Font Chooser",
             PreviewText = "0.123456789 abcdefghijklmnopqrstuvxyzw",
-            SelectedFont = current ?? new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance },
+            SelectedFont = (SingleFontSpec?)current ?? new SingleFontSpec { FontId = DalamudDefaultFontAndFamilyId.Instance },
         };
         chooser.ResultTask.ContinueWith(chooserTask =>
         {

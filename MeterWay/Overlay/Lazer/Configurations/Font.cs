@@ -12,7 +12,7 @@ namespace Lazer;
 public class Font()
 {
     public uint LazerFontColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f));
-    public SingleFontSpec? LazerFontSpec { get; set; } = null;
+    public IFontSpec? LazerFontSpec { get; set; } = null;
 }
 
 public partial class Overlay : BasicOverlay
@@ -21,9 +21,6 @@ public partial class Overlay : BasicOverlay
     {
         using var tab = ImRaii.TabItem("Fonts");
         if (!tab) return;
-
-        ImGui.TextColored(new Vector4(1, 0, 0, 1), "Temporarily disabled, sorry.");
-        //ImGui.BeginDisabled();
 
         ImGui.Spacing();
         ImGui.Text("Change the fonts used in the overlay");
@@ -57,7 +54,5 @@ public partial class Overlay : BasicOverlay
         ImGui.Text("-->");
         ImGui.SameLine();
         ImGui.Text($"{Config.Font.LazerFontSpec?.ToLocalizedString("en") ?? "Default"}");
-
-        //ImGui.EndDisabled();
     }
 }

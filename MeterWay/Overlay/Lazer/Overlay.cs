@@ -35,7 +35,7 @@ public partial class Overlay : BasicOverlay
     private Lerp<Dictionary<uint, PlayerData>> Lerping { get; init; }
 
     private CancellationTokenSource? DelayToken { get; set; }
-    
+
     private uint _playerId = MeterWay.Dalamud.ClientState.LocalPlayer?.EntityId ?? 0;
 
     public struct PlayerData
@@ -113,7 +113,7 @@ public partial class Overlay : BasicOverlay
             ImGui.PopClipRect();
             return;
         }
-        
+
         if (!Data.Finished && Data.Active) Data.Calculate(); // this will ignore last frame data ??
 
         // Header
@@ -145,21 +145,21 @@ public partial class Overlay : BasicOverlay
             draw.AddRectFilled(line.Min, line.Max, Config.Appearance.HeaderBackgroundColor);
 
             // Bar
-            var barColor = Config.Appearance.JobColors.Override ? Helpers.ColorU32AlphaOverride(GetJobColor(player.Job), Config.Appearance.JobColors.Opacity) :GetJobColor(player.Job);
+            var barColor = Config.Appearance.JobColors.Override ? Helpers.ColorU32AlphaOverride(GetJobColor(player.Job), Config.Appearance.JobColors.Opacity) : GetJobColor(player.Job);
             float progress = (float)(playerLerped?.Progress ?? 1);
             line.Padding(0);
             DrawProgressBar(line.Area, barColor, progress, player.Id == _playerId);
-            draw.AddRect(line.Min, line.Max, _playerId == player.Id ? Config.Appearance.YourBarColor : Config.Appearance.BarBorderColor,0, ImDrawFlags.None, player.Id == _playerId ? 2: 1);
+            draw.AddRect(line.Min, line.Max, _playerId == player.Id ? Config.Appearance.YourBarColor : Config.Appearance.BarBorderColor, 0, ImDrawFlags.None, player.Id == _playerId ? 2 : 1);
 
             // icon
             Canvas icon = new(line.Area);
             icon.Max = icon.Min + new Vector2(icon.Height, icon.Height);
-            icon.Padding(1);    
+            icon.Padding(1);
             draw.AddRectFilled(icon.Min, icon.Max, ColorBlack);
             draw.AddRect(icon.Min, icon.Max, Config.Appearance.JobIconBorderColor);
             DrawJobIcon(icon, player.Job);
             line.AddMin(icon.Height + Config.Appearance.Spacing, 0);
-            
+
             // Texts
             if (Config.Appearance.Layout.DisplayJobAcronym)
             {
@@ -220,7 +220,7 @@ public partial class Overlay : BasicOverlay
             Window.IsOpen = true;
             return;
         }
-        
+
         _playerId = MeterWay.Dalamud.ClientState.LocalPlayer?.EntityId ?? 0;
     }
 
