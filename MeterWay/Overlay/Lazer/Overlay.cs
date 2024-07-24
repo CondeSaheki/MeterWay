@@ -120,7 +120,9 @@ public partial class Overlay : BasicOverlay
         cursor.Max = new(cursor.Max.X, cursor.Min.Y + fontSize + 2 * Config.Appearance.Spacing);
         draw.AddRectFilled(cursor.Min, cursor.Max, Config.Appearance.HeaderBackgroundColor, Config.Appearance.Rounding, ImDrawFlags.RoundCornersTop);
 
-        text = $"[{Data.Duration.ToString(@"mm\:ss")}] - {Data.Name}";
+        text = $"[{Data.Duration.ToString(@"mm\:ss")}]";
+        if (Config.Appearance.Layout.DisplayCombatName)
+            text += $" - {Data.Name}";
         position = cursor.Align(text, Canvas.HorizontalAlign.Center, Canvas.VerticalAlign.Center);
         draw.AddText(position, ColorWhite, text);
         cursor.Move((0, cursor.Height));
@@ -169,7 +171,7 @@ public partial class Overlay : BasicOverlay
                 line.AddMin(ImGui.CalcTextSize(text).X + Config.Appearance.Spacing, 0);
             }
 
-            text = $"{sortCache.IndexOf(id) + 1} » {player.Name.Split(" ")[0]} {player.Name.Split(" ")[1][0]}.";
+            text = Config.Appearance.Layout.DisplayYourName && player.Id == _playerId ? $"{sortCache.IndexOf(id) + 1} » YOU" : $"{sortCache.IndexOf(id) + 1} » {player.Name.Split(" ")[0]} {player.Name.Split(" ")[1][0]}.";
             position = line.Padding((Config.Appearance.Spacing, 0)).Align(text, Canvas.HorizontalAlign.Left, Canvas.VerticalAlign.Center);
             draw.AddText(position, ColorWhite, text);
             line.AddMin(ImGui.CalcTextSize(text).X + Config.Appearance.Spacing, 0);
