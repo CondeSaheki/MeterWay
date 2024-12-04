@@ -9,11 +9,11 @@
     "RepoUrl": "https://github.com/CondeSaheki/MeterWay",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 11,
-    "DownloadLinkInstall": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.12/latest.zip",
+    "DownloadLinkInstall": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.13/latest.zip",
     "IsHide": false,
     "IsTestingExclusive": false,
-    "DownloadLinkTesting": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.12/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.12/latest.zip",
+    "DownloadLinkTesting": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.13/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.13/latest.zip",
     "DownloadCount": 0,
     "IconUrl": "https://raw.githubusercontent.com/CondeSaheki/MeterWay/main/images/icon.png"
   }
