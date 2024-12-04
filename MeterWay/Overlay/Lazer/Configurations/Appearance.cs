@@ -10,7 +10,7 @@ namespace Lazer;
 [Serializable]
 public class Appearance()
 {
-    public float Spacing { get; set; } = 3.5f;
+    public float Spacing { get; set; } = 1.5f;
 
     public float Rounding { get; set; } = 8f;
     public uint BackgroundColor { get; set; } = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.25f));

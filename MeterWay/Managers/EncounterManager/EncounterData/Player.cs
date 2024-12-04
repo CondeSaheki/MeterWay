@@ -14,8 +14,8 @@ public class Player(ICharacter character, Encounter encounter) : IPlayer
     public bool IsActive { get; set; } = true;
 
     public string Name { get; set; } = character.Name.ToString();
-    public uint? World { get; set; } = (character as IPlayerCharacter)?.HomeWorld.Id;
-    public Job Job { get; set; } = Job.FromId((int)character.ClassJob.Id) ?? Job.Unknown;
+    public uint? World { get; set; } = (character as IPlayerCharacter)?.HomeWorld.RowId;
+    public Job Job { get; set; } = Job.FromId((int)character.ClassJob.RowId) ?? Job.Unknown;
 
     public Damage DamageDealt { get; set; } = new Damage();
     public Damage DamageReceived { get; set; } = new Damage();
@@ -45,8 +45,8 @@ public class Player(ICharacter character, Encounter encounter) : IPlayer
         if (player == null) return false;
 
         var tmpName = player.Name.ToString();
-        var tmpWorld = player.HomeWorld.Id;
-        var tmpJob = Job.FromId((int)player.ClassJob.Id) ?? Job.Unknown;
+        var tmpWorld = player.HomeWorld.RowId;
+        var tmpJob = Job.FromId((int)player.ClassJob.RowId) ?? Job.Unknown;
         if (Name != tmpName || World != tmpWorld || Job != tmpJob)
         {
             Name = tmpName;

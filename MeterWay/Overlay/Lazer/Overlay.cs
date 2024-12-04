@@ -3,6 +3,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Collections.Generic;
+using Dalamud.Interface.GameFonts;
 using ImGuiNET;
 using Dalamud.Interface.ManagedFontAtlas;
 
@@ -27,7 +28,7 @@ public partial class Overlay : BasicOverlay
 
     private IFontAtlas FontAtlas { get; init; } = MeterWay.Dalamud.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.Async);
     private IFontHandle FontLazer { get; set; }
-    private IFontHandle DefaultFont => FontAtlas.NewDelegateFontHandle(e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(20)));
+    private IFontHandle DefaultFont => FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.TrumpGothic, 24));
 
     private Encounter? Data;
     private List<uint> SortCache = [];
