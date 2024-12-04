@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Lumina.Excel.GeneratedSheets;
-
+using Lumina.Excel.Sheets;
 using MeterWay.Utils;
 using MeterWay.LogParser;
 
@@ -107,8 +106,8 @@ public class Encounter : IEncounter
     private static string GetName()
     {
         var locationRow = Dalamud.GameData.GetExcelSheet<TerritoryType>()?.GetRow(Dalamud.ClientState.TerritoryType);
-        var instanceContentName = locationRow?.ContentFinderCondition.Value?.Name?.ToString();
-        var placeName = locationRow?.PlaceName.Value?.Name?.ToString();
+        var instanceContentName = locationRow?.ContentFinderCondition.Value.Name.ToString();
+        var placeName = locationRow?.PlaceName.Value.Name.ToString();
 
         return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
     }

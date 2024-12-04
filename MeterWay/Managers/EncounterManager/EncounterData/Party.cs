@@ -141,7 +141,7 @@ public class Party : IParty
         uint? recovered = null;
         foreach (KeyValuePair<uint, Player> cachedPlayer in Players)
         {
-            if (cachedPlayer.Value.Name == player.Name.ToString() && cachedPlayer.Value.World == player.World.Id)
+            if (cachedPlayer.Value.Name == player.Name.ToString() && cachedPlayer.Value.World == player.World.Value.RowId)
             {
                 recovered = cachedPlayer.Key;
                 break;
