@@ -1,26 +1,32 @@
 {
   "version": 1,
   "dependencies": {
-    "net8.0-windows7.0": {
+    "net9.0-windows7.0": {
       "DalamudPackager": {
         "type": "Direct",
-        "requested": "[11.0.0, )",
-        "resolved": "11.0.0",
-        "contentHash": "bjT7XUlhIJSmsE/O76b7weUX+evvGQctbQB8aKXt94o+oPWxHpCepxAGMs7Thow3AzCyqWs7cOpp9/2wcgRRQA=="
+        "requested": "[12.0.0, )",
+        "resolved": "12.0.0",
+        "contentHash": "J5TJLV3f16T/E2H2P17ClWjtfEBPpq3yxvqW46eN36JCm6wR+EaoaYkqG9Rm5sHqs3/nK/vKjWWyvEs/jhKoXw=="
+      },
+      "DotNet.ReproducibleBuilds": {
+        "type": "Direct",
+        "requested": "[1.2.25, )",
+        "resolved": "1.2.25",
+        "contentHash": "xCXiw7BCxHJ8pF6wPepRUddlh2dlQlbr81gXA72hdk4FLHkKXas7EH/n+fk5UCA/YfMqG1Z6XaPiUjDbUNBUzg=="
       },
       "NLua": {
         "type": "Direct",
-        "requested": "[1.7.2, )",
-        "resolved": "1.7.2",
-        "contentHash": "Eh/Nyois3Y4pObgAR8MDsiq5npSQcmEq7IkM50TfkZ8Pb+kV1HMWmaKLl6fFy6ydAzG67L3l3KQseZpBxjI6zw==",
+        "requested": "[1.7.5, )",
+        "resolved": "1.7.5",
+        "contentHash": "ACDMZiuJxQWw3rMeP7nPIIOid5fv2Bp66XKr7q1+vJdfcr9AZ8NRqoKOAf0ZsZGBUODEZhEbwliuwgo0T0s2XA==",
         "dependencies": {
-          "KeraLua": "1.4.1"
+          "KeraLua": "1.4.4"
         }
       },
       "KeraLua": {
         "type": "Transitive",
-        "resolved": "1.4.1",
-        "contentHash": "SHfGjaWED+nHxMWbIqAVN90bs5xLnOOojuQaSSzZqJAKXSzcDi94ikr/7GQxM1/4ny/tKnnGHSKkOQyZ65572Q=="
+        "resolved": "1.4.4",
+        "contentHash": "JsTqvTtHP9DzBK0EigywkQ/EwOHBGgBrk+vtgIqSKHWFGKkR1uIXmt8woDOG8cnprg/8uhS5YRmdCjjlyd15WQ=="
       }
     }
   }
