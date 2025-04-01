@@ -1,31 +1,70 @@
-- [Meterway](#Meterway)
-- [Instalation](#Instalation)
-- [Building](#Building)
-  * [Prerequisites](#Prerequisites)
-  * [Build](#Build)
-  * [Add to game](#Add-to-game)
+# MeterWay
 
+**MeterWay** is a Dalamud-based plugin for Final Fantasy XIV that displays and helps you analyze combat data in real-time.
 
-# Meterway
-Dalamud-based FFXIV addon that display and help you analyze combat data. 
+It is designed to work alongside tools like **IINACT** or **ACT**, acting as a live log parser to deliver detailed combat statistics even during encounters.
 
-MeterWay is designed to be used in conjunction with [IINACT](https://www.iinact.com/) or Act and has the ability acts as a real-time log parser alowing to get and display elaborated statistics and data even during combat.
+---
 
-## Instalation
-1. Click the "Experimental" tab.
-2. Paste ```https://raw.githubusercontent.com/CondeSaheki/MeterWay/main/repo.json``` into the empty box at the bottom of the "Custom Plugin Repositories" section (the last box will always have a + next to it).
-3. Click the + button.
-4. Click the 💾 button.
+## 🔧 Installation (via Dalamud)
 
-## Building
+1. Open the **"Experimental"** tab in the Dalamud plugin installer.
+2. Paste the following URL into the empty box under **Custom Plugin Repositories**:
+   ```plaintext
+   https://raw.githubusercontent.com/CondeSaheki/MeterWay/main/repo.json
+   ```
+3. Click the **`+`** button.
+4. Click the **💾 Save** button.
+5. Find and install **MeterWay** from the list.
+
+---
+
+## 🛠️ Building from Source
+
 ### Prerequisites
-- XIVLauncher, FINAL FANTASY XIV, and Dalamud installed and the game has been run with Dalamud at least once.
-- DALAMUD_HOME environment variable must be set if you used an custom instalation paths.
-- .NET Core 8 SDK installed and configured.
 
-### Build
-- Restore packages with ```dotnet restore```
-- Run ```dotnet build -c Debug``` or ```dotnet build -c Release```
+- **FINAL FANTASY XIV**, **XIVLauncher**, and **Dalamud** installed.
+- Game must have been launched at least once with Dalamud active.
+- `.NET 9 SDK` installed and configured.
+- `DALAMUD_HOME` environment variable set (only required for custom Dalamud install paths).
 
-#### Add to game
-Add the full path to the ```MeterWay.dll``` in list of Dev Plugins and then Install with Plugin Installer. You can disable, enable, or load your plugin on startup
+> **Note:** This plugin now targets **.NET 9** and **Dalamud API 12**.
+
+### Build Instructions
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/CondeSaheki/MeterWay.git
+   cd MeterWay
+   ```
+
+2. Restore dependencies:
+   ```bash
+   dotnet restore
+   `````
+
+3. Build the plugin:
+   ```bash
+   dotnet build -c Release
+   `````
+
+---
+
+## 📦 Add to Game (Manual Dev Plugin)
+
+To load the plugin manually in Dalamud:
+
+1. Go to the **Dev Plugins** tab.
+2. Add the full path to the built `MeterWay.dll`.
+3. Use the **Plugin Installer** to install it.
+4. Enable/disable it, we don't recommend to turn on the auto-load option for debug builds.
+
+---
+
+## 💬 Support / Feedback
+
+Feel free to open an [issue on GitHub](https://github.com/CondeSaheki/MeterWay/issues) or reach out via Discord if you encounter bugs or have suggestions!
+
+---
+
+Happy parsing!

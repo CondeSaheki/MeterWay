@@ -45,7 +45,7 @@ public class OverlayWindow : Window, IOverlayWindow
 
         Init();
 
-        if (spec.IsEnabled) Enable();
+        if (spec.IsEnabled) MeterWay.Dalamud.Framework.RunOnTick(Enable).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     private void Init()

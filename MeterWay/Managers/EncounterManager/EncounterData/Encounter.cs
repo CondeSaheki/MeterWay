@@ -40,7 +40,7 @@ public class Encounter : IEncounter
     public Encounter()
     {
         Id = Helpers.CreateId();
-        Name = GetName();
+        Name = Dalamud.Framework.RunOnTick(GetName).ConfigureAwait(false).GetAwaiter().GetResult();
         Party = new Party(this);
         RawActions = [];
 
@@ -80,7 +80,7 @@ public class Encounter : IEncounter
     public bool Update()
     {
         bool changed = false;
-        var tmpName = GetName();
+        var tmpName = Dalamud.Framework.RunOnTick(GetName).ConfigureAwait(false).GetAwaiter().GetResult();
         if (Name != tmpName)
         {
             changed = true;
@@ -89,7 +89,7 @@ public class Encounter : IEncounter
         if (Party.HasChanged())
         {
             changed = true;
-            Party.Update();
+            Dalamud.Framework.RunOnTick(Party.Update).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         else
         {
