@@ -61,7 +61,7 @@ public class ConnectionManager : IDisposable
     {
         Subscriptions = subscriptions ?? [];
         Init();
-        if (ConfigurationManager.Inst.Configuration.AutoConnect) AutoConnect();
+        if (ConfigurationManager.Inst.Configuration.AutoConnect) Dalamud.Framework.RunOnTick(AutoConnect).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     /// <summary>

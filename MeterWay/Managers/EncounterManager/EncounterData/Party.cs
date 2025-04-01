@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Party;
-
+using Dalamud.Plugin.Services;
 using MeterWay.Utils;
 
 namespace MeterWay.Data;
@@ -35,7 +35,7 @@ public class Party : IParty
         Encounter = encounter;
         Id = Helpers.CreateId();
 
-        Players = GetPlayers();
+        Players = Dalamud.Framework.RunOnTick(GetPlayers).ConfigureAwait(false).GetAwaiter().GetResult();
         Pets = [];
     }
 
@@ -74,7 +74,7 @@ public class Party : IParty
         // keep only you
         if (partyList.Length == 0)
         {
-            Disband();
+            Dalamud.Framework.RunOnTick(Disband).ConfigureAwait(false).GetAwaiter().GetResult();
             return; // done
         }
 

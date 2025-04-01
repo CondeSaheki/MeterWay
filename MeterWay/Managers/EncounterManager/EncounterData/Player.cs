@@ -41,7 +41,7 @@ public class Player(ICharacter character, Encounter encounter) : IPlayer
     {
         if (!IsActive) return false;
 
-        var player = GetPlayer();
+        var player = Dalamud.Framework.RunOnTick(GetPlayer).ConfigureAwait(false).GetAwaiter().GetResult();
         if (player == null) return false;
 
         var tmpName = player.Name.ToString();

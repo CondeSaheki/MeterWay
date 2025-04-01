@@ -90,7 +90,7 @@ public partial class Overlay : BasicOverlay
         }
         if (PlayerId == null)
         {
-            UpdatePlayerId();
+            MeterWay.Dalamud.Framework.RunOnTick(UpdatePlayerId).ConfigureAwait(false).GetAwaiter().GetResult();
             FontVision?.Pop();
             return;
         }
@@ -167,7 +167,7 @@ public partial class Overlay : BasicOverlay
 
     public override void OnEncounterBegin()
     {
-        UpdatePlayerId();
+        MeterWay.Dalamud.Framework.RunOnTick(UpdatePlayerId).ConfigureAwait(false).GetAwaiter().GetResult();
         DelayToken?.Cancel();
         if (Config.Visibility.Always || Config.Visibility.Combat)
         {
