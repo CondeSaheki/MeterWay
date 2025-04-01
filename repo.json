@@ -9,7 +9,7 @@
     "LastUpdated": 0,
     "RepoUrl": "https://github.com/CondeSaheki/MeterWay",
     "ApplicableVersion": "any",
-    "DalamudApiLevel": 11,
+    "DalamudApiLevel": 12,
     "DownloadLinkInstall": "https://github.com/CondeSaheki/MeterWay/releases/download/v1.0.14/latest.zip",
     "IsHide": false,
     "IsTestingExclusive": false,
