@@ -89,7 +89,7 @@ public class Encounter : IEncounter
         if (Party.HasChanged())
         {
             changed = true;
-            Party.Update();
+            Dalamud.Framework.RunOnTick(Party.Update).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         else
         {

@@ -84,7 +84,7 @@ public class Party : IParty
         // fill commonPlayers & newPlayers
         foreach (var player in partyList)
         {
-            var tmpPlayerId = GetOrRecoverPlayer(player);
+            var tmpPlayerId = Dalamud.Framework.RunOnTick(() => GetOrRecoverPlayer(player)).ConfigureAwait(false).GetAwaiter().GetResult();
             if (tmpPlayerId == null) continue;
 
             if (!Players.ContainsKey((uint)tmpPlayerId))
@@ -188,7 +188,7 @@ public class Party : IParty
         // party sizes are equal and need to be checked
         foreach (var player in partyList)
         {
-            var recoveredId = GetOrRecoverPlayer(player);
+            var recoveredId = Dalamud.Framework.RunOnTick(() => GetOrRecoverPlayer(player)).ConfigureAwait(false).GetAwaiter().GetResult();
             if (recoveredId == null) return true; // id did not got recovered
             if (!Players.ContainsKey((uint)recoveredId)) return true; // new player
         }

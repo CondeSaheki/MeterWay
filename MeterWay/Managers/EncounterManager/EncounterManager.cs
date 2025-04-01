@@ -105,7 +105,7 @@ public class EncounterManager : IDisposable
 
     public static void Receiver(object? _, JObject json)
     {
-        var combatState = IsInCombat();        
+        var combatState = Dalamud.Framework.RunOnTick(IsInCombat).ConfigureAwait(false).GetAwaiter().GetResult();
 
         // Start/End Combat
         if ((combatState == true) && Inst.lastCombatState == false)
