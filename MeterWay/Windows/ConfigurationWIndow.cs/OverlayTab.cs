@@ -21,7 +21,7 @@ public partial class ConfigWindow : Window, IDisposable
 
         ImGui.Spacing();
 
-        if (EncounterManager.LastEncounter.Active)
+        if (EncounterManager.LastEncounter != null && EncounterManager.LastEncounter.Active)
         {
             ImGui.Text("You can not change overlay configs when in combat");
             return;

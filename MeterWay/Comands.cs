@@ -52,7 +52,7 @@ public class Commands : IDisposable
         List<string> args = [.. arg.Split(' ')];
         Action handler = args[0] switch
         {
-            "" when args.Count == 1 => () => { Plugin.MainWindow.IsOpen = true; }
+            "" when args.Count == 1 => () => { Plugin.ConfigWindow.IsOpen = true; }
             ,
             "config" when args.Count == 1 => () => { Plugin.ConfigWindow.IsOpen = true; }
             ,

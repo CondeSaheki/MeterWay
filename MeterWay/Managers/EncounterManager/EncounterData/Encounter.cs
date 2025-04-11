@@ -105,11 +105,21 @@ public class Encounter : IEncounter
 
     private static string GetName()
     {
-        var locationRow = Dalamud.GameData.GetExcelSheet<TerritoryType>()?.GetRow(Dalamud.ClientState.TerritoryType);
-        var instanceContentName = locationRow?.ContentFinderCondition.Value.Name.ToString();
-        var placeName = locationRow?.PlaceName.Value.Name.ToString();
+        try
+        {
+            if (Dalamud.ClientState.TerritoryType == 0) return "Unknown";
 
-        return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
+            var locationRow = Dalamud.GameData.GetExcelSheet<TerritoryType>()?.GetRow(Dalamud.ClientState.TerritoryType);
+            var instanceContentName = locationRow?.ContentFinderCondition.Value.Name.ToString();
+            var placeName = locationRow?.PlaceName.Value.Name.ToString();
+
+            return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
+        }
+        catch (Exception e)
+        {
+            Dalamud.Log.Error($"Encounter: Fail to get name: {e}");
+            return "";
+        }
     }
 
     private TimeSpan _Duration()
