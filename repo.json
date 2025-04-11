@@ -6,7 +6,7 @@
     "Description": "MeterWay is designed to be used in conjunction with IINACT and has the hability acts as a real-time log parser alowing to get and display elaborated statistics and data even during combat",
     "InternalName": "MeterWay",
     "AssemblyVersion": "1.0.14",
-    "LastUpdated": 0,
+    "LastUpdated": 1,
     "RepoUrl": "https://github.com/CondeSaheki/MeterWay",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 12,
