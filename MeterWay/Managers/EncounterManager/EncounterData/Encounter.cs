@@ -16,8 +16,15 @@ public class Encounter : IEncounter
 
     public DateTime? Begin { get; set; }
     public DateTime? End { get; set; }
-    public TimeSpan Duration => _Duration();
-
+    public TimeSpan Duration
+    {
+        get
+        {
+            if (Begin == null) return new TimeSpan(0);
+            if (End == null) return (TimeSpan)(DateTime.Now - Begin);
+            return (TimeSpan)(End - Begin);
+        }
+    }
     public List<LogLineData> RawActions { get; set; }
 
     public Party Party;
@@ -40,7 +47,7 @@ public class Encounter : IEncounter
     public Encounter()
     {
         Id = Helpers.CreateId();
-        Name = Dalamud.Framework.RunOnTick(GetName).ConfigureAwait(false).GetAwaiter().GetResult();
+        Name = GetName();
         Party = new Party(this);
         RawActions = [];
 
@@ -107,25 +114,29 @@ public class Encounter : IEncounter
     {
         try
         {
-            if (Dalamud.ClientState.TerritoryType == 0) return "Unknown";
 
-            var locationRow = Dalamud.GameData.GetExcelSheet<TerritoryType>()?.GetRow(Dalamud.ClientState.TerritoryType);
-            var instanceContentName = locationRow?.ContentFinderCondition.Value.Name.ToString();
-            var placeName = locationRow?.PlaceName.Value.Name.ToString();
+            var territoryType = Dalamud.Framework.RunOnTick(() => Dalamud.ClientState.TerritoryType).ConfigureAwait(false).GetAwaiter().GetResult();
+            if (territoryType == 0)
+                return "Unknown";
 
-            return (string.IsNullOrEmpty(instanceContentName) ? placeName : instanceContentName) ?? "";
+            var territorySheet = Dalamud.GameData.GetExcelSheet<TerritoryType>();
+            if (territorySheet == null)
+            {
+                Dalamud.Log.Error("Encounter: Failed to load TerritoryType Excel sheet.");
+                return "Unknown";
+            }
+
+            var locationRow = territorySheet.GetRow(territoryType);
+
+            var instanceContentName = locationRow.ContentFinderCondition.Value.Name.ToString();
+            var placeName = locationRow.PlaceName.Value.Name.ToString();
+
+            return !string.IsNullOrEmpty(instanceContentName) ? instanceContentName : placeName ?? "Unknown";
         }
         catch (Exception e)
         {
-            Dalamud.Log.Error($"Encounter: Fail to get name: {e}");
-            return "";
+            Dalamud.Log.Error($"Encounter: Failed to get name: {e}");
+            return "Unknown";
         }
-    }
-
-    private TimeSpan _Duration()
-    {
-        if (Begin == null) return new TimeSpan(0);
-        if (End == null) return (TimeSpan)(DateTime.Now - Begin);
-        return (TimeSpan)(End - Begin);
     }
 }
