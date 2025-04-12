@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/12.0.2">
     <PropertyGroup>
         <Authors>CondeSaheki</Authors>
-        <Version>1.0.15</Version>
+        <Version>1.0.16</Version>
         <Description>"An plugin that display and help you analyze combat data.</Description>
         <PackageProjectUrl>https://github.com/CondeSaheki/MeterWay</PackageProjectUrl>
         <TargetFramework>net9.0-windows</TargetFramework>
